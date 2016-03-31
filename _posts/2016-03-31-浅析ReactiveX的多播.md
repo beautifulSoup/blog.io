@@ -1,6 +1,6 @@
 ---
 layout: post
-title: 浅析ReactiveX的多播
+title: 浅析ReactiveX的多播——实现安卓双击检测遇到的坑
 date: 2016-3-31
 categories: blog
 author: beautifulSoup
@@ -8,8 +8,6 @@ tags: [Android, Development, RxJava]
 description: 本文主要介绍如何在一个Observable订阅多个Subscriber。
 
 ---
-
-# 浅析ReactiveX的多播——实现安卓双击检测遇到的坑
 
 ## 背景
 今天需要实现一个双击检测功能，以前的实现方式是自己记录上次点击时间与本次比对，如果小于门槛值，则发出双击事件。不过自从入了Rx的坑之后，凡事都喜欢用Rx的思想思考问题。于是上Github找找代码，还真找到一段，虽然是Kotlin的[一段错误的代码](https://gist.github.com/imton/ee74249fabff5ac95b16)，翻译成Java如下：（注：这段代码是有问题的，请不要看到这里就复制黏贴）
@@ -78,6 +76,7 @@ Share 其实就是publish().refCount();
 
 ```
 上面的修改在原有代码基础上使用share操作符将原本的Observable变成了可共享流的Connectable Observable。
+
 ## 注意事项
 在使用refCount或者share的时候需要注意一点，那就是在第一个subscriber订阅之后Connectable Observable就被connect产生item了。所以后面subscribe 的订阅者可能就收不到之前的一些item了。如果需要所有的subscriber都收到一样的item。还是先subscribe，最后再connect吧。
 
