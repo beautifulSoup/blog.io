@@ -42,6 +42,7 @@ description: 本文主要介绍如何在一个Observable订阅多个Subscriber�
 
 ## 修改
 那么该如何修改以上代码，让它达到我们需要的效果呢。下面先来介绍几个相关的操作符。
+
 ### Publish
 通过Publish操作符可以将一个普通的Observable转换为一个Connectable Observable。Connectable Observable 可以被多次订阅，被多个Subscriber共享Stream。但是和普通的Observable不同，它在被subscribe之后并不开始产生item，而需要在调用connect()之后才会产生item。
 
