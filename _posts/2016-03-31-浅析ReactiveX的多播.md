@@ -21,7 +21,10 @@ description: 本文主要介绍如何在一个Observable订阅多个Subscriber�
                 .subscribe(new Action1<List<Void>>() {
                     @Override
                     public void call(List<Void> voids) {
-                        //double click detected
+                        if(voids.size() >= 2){
+                        	//double click detected
+                        }
+                        
                     }
                 }, new Action1<Throwable>() {
                     @Override
@@ -65,7 +68,9 @@ Share 其实就是publish().refCount();
                 .subscribe(new Action1<List<Void>>() {
                     @Override
                     public void call(List<Void> voids) {
-                        //double click detected
+                        if(voids.size() >= 2){
+                        	//double click detected
+                        }
                     }
                 }, new Action1<Throwable>() {
                     @Override

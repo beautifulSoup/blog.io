@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A chinese man, detemined in Android and Python">
+    <meta name="baidu-site-verification" content="KonQRkt3nq" />
+    <title>Android实现多次闪退清除数据 - In Coding</title>
+
+    <link rel="canonical" href="http://sixwolf.net/blog/2016/03/22/Android%E5%AE%9E%E7%8E%B0%E5%A4%9A%E6%AC%A1%E9%97%AA%E9%80%80%E6%B8%85%E9%99%A4%E6%95%B0%E6%8D%AE/">
+
+    <!-- Icons -->
+  <link rel="shortcut icon" href="img/logo.ico">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/clean-blog.css">
+
+    <!-- Pygments Github CSS -->
+    <link rel="stylesheet" href="/css/syntax.css">
+
+    <!-- Custom Fonts -->
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href='//fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "//hm.baidu.com/hm.js?ad37e90f12e85cec39277b32f2653dfd";
+            var s = document.getElementsByTagName("script")[0];
+            s.parentNode.insertBefore(hm, s);
+        })();
+    </script>
+
+</head>
+
+
+
+
+
+
+<body ontouchstart="">
+
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">In Coding</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav navbar-right">
+                <li>
+                    <a href="/">Home</a>
+                </li>
+                
+                <li>
+                    <a href="/about/">About</a>
+                </li>
+                
+                <li>
+                    <a href="/archive/">Archive</a>
+                </li>
+                
+                <li>
+                    <a href="/milestone/">milestone</a>
+                </li>
+                
+                <li>
+                    <a href="/tags/">Tags</a>
+                </li>
+                
+            </ul>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+
+
+    <!-- Post Header -->
+<style type="text/css">
+    header.intro-header{
+        background-image: url('https://img.alicdn.com/imgextra/i4/754328530/TB2GEa3cVXXXXbUXpXXXXXXXXXX-754328530.jpg')
+    }
+</style>
+<header class="intro-header" >
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+	           <!-- <div class="Tags">
+                        
+                        <a class="tag" href="/Tags/#Android" title="Android">Android</a>
+                        
+                        <a class="tag" href="/Tags/#Development" title="Development">Development</a>
+                        
+                    </div> -->
+                    <h1>Android实现多次闪退清除数据</h1>
+                    
+                    <span class="meta">Posted by beautifulSoup on March 22, 2016</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+
+
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1 post-container">
+
+                <h1 id="section">背景</h1>
+<p>很多时候由于后台返回的数据异常，可能会导致App闪退。而如果这些异常数据被App本地缓存下来，那么即使杀掉进程重新进入还是会发生闪退。唯一的解决方法就是清除App数据，但是用户可能没有这个意识或者嫌麻烦就直接不再使用了，这是我们无法接受的。在使用淘宝、追书神器等App时我发现有时候它们也会连续闪退，但是往往闪退三次后就恢复正常了，所以一般成熟的App都会做连续闪退三次后清除缓存数据的工作。而目前笔者搜不到有哪篇blog来讲这方面的事情，所以就姑且由我来讲讲此事，为希望提高App用户体验的朋友提供些许参考。</p>
+
+<h1 id="acra">ACRA</h1>
+<p>为了能够在闪退的时候做一些事情，我们可以使用ACRA，这是Github上的一个开源项目，允许使用者设置一些Sender在App闪退的时候做一些事情。具体使用可以直接参考<a href="https://github.com/ACRA/acra">Github</a></p>
+
+<h1 id="section-1">实现清除数据</h1>
+<p>ACRA提供了自己的一些Sender，如使用系统邮件客户端向指定邮箱发送邮件的EmailIntentSender。而我们希望记录闪退次数和清除数据则需要implements ReportSender接口。</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">class</span> <span class="nc">CrashHandler</span> <span class="kd">implements</span> <span class="n">ReportSender</span> <span class="o">{</span>
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="n">send</span><span class="o">(</span><span class="n">Context</span> <span class="n">context</span><span class="o">,</span> <span class="n">CrashReportData</span> <span class="n">errorContent</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">ReportSenderException</span> <span class="o">{</span>
+        <span class="n">Timber</span><span class="o">.</span><span class="na">i</span><span class="o">(</span><span class="s">"闪退,检查是否需要清空数据"</span><span class="o">);</span>
+        <span class="k">new</span> <span class="n">CrashModel</span><span class="o">().</span><span class="na">checkAndClearData</span><span class="o">();</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre>
+</div>
+<p>这里我们写了一个CrashModel用来记录闪退次数和时间决定是否需要清空数据，具体代码如下。
+由于在ReportSender的时候无法打开其它线程，所以我们无法使用SharedPerferences来清理数据（打开SP的时候其实打开了一个新线程）。为此需要找到数据缓存的位置并将文件删除。同样道理，记录闪退时间也只能通过文件记录。当然，你可以选择一些文件不进行删除，如用户信息等不太容易出问题的数据。</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">class</span> <span class="nc">CrashModel</span> <span class="o">{</span>
+
+    <span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="n">String</span> <span class="n">KEY_CRASH_TIMES</span> <span class="o">=</span> <span class="s">"crash_times"</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="n">String</span> <span class="n">CRASH_TIME_FILE_NAME</span> <span class="o">=</span> <span class="s">"crash_time"</span><span class="o">;</span>
+    <span class="c1">//不能通过App.getPackageName来获取包名，否则会有问题，只能默认为cn.campusapp.campus。所以对于debug或者运营版本，清数据会把release的清掉</span>
+    <span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="n">String</span> <span class="n">FILE_DIR</span> <span class="o">=</span> <span class="n">String</span><span class="o">.</span><span class="na">format</span><span class="o">(</span><span class="s">"/data/data/%s/"</span><span class="o">,</span> <span class="n">BuildConfig</span><span class="o">.</span><span class="na">APPLICATION_ID</span><span class="o">);</span>
+    <span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="n">String</span> <span class="n">ACCOUNT_FILE_NAME</span> <span class="o">=</span> <span class="n">String</span><span class="o">.</span><span class="na">format</span><span class="o">(</span><span class="s">"%s%s"</span><span class="o">,</span> <span class="n">FILE_DIR</span><span class="o">,</span> <span class="s">"shared_prefs/account_pref.xml"</span><span class="o">);</span>
+    <span class="kd">private</span> <span class="kd">static</span> <span class="n">ArrayList</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">FILES_DONTNEED_DELETE</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ArrayList</span><span class="o">&lt;&gt;();</span>  <span class="c1">//该目录中的文件不会被删除</span>
+
+    <span class="kd">static</span> <span class="o">{</span>
+        <span class="n">FILES_DONTNEED_DELETE</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">ACCOUNT_FILE_NAME</span><span class="o">);</span>  <span class="c1">//目前账号信息文件不会被删除，但是会手动改变数据，只保留userId  accessToken 和school</span>
+    <span class="o">}</span>
+
+    <span class="kd">protected</span> <span class="n">ArrayList</span><span class="o">&lt;</span><span class="n">Long</span><span class="o">&gt;</span> <span class="n">mCrashTimes</span><span class="o">;</span>
+    <span class="n">Gson</span> <span class="n">gson</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Gson</span><span class="o">();</span>
+    <span class="kd">private</span> <span class="n">File</span> <span class="n">mFileDir</span><span class="o">;</span>
+
+    <span class="kd">public</span> <span class="n">CrashModel</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">mFileDir</span> <span class="o">=</span> <span class="k">new</span> <span class="n">File</span><span class="o">(</span><span class="n">FILE_DIR</span><span class="o">);</span>
+        <span class="n">mCrashTimes</span> <span class="o">=</span> <span class="n">readCrashTimes</span><span class="o">();</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">mCrashTimes</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">mCrashTimes</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ArrayList</span><span class="o">&lt;&gt;();</span>
+            <span class="n">storeCrashTimes</span><span class="o">(</span><span class="n">mCrashTimes</span><span class="o">);</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+
+
+    <span class="kd">public</span> <span class="kt">void</span> <span class="n">checkAndClearData</span><span class="o">()</span> <span class="o">{</span>
+        <span class="kt">long</span> <span class="n">timeNow</span> <span class="o">=</span> <span class="n">System</span><span class="o">.</span><span class="na">currentTimeMillis</span><span class="o">();</span>
+
+        <span class="k">if</span> <span class="o">(</span><span class="n">checkClearData</span><span class="o">(</span><span class="n">timeNow</span><span class="o">,</span> <span class="k">new</span> <span class="n">ArrayList</span><span class="o">&lt;&gt;(</span><span class="n">mCrashTimes</span><span class="o">)))</span> <span class="o">{</span>
+            <span class="n">Timber</span><span class="o">.</span><span class="na">i</span><span class="o">(</span><span class="s">"已经在5分钟之内有三次闪退，需要清理数据"</span><span class="o">);</span>
+            <span class="k">try</span> <span class="o">{</span>
+                <span class="n">clearData</span><span class="o">();</span>
+            <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">Exception</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+                <span class="n">Timber</span><span class="o">.</span><span class="na">e</span><span class="o">(</span><span class="n">e</span><span class="o">,</span> <span class="s">"清空所有数据失败"</span><span class="o">);</span>
+            <span class="o">}</span>
+        <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+            <span class="n">mCrashTimes</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">timeNow</span><span class="o">);</span>
+            <span class="n">storeCrashTimes</span><span class="o">(</span><span class="n">mCrashTimes</span><span class="o">);</span>
+            <span class="n">Timber</span><span class="o">.</span><span class="na">i</span><span class="o">(</span><span class="s">"此次不需要清空数据, %s"</span><span class="o">,</span> <span class="n">gson</span><span class="o">.</span><span class="na">toJson</span><span class="o">(</span><span class="n">mCrashTimes</span><span class="o">));</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+
+    <span class="kd">private</span> <span class="kt">void</span> <span class="n">storeCrashTimes</span><span class="o">(</span><span class="n">ArrayList</span><span class="o">&lt;</span><span class="n">Long</span><span class="o">&gt;</span> <span class="n">crashTimes</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">try</span> <span class="o">{</span>
+            <span class="n">String</span> <span class="n">str</span> <span class="o">=</span> <span class="n">gson</span><span class="o">.</span><span class="na">toJson</span><span class="o">(</span><span class="n">crashTimes</span><span class="o">);</span>
+            <span class="n">Files</span><span class="o">.</span><span class="na">writeToFile</span><span class="o">(</span><span class="n">mFileDir</span><span class="o">,</span> <span class="n">CRASH_TIME_FILE_NAME</span><span class="o">,</span> <span class="n">str</span><span class="o">);</span>
+        <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">Exception</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">Timber</span><span class="o">.</span><span class="na">e</span><span class="o">(</span><span class="n">e</span><span class="o">,</span> <span class="s">"保存闪退时间失败"</span><span class="o">);</span>
+        <span class="o">}</span>
+
+    <span class="o">}</span>
+
+    <span class="kd">private</span> <span class="n">ArrayList</span><span class="o">&lt;</span><span class="n">Long</span><span class="o">&gt;</span> <span class="n">readCrashTimes</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">try</span> <span class="o">{</span>
+            <span class="n">String</span> <span class="n">timeStr</span> <span class="o">=</span> <span class="n">Files</span><span class="o">.</span><span class="na">readFileContent</span><span class="o">(</span><span class="n">mFileDir</span><span class="o">,</span> <span class="n">CRASH_TIME_FILE_NAME</span><span class="o">);</span>
+            <span class="k">return</span> <span class="n">gson</span><span class="o">.</span><span class="na">fromJson</span><span class="o">(</span><span class="n">timeStr</span><span class="o">,</span> <span class="k">new</span> <span class="n">TypeToken</span><span class="o">&lt;</span><span class="n">ArrayList</span><span class="o">&lt;</span><span class="n">Long</span><span class="o">&gt;&gt;()</span> <span class="o">{</span>
+            <span class="o">}.</span><span class="na">getType</span><span class="o">());</span>
+        <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">Exception</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">Timber</span><span class="o">.</span><span class="na">e</span><span class="o">(</span><span class="n">e</span><span class="o">,</span> <span class="s">"读取闪退时间失败"</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="cm">/**
+     * 检查是否需要清空数据，目前的清空策略是在5分钟之内有三次闪退的就清空数据，也就是从后往前遍历，只要前两次闪退发生在5分钟之内，就清空数据
+     *
+     * @return
+     */</span>
+    <span class="kd">private</span> <span class="kt">boolean</span> <span class="n">checkClearData</span><span class="o">(</span><span class="kt">long</span> <span class="n">time</span><span class="o">,</span> <span class="n">ArrayList</span><span class="o">&lt;</span><span class="n">Long</span><span class="o">&gt;</span> <span class="n">crashTimes</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">Timber</span><span class="o">.</span><span class="na">i</span><span class="o">(</span><span class="n">gson</span><span class="o">.</span><span class="na">toJson</span><span class="o">(</span><span class="n">crashTimes</span><span class="o">));</span>
+        <span class="kt">int</span> <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+        <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="n">crashTimes</span><span class="o">.</span><span class="na">size</span><span class="o">()</span> <span class="o">-</span> <span class="mi">1</span><span class="o">;</span> <span class="n">i</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">i</span><span class="o">--)</span> <span class="o">{</span>
+            <span class="kt">long</span> <span class="n">crashTime</span> <span class="o">=</span> <span class="n">crashTimes</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">i</span><span class="o">);</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">time</span> <span class="o">-</span> <span class="n">crashTime</span> <span class="o">&lt;=</span> <span class="mi">5</span> <span class="o">*</span> <span class="mi">60</span> <span class="o">*</span> <span class="mi">1000</span><span class="o">)</span> <span class="o">{</span>
+                <span class="n">count</span><span class="o">++;</span>
+                <span class="k">if</span> <span class="o">(</span><span class="n">count</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="o">)</span> <span class="o">{</span>
+                    <span class="k">break</span><span class="o">;</span>
+                <span class="o">}</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">count</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="o">)</span> <span class="o">{</span>
+            <span class="c1">//在5分钟之内有三次闪退，这时候需要清空数据</span>
+            <span class="k">return</span> <span class="kc">true</span><span class="o">;</span>
+        <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+            <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+
+    <span class="cm">/**
+     * 清空数据，包括数据库中的和SharedPreferences中的
+     *
+     * @throws Exception
+     */</span>
+    <span class="kd">private</span> <span class="kt">void</span> <span class="n">clearData</span><span class="o">()</span> <span class="kd">throws</span> <span class="n">Exception</span> <span class="o">{</span>
+        <span class="n">Timber</span><span class="o">.</span><span class="na">i</span><span class="o">(</span><span class="s">"开始清理数据"</span><span class="o">);</span>
+        <span class="n">Files</span><span class="o">.</span><span class="na">deleteFilesExceptSomeInDirectory</span><span class="o">(</span><span class="n">mFileDir</span><span class="o">,</span> <span class="n">FILES_DONTNEED_DELETE</span><span class="o">);</span>
+    <span class="o">}</span>
+
+
+<span class="o">}</span>
+
+</code></pre>
+</div>
+
+<p>然后我们需要将CrashHandler 添加到ACRA的异常处理Sender列表中。在你的Application类中添加如下代码。</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="nd">@ReportsCrashes</span><span class="o">(</span>
+		  <span class="c1">//一些ACRA的设置，具体参考ACRA文档，因为我们使用自定义Sender，所以这里完全可以不用设置</span>
+        <span class="c1">//mailTo = "bugs@treeholeapp.cn",</span>
+        <span class="c1">//mode = ReportingInteractionMode.TOAST,</span>
+        <span class="c1">//resToastText = R.string.crash_toast_text</span>
+<span class="o">)</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">App</span> <span class="kd">extends</span> <span class="n">Application</span> <span class="o">{</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="n">onCreate</span><span class="o">()</span> <span class="o">{</span>
+    	<span class="k">if</span> <span class="o">(!</span><span class="n">BuildConfig</span><span class="o">.</span><span class="na">DEBUG</span><span class="o">)</span> <span class="o">{</span>  <span class="c1">//这里我判断只有在非DEBUG下才清除数据，主要是为了在开发过程中能够保留线程。</span>
+                <span class="n">ACRA</span><span class="o">.</span><span class="na">init</span><span class="o">(</span><span class="n">APPLICATION_CONTEXT</span><span class="o">);</span>
+                <span class="n">CrashHandler</span> <span class="n">handler</span> <span class="o">=</span> <span class="k">new</span> <span class="n">CrashHandler</span><span class="o">();</span>
+              	<span class="n">ACRA</span><span class="o">.</span><span class="na">getErrorReporter</span><span class="o">().</span><span class="na">setReportSender</span><span class="o">(</span><span class="n">handler</span><span class="o">);</span>  <span class="c1">//在闪退时检查是否要清空数据</span>
+        <span class="o">}</span>
+
+    <span class="o">}</span>
+<span class="o">}</span>
+
+</code></pre>
+</div>
+
+<h1 id="section-2">总结</h1>
+<p>以上即为实现多次闪退后清除数据的实现，希望大家开发的App Bug越来越少，鲁棒性越来越强。</p>
+
+
+                <hr>
+
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/blog/2016/03/06/Android%E5%8D%95%E5%85%83%E6%B5%8B%E8%AF%95%E8%AF%A6%E8%A7%A31(AndroidJunitTest)/" data-toggle="tooltip" data-placement="top" title="Android单元测试详解（1）——— AndroidJunitTest">&larr; Previous Post</a>
+                    </li>
+                    
+                    
+                    <li class="next">
+                        <a href="/blog/2016/03/23/Android%E8%B7%AF%E7%94%B1%E6%A1%86%E6%9E%B6%E8%AE%BE%E8%AE%A1/" data-toggle="tooltip" data-placement="top" title="Android路由框架设计与实现">Next Post &rarr;</a>
+                    </li>
+                    
+                </ul>
+
+                <!-- Duoshuo Share start -->
+                <style>
+                    .ds-share{
+                        text-align: right;
+                    }
+
+                    @media only screen and (max-width: 700px) {
+                        .ds-share {
+
+                        }
+                    }
+                </style>
+
+                <div class="ds-share"
+                    data-thread-key="/blog/2016/03/22/Android实现多次闪退清除数据" data-title="Android实现多次闪退清除数据"
+                    data-images="http://sixwolf.net/https://img.alicdn.com/imgextra/i4/754328530/TB2GEa3cVXXXXbUXpXXXXXXXXXX-754328530.jpg"
+                    data-content="背景
+很多时候由于后台返回的数据异常，可能会导致App闪退。而如果这些异常数据被App本地缓存下来，那么即使杀掉进程重新进入还是会发生闪退。唯一的解决方法... | Microdust:Azeril's blog"
+                    data-url="http://sixwolf.net/blog/2016/03/22/Android%E5%AE%9E%E7%8E%B0%E5%A4%9A%E6%AC%A1%E9%97%AA%E9%80%80%E6%B8%85%E9%99%A4%E6%95%B0%E6%8D%AE/">
+                    <div class="ds-share-inline">
+                      <ul  class="ds-share-icons-16">
+
+                        <li data-toggle="ds-share-icons-more"><a class="ds-more" href="#">分享到：</a></li>
+                        <li><a class="ds-wechat flat" href="javascript:void(0);" data-service="wechat">微信</a></li>
+                        <li><a class="ds-weibo flat" href="javascript:void(0);" data-service="weibo">微博</a></li>
+                        <li><a class="ds-douban flat" href="javascript:void(0);" data-service="douban">豆瓣</a></li>
+                      </ul>
+                      <div class="ds-share-icons-more">
+                      </div>
+                    </div>
+                <hr>
+                </div>
+                <!-- Duoshuo Share end-->
+
+
+                <!-- 多说评论框 start -->
+                <div class="comment">
+                    <div class="ds-thread" data-thread-key="/blog/2016/03/22/Android实现多次闪退清除数据" data-title="Android实现多次闪退清除数据" data-url="http://sixwolf.net/blog/2016/03/22/Android%E5%AE%9E%E7%8E%B0%E5%A4%9A%E6%AC%A1%E9%97%AA%E9%80%80%E6%B8%85%E9%99%A4%E6%95%B0%E6%8D%AE/"></div>
+                </div>
+                <!-- 多说评论框 end -->
+
+
+
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"sixwolf"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0]
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+<!-- 多说公共JS代码 end -->
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("http://cdn.bootcss.com/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'always',
+          placement: 'right',
+          icon: '#'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
+
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                    <!-- kill the Facebook and Weibo -->
+                    <li>
+                        <a href="/feed.xml">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-rss fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="https://twitter.com/SuperTwoDog">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+
+                    
+                    <li>
+                        <a href="https://github.com/beautifulSoup">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                    
+                    <!--
+                    
+                    <li>
+                        <a href="http://www.douban.com/people/汤利康">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-douban fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                    -->
+
+                    <!--
+                    
+                    <li>
+                        <a href="https://www.facebook.com/汤利康">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-facebook fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                    -->
+
+                    
+                    <li>
+                        <a target="_blank" href="https://www.zhihu.com/people/汤利康">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa  fa-stack-1x fa-inverse">知</i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                    <!--
+                    
+                    <li>
+                        <a target="_blank" href="http://weibo.com/不知菌">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-weibo fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                    -->
+
+                </ul>
+                <p class="copyright text-muted">
+                &copy; 2016  Klojure ❖ Powered by Jekyll.
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/js/jquery.min.js "></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="/js/bootstrap.min.js "></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/js/clean-blog.min.js "></script>
+
+
+
+<!-- Highlight.js -->
+<script>
+    async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js",function(){
+        hljs.initHighlightingOnLoad();
+    })
+</script>
+<link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+
+
+</body>
+
+</html>

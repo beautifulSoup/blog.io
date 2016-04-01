@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A chinese man, detemined in Android and Python">
+    <meta name="baidu-site-verification" content="KonQRkt3nq" />
+    <title>浅析ReactiveX的多播——实现安卓双击检测遇到的坑 - In Coding</title>
+
+    <link rel="canonical" href="http://sixwolf.net/blog/2016/03/31/%E6%B5%85%E6%9E%90ReactiveX%E7%9A%84%E5%A4%9A%E6%92%AD/">
+
+    <!-- Icons -->
+  <link rel="shortcut icon" href="img/logo.ico">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/clean-blog.css">
+
+    <!-- Pygments Github CSS -->
+    <link rel="stylesheet" href="/css/syntax.css">
+
+    <!-- Custom Fonts -->
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href='//fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "//hm.baidu.com/hm.js?ad37e90f12e85cec39277b32f2653dfd";
+            var s = document.getElementsByTagName("script")[0];
+            s.parentNode.insertBefore(hm, s);
+        })();
+    </script>
+
+</head>
+
+
+
+
+
+
+<body ontouchstart="">
+
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">In Coding</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav navbar-right">
+                <li>
+                    <a href="/">Home</a>
+                </li>
+                
+                <li>
+                    <a href="/about/">About</a>
+                </li>
+                
+                <li>
+                    <a href="/archive/">Archive</a>
+                </li>
+                
+                <li>
+                    <a href="/milestone/">milestone</a>
+                </li>
+                
+                <li>
+                    <a href="/tags/">Tags</a>
+                </li>
+                
+            </ul>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+
+
+    <!-- Post Header -->
+<style type="text/css">
+    header.intro-header{
+        background-image: url('https://img.alicdn.com/imgextra/i4/754328530/TB2GEa3cVXXXXbUXpXXXXXXXXXX-754328530.jpg')
+    }
+</style>
+<header class="intro-header" >
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+	           <!-- <div class="Tags">
+                        
+                        <a class="tag" href="/Tags/#Android" title="Android">Android</a>
+                        
+                        <a class="tag" href="/Tags/#Development" title="Development">Development</a>
+                        
+                        <a class="tag" href="/Tags/#RxJava" title="RxJava">RxJava</a>
+                        
+                    </div> -->
+                    <h1>浅析ReactiveX的多播——实现安卓双击检测遇到的坑</h1>
+                    
+                    <span class="meta">Posted by beautifulSoup on March 31, 2016</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+
+
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1 post-container">
+
+                <h2 id="section">背景</h2>
+<p>今天需要实现一个双击检测功能，以前的实现方式是自己记录上次点击时间与本次比对，如果小于门槛值，则发出双击事件。不过自从入了Rx的坑之后，凡事都喜欢用Rx的思想思考问题。于是上Github找找代码，还真找到一段，虽然是Kotlin的<a href="https://gist.github.com/imton/ee74249fabff5ac95b16">一段错误的代码</a>，翻译成Java如下：（注：这段代码是有问题的，请不要看到这里就复制黏贴）</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>	<span class="kd">public</span> <span class="kt">void</span> <span class="nf">doubleClickDetect</span><span class="p">(</span><span class="n">View</span> <span class="n">view</span><span class="o">){</span>
+        <span class="n">Observable</span><span class="o">&lt;</span><span class="n">Void</span><span class="o">&gt;</span> <span class="n">observable</span> <span class="o">=</span> <span class="n">RxView</span><span class="o">.</span><span class="na">clicks</span><span class="o">(</span><span class="n">view</span><span class="o">);</span>
+        <span class="n">observable</span><span class="o">.</span><span class="na">buffer</span><span class="o">(</span><span class="n">observable</span><span class="o">.</span><span class="na">debounce</span><span class="o">(</span><span class="mi">200</span><span class="o">,</span> <span class="n">TimeUnit</span><span class="o">.</span><span class="na">MILLISECONDS</span><span class="o">))</span>
+                <span class="o">.</span><span class="na">observeOn</span><span class="o">(</span><span class="n">AndroidSchedulers</span><span class="o">.</span><span class="na">mainThread</span><span class="o">())</span>
+                <span class="o">.</span><span class="na">subscribe</span><span class="o">(</span><span class="k">new</span> <span class="n">Action1</span><span class="o">&lt;</span><span class="n">List</span><span class="o">&lt;</span><span class="n">Void</span><span class="o">&gt;&gt;()</span> <span class="o">{</span>
+                    <span class="nd">@Override</span>
+                    <span class="kd">public</span> <span class="kt">void</span> <span class="n">call</span><span class="o">(</span><span class="n">List</span><span class="o">&lt;</span><span class="n">Void</span><span class="o">&gt;</span> <span class="n">voids</span><span class="o">)</span> <span class="o">{</span>
+                        <span class="k">if</span><span class="o">(</span><span class="n">voids</span><span class="o">.</span><span class="na">size</span><span class="o">()</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="o">){</span>
+                        	<span class="c1">//double click detected</span>
+                        <span class="o">}</span>
+                        
+                    <span class="o">}</span>
+                <span class="o">},</span> <span class="k">new</span> <span class="n">Action1</span><span class="o">&lt;</span><span class="n">Throwable</span><span class="o">&gt;()</span> <span class="o">{</span>
+                    <span class="nd">@Override</span>
+                    <span class="kd">public</span> <span class="kt">void</span> <span class="n">call</span><span class="o">(</span><span class="n">Throwable</span> <span class="n">throwable</span><span class="o">)</span> <span class="o">{</span>
+                        <span class="n">Timber</span><span class="o">.</span><span class="na">e</span><span class="o">(</span><span class="n">throwable</span><span class="o">,</span> <span class="s">"error"</span><span class="o">);</span>
+                    <span class="o">}</span>
+                <span class="o">});</span>
+    <span class="o">}</span>
+
+</code></pre>
+</div>
+<p>我们先不讲这段代码的问题在哪，先来说说其中涉及到的几个操作符。
+其中buffer()会将observable 发射的item缓存起来，直到它的参数Observable发射一个item时，它会将之前缓存的都作为一个list发射出去，这个还是比较好理解的，如果还是不懂，请参考 <a href="http://reactivex.io/documentation/operators/buffer.html">buffer操作符文档</a>。</p>
+
+<p>而debounce操作符会将在那些在参数时间间隔内跟着另一个item的items过滤掉。<img src="https://img.alicdn.com/imgextra/i3/754328530/TB2aHeWmXXXXXaCXXXXXXXXXXXX-754328530.png" alt="" />
+如图，1，5和6之后在一段时间内没有跟随其它item，所以被发射出来，而其它的都被过滤了。详见<a href="http://reactivex.io/documentation/operators/debounce.html">debounce操作符文档</a></p>
+
+<p>所以上面代码的意思就是当有点击事件item产生的时候先缓存起来，当一段事件内没有新的事件产生的时候把之前缓存的事件作为一个列表发射出去，当发现有大于等于2的事件时，认为用户在一定时间内连续点了两次。所以这段代码在逻辑上是ok的。但是实际运行起来发现没反应，buffer后面没有item被发射。但是在buffer之前是有的，所以将问题定位到debounce没有item产生。所以问题在哪呢？我们需要明确一点，普通的Observable是不支持多播的，即使被多个Subscriber所订阅，也只会有一个Subscriber收到items。在buffer中，其实订阅了参数Observable，但是这个Observable在buffer之后又被订阅了一次，所以debounce就收不到item了。</p>
+
+<h2 id="section-1">修改</h2>
+<p>那么该如何修改以上代码，让它达到我们需要的效果呢。下面先来介绍几个相关的操作符。</p>
+
+<h3 id="publish">Publish</h3>
+<p>通过Publish操作符可以将一个普通的Observable转换为一个Connectable Observable。Connectable Observable 可以被多次订阅，被多个Subscriber共享Stream。但是和普通的Observable不同，它在被subscribe之后并不开始产生item，而需要在调用connect()之后才会产生item。</p>
+
+<h3 id="connect">Connect</h3>
+<p>在Publish中已经提到，用来让Connectable Observable开始产生item。</p>
+
+<h3 id="refcount">Refcount</h3>
+<p>除了Connect，我们有另一种方式来让Connectable Observable 产生item，那就是Refcount，refCount会在第一个subscriber订阅之后自动connect，在最后一个subscriber unsubscribe之后自动disconnect。</p>
+
+<h3 id="share">Share</h3>
+<p>Share 其实就是publish().refCount();</p>
+
+<p>基于以上操作符，我们可以修正我们上面的代码了，稍微改一下就能达到我们预期的效果了，代码如下：</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>	<span class="kd">public</span> <span class="kt">void</span> <span class="nf">doubleClickDetect</span><span class="p">(</span><span class="n">View</span> <span class="n">view</span><span class="o">){</span>
+        <span class="n">Observable</span><span class="o">&lt;</span><span class="n">Void</span><span class="o">&gt;</span> <span class="n">observable</span> <span class="o">=</span> <span class="n">RxView</span><span class="o">.</span><span class="na">clicks</span><span class="o">(</span><span class="n">view</span><span class="o">).</span><span class="na">share</span><span class="o">();</span>
+        <span class="n">observable</span><span class="o">.</span><span class="na">buffer</span><span class="o">(</span><span class="n">observable</span><span class="o">.</span><span class="na">debounce</span><span class="o">(</span><span class="mi">200</span><span class="o">,</span> <span class="n">TimeUnit</span><span class="o">.</span><span class="na">MILLISECONDS</span><span class="o">))</span>
+                <span class="o">.</span><span class="na">observeOn</span><span class="o">(</span><span class="n">AndroidSchedulers</span><span class="o">.</span><span class="na">mainThread</span><span class="o">())</span>
+                <span class="o">.</span><span class="na">subscribe</span><span class="o">(</span><span class="k">new</span> <span class="n">Action1</span><span class="o">&lt;</span><span class="n">List</span><span class="o">&lt;</span><span class="n">Void</span><span class="o">&gt;&gt;()</span> <span class="o">{</span>
+                    <span class="nd">@Override</span>
+                    <span class="kd">public</span> <span class="kt">void</span> <span class="n">call</span><span class="o">(</span><span class="n">List</span><span class="o">&lt;</span><span class="n">Void</span><span class="o">&gt;</span> <span class="n">voids</span><span class="o">)</span> <span class="o">{</span>
+                        <span class="k">if</span><span class="o">(</span><span class="n">voids</span><span class="o">.</span><span class="na">size</span><span class="o">()</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="o">){</span>
+                        	<span class="c1">//double click detected</span>
+                        <span class="o">}</span>
+                    <span class="o">}</span>
+                <span class="o">},</span> <span class="k">new</span> <span class="n">Action1</span><span class="o">&lt;</span><span class="n">Throwable</span><span class="o">&gt;()</span> <span class="o">{</span>
+                    <span class="nd">@Override</span>
+                    <span class="kd">public</span> <span class="kt">void</span> <span class="n">call</span><span class="o">(</span><span class="n">Throwable</span> <span class="n">throwable</span><span class="o">)</span> <span class="o">{</span>
+                        <span class="n">Timber</span><span class="o">.</span><span class="na">e</span><span class="o">(</span><span class="n">throwable</span><span class="o">,</span> <span class="s">"error"</span><span class="o">);</span>
+                    <span class="o">}</span>
+                <span class="o">});</span>
+    <span class="o">}</span>
+
+</code></pre>
+</div>
+<p>上面的修改在原有代码基础上使用share操作符将原本的Observable变成了可共享流的Connectable Observable。</p>
+
+<h2 id="section-2">注意事项</h2>
+<p>在使用refCount或者share的时候需要注意一点，那就是在第一个subscriber订阅之后Connectable Observable就被connect产生item了。所以后面subscribe 的订阅者可能就收不到之前的一些item了。如果需要所有的subscriber都收到一样的item。还是先subscribe，最后再connect吧。</p>
+
+
+
+                <hr>
+
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/blog/2016/03/23/Android%E8%B7%AF%E7%94%B1%E6%A1%86%E6%9E%B6%E8%AE%BE%E8%AE%A1/" data-toggle="tooltip" data-placement="top" title="Android路由框架设计与实现">&larr; Previous Post</a>
+                    </li>
+                    
+                    
+                    <li class="next">
+                        <a href="/blog/2016/04/01/%E5%A6%82%E4%BD%95%E4%BA%A7%E7%94%9F%E4%B8%80%E4%B8%AA%E9%9A%8F%E6%9C%BA%E7%9A%84-0,-n)%E7%9A%84short%E5%80%BC/" data-toggle="tooltip" data-placement="top" title="如何产生一个随机的[0, n)范围内的Short值">Next Post &rarr;</a>
+                    </li>
+                    
+                </ul>
+
+                <!-- Duoshuo Share start -->
+                <style>
+                    .ds-share{
+                        text-align: right;
+                    }
+
+                    @media only screen and (max-width: 700px) {
+                        .ds-share {
+
+                        }
+                    }
+                </style>
+
+                <div class="ds-share"
+                    data-thread-key="/blog/2016/03/31/浅析ReactiveX的多播" data-title="浅析ReactiveX的多播——实现安卓双击检测遇到的坑"
+                    data-images="http://sixwolf.net/https://img.alicdn.com/imgextra/i4/754328530/TB2GEa3cVXXXXbUXpXXXXXXXXXX-754328530.jpg"
+                    data-content="背景
+今天需要实现一个双击检测功能，以前的实现方式是自己记录上次点击时间与本次比对，如果小于门槛值，则发出双击事件。不过自从入了Rx的坑之后，凡事都喜欢用... | Microdust:Azeril's blog"
+                    data-url="http://sixwolf.net/blog/2016/03/31/%E6%B5%85%E6%9E%90ReactiveX%E7%9A%84%E5%A4%9A%E6%92%AD/">
+                    <div class="ds-share-inline">
+                      <ul  class="ds-share-icons-16">
+
+                        <li data-toggle="ds-share-icons-more"><a class="ds-more" href="#">分享到：</a></li>
+                        <li><a class="ds-wechat flat" href="javascript:void(0);" data-service="wechat">微信</a></li>
+                        <li><a class="ds-weibo flat" href="javascript:void(0);" data-service="weibo">微博</a></li>
+                        <li><a class="ds-douban flat" href="javascript:void(0);" data-service="douban">豆瓣</a></li>
+                      </ul>
+                      <div class="ds-share-icons-more">
+                      </div>
+                    </div>
+                <hr>
+                </div>
+                <!-- Duoshuo Share end-->
+
+
+                <!-- 多说评论框 start -->
+                <div class="comment">
+                    <div class="ds-thread" data-thread-key="/blog/2016/03/31/浅析ReactiveX的多播" data-title="浅析ReactiveX的多播——实现安卓双击检测遇到的坑" data-url="http://sixwolf.net/blog/2016/03/31/%E6%B5%85%E6%9E%90ReactiveX%E7%9A%84%E5%A4%9A%E6%92%AD/"></div>
+                </div>
+                <!-- 多说评论框 end -->
+
+
+
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"sixwolf"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0]
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+<!-- 多说公共JS代码 end -->
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("http://cdn.bootcss.com/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'always',
+          placement: 'right',
+          icon: '#'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
+
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                    <!-- kill the Facebook and Weibo -->
+                    <li>
+                        <a href="/feed.xml">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-rss fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="https://twitter.com/SuperTwoDog">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+
+                    
+                    <li>
+                        <a href="https://github.com/beautifulSoup">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                    
+                    <!--
+                    
+                    <li>
+                        <a href="http://www.douban.com/people/汤利康">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-douban fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                    -->
+
+                    <!--
+                    
+                    <li>
+                        <a href="https://www.facebook.com/汤利康">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-facebook fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                    -->
+
+                    
+                    <li>
+                        <a target="_blank" href="https://www.zhihu.com/people/汤利康">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa  fa-stack-1x fa-inverse">知</i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                    <!--
+                    
+                    <li>
+                        <a target="_blank" href="http://weibo.com/不知菌">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-weibo fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                    -->
+
+                </ul>
+                <p class="copyright text-muted">
+                &copy; 2016  Klojure ❖ Powered by Jekyll.
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/js/jquery.min.js "></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="/js/bootstrap.min.js "></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/js/clean-blog.min.js "></script>
+
+
+
+<!-- Highlight.js -->
+<script>
+    async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js",function(){
+        hljs.initHighlightingOnLoad();
+    })
+</script>
+<link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+
+
+</body>
+
+</html>

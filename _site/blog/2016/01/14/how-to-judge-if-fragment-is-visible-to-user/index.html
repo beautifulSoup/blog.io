@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A chinese man, detemined in Android and Python">
+    <meta name="baidu-site-verification" content="KonQRkt3nq" />
+    <title>如何判断Fragment是否对用户可见 - In Coding</title>
+
+    <link rel="canonical" href="http://sixwolf.net/blog/2016/01/14/how-to-judge-if-fragment-is-visible-to-user/">
+
+    <!-- Icons -->
+  <link rel="shortcut icon" href="img/logo.ico">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/clean-blog.css">
+
+    <!-- Pygments Github CSS -->
+    <link rel="stylesheet" href="/css/syntax.css">
+
+    <!-- Custom Fonts -->
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href='//fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "//hm.baidu.com/hm.js?ad37e90f12e85cec39277b32f2653dfd";
+            var s = document.getElementsByTagName("script")[0];
+            s.parentNode.insertBefore(hm, s);
+        })();
+    </script>
+
+</head>
+
+
+
+
+
+
+<body ontouchstart="">
+
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">In Coding</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav navbar-right">
+                <li>
+                    <a href="/">Home</a>
+                </li>
+                
+                <li>
+                    <a href="/about/">About</a>
+                </li>
+                
+                <li>
+                    <a href="/archive/">Archive</a>
+                </li>
+                
+                <li>
+                    <a href="/milestone/">milestone</a>
+                </li>
+                
+                <li>
+                    <a href="/tags/">Tags</a>
+                </li>
+                
+            </ul>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+
+
+    <!-- Post Header -->
+<style type="text/css">
+    header.intro-header{
+        background-image: url('https://img.alicdn.com/imgextra/i4/754328530/TB2GEa3cVXXXXbUXpXXXXXXXXXX-754328530.jpg')
+    }
+</style>
+<header class="intro-header" >
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+	           <!-- <div class="Tags">
+                        
+                        <a class="tag" href="/Tags/#Development" title="Development">Development</a>
+                        
+                        <a class="tag" href="/Tags/#Android" title="Android">Android</a>
+                        
+                    </div> -->
+                    <h1>如何判断Fragment是否对用户可见</h1>
+                    
+                    <span class="meta">Posted by Klojure on January 14, 2016</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+
+
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1 post-container">
+
+                <p><br />
+<br /></p>
+
+<h2 id="section">背景</h2>
+<p>最近在开发中遇到了一个问题。我们的app需要统计用户的页面路径，也就是用户使用各个页面的情况。这就需要在不同的页面跳入和跳出时记录下来。但是我们的app主要是由Fragment构成的。而在不同的使用情况下，判断Fragment是否可见的方法是不一样的。下面对这些不同的使用情况分开分析。</p>
+
+<h2 id="section-1">不同的情况</h2>
+
+<h3 id="activity">在Activity中直接使用</h3>
+<p>这种情况是最简单的，也就是在Activity使用XML引入，或者使用FragmentManager 的addFragment或者replaceFrament 动态载入。在这种情况下，只要监听Fragment的onResume和onPause方法就能够判断其显隐。在onResume和onPause中间是对用户可见的.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>@Override
+public void onResume() {
+    super.onResume();
+    //TODO now visible to user
+}
+@Override
+public void onPause() {
+    super.onPause();
+    //TODO now invisible to user
+}
+</code></pre>
+</div>
+
+<h3 id="showhidefragment">使用show和hide来显隐的Fragment</h3>
+<p>FragmentManager除了addFragment和replaceFragment之外还有showFragment和hideFragment来做Fragment的显隐，这样可以提生页面切换的速度，是一种用空间换时间的方式。但是这样使用的Fragment在被hide的时候是不会调用onPause方法的。因为它只是在屏幕中不可见了，但是没有Pause。这时候我们需要监听onHiddenChanged方法</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>@Override
+public void onHiddenChanged(boolean hidden) {
+    super.onHiddenChanged(hidden);
+	if(hidden){
+		//TODO now visible to user
+	} else {
+		//TODO now invisible to user
+	}
+}
+</code></pre>
+</div>
+
+<p>但是我们需要注意一点，那就是，如果用户直接按home键退出了，我们的程序也没有对按home键事件进行监听，在按home键时调用hideFragment，那么onHiddenChanged事实上没有被调用，反而是onPause被调用了。所以我们需要针对这样的情况做特殊的处理。比如在home键退出时显示调用一下hideFragment或者在onPause中也发信号说本Fragment不可见了，这都是可以的。</p>
+
+<h3 id="viewpagerfragment">在ViewPager中的Fragment</h3>
+<p>现在安卓市场上基本上的app都会做tab页，而tab页基本都是通过android自带的ViewPager实现的。ViewPager有这样一个特点，当滑到某一个Tab时，它会同时加载这个tab的左右两个tab页，比如我从1页面切换到了2页面，那么3页面的onResume也被调用了，但是3页面其实对用户是不可见的。这时候我们就需要监听setUserVisibleHint来判断到底对用户是否可见。</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>@Override
+public void setUserVisibleHint(boolean isVisibleToUser) {
+    super.setUserVisibleHint(isVisibleToUser);
+	if(isVisibleToUser){
+		//TODO now it's visible to user
+	} else {
+		//TODO now it's invisible to user
+	}
+}
+</code></pre>
+</div>
+
+<p>但是与第二条类似，我们依然不能完全依赖setUserVisibleHint这个方法来判断是否ViewPager中的页面是否对用户可见。因为该方法只有在Fragment切换的时候被调用。比如我从一个含有ViewPager的Actvity跳转到另一个activity，ViewPager中的Fragment的 setUserVisibleHint方法是不会被调用的，只能通过onPause来判断。进入该Activity原理类似。那么怎么办呢，我们需要结合setUserVisibleHint和onResume和onPause。</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>@Override
+public void setUserVisibleHint(boolean isVisibleToUser) {
+    super.setUserVisibleHint(isVisibleToUser);
+    if ((isVisibleToUser &amp;&amp; isResumed())) {
+        onResume();
+    } else if (!isVisibleToUser) {
+        Timber.i("On Pause on %s Fragment Invisble", getClass().getSimpleName());
+        onPause()
+    }
+}
+ @Override
+public void onResume() {
+    super.onResume();
+    if (getUserVisibleHint()) {
+        Timber.i("On Resume on %s Fragment Visible", getClass().getSimpleName());
+		//TODO give the signal that the fragment is visible
+    }
+}
+
+@Override
+public void onPause() {
+    super.onPause();
+	//TODO give the signal that the fragment is invisible
+}
+</code></pre>
+</div>
+
+<p>需要注意以上方法并不完美，Fragment不可见的信号会被多次发送。目前还没找到一个只发送一次的方法。如果读者有更好的解决方案，欢迎跟我交流。</p>
+
+<p>Contact me:</p>
+
+<p>mailto@ tanglikang@163.com</p>
+
+
+
+                <hr>
+
+                <ul class="pager">
+                    
+                    
+                    <li class="next">
+                        <a href="/blog/2016/01/14/some-blog-to-study-ReactiveX/" data-toggle="tooltip" data-placement="top" title="学习RxJava和RxAndroid的一些好的学习资料（亲自验证）">Next Post &rarr;</a>
+                    </li>
+                    
+                </ul>
+
+                <!-- Duoshuo Share start -->
+                <style>
+                    .ds-share{
+                        text-align: right;
+                    }
+
+                    @media only screen and (max-width: 700px) {
+                        .ds-share {
+
+                        }
+                    }
+                </style>
+
+                <div class="ds-share"
+                    data-thread-key="/blog/2016/01/14/how-to-judge-if-fragment-is-visible-to-user" data-title="如何判断Fragment是否对用户可见"
+                    data-images="http://sixwolf.net/https://img.alicdn.com/imgextra/i4/754328530/TB2GEa3cVXXXXbUXpXXXXXXXXXX-754328530.jpg"
+                    data-content="
+
+
+背景
+最近在开发中遇到了一个问题。我们的app需要统计用户的页面路径，也就是用户使用各个页面的情况。这就需要在不同的页面跳入和跳出时记录下来。但是我... | Microdust:Azeril's blog"
+                    data-url="http://sixwolf.net/blog/2016/01/14/how-to-judge-if-fragment-is-visible-to-user/">
+                    <div class="ds-share-inline">
+                      <ul  class="ds-share-icons-16">
+
+                        <li data-toggle="ds-share-icons-more"><a class="ds-more" href="#">分享到：</a></li>
+                        <li><a class="ds-wechat flat" href="javascript:void(0);" data-service="wechat">微信</a></li>
+                        <li><a class="ds-weibo flat" href="javascript:void(0);" data-service="weibo">微博</a></li>
+                        <li><a class="ds-douban flat" href="javascript:void(0);" data-service="douban">豆瓣</a></li>
+                      </ul>
+                      <div class="ds-share-icons-more">
+                      </div>
+                    </div>
+                <hr>
+                </div>
+                <!-- Duoshuo Share end-->
+
+
+                <!-- 多说评论框 start -->
+                <div class="comment">
+                    <div class="ds-thread" data-thread-key="/blog/2016/01/14/how-to-judge-if-fragment-is-visible-to-user" data-title="如何判断Fragment是否对用户可见" data-url="http://sixwolf.net/blog/2016/01/14/how-to-judge-if-fragment-is-visible-to-user/"></div>
+                </div>
+                <!-- 多说评论框 end -->
+
+
+
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"sixwolf"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0]
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+<!-- 多说公共JS代码 end -->
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("http://cdn.bootcss.com/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'always',
+          placement: 'right',
+          icon: '#'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
+
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                    <!-- kill the Facebook and Weibo -->
+                    <li>
+                        <a href="/feed.xml">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-rss fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="https://twitter.com/SuperTwoDog">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+
+                    
+                    <li>
+                        <a href="https://github.com/beautifulSoup">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                    
+                    <!--
+                    
+                    <li>
+                        <a href="http://www.douban.com/people/汤利康">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-douban fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                    -->
+
+                    <!--
+                    
+                    <li>
+                        <a href="https://www.facebook.com/汤利康">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-facebook fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                    -->
+
+                    
+                    <li>
+                        <a target="_blank" href="https://www.zhihu.com/people/汤利康">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa  fa-stack-1x fa-inverse">知</i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                    <!--
+                    
+                    <li>
+                        <a target="_blank" href="http://weibo.com/不知菌">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-weibo fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                    -->
+
+                </ul>
+                <p class="copyright text-muted">
+                &copy; 2016  Klojure ❖ Powered by Jekyll.
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/js/jquery.min.js "></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="/js/bootstrap.min.js "></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/js/clean-blog.min.js "></script>
+
+
+
+<!-- Highlight.js -->
+<script>
+    async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js",function(){
+        hljs.initHighlightingOnLoad();
+    })
+</script>
+<link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+
+
+</body>
+
+</html>

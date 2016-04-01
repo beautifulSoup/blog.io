@@ -1,0 +1,1436 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>In Coding</title>
+    <description>A chinese man, detemined in Android and Python</description>
+    <link>http://sixwolf.net/</link>
+    <atom:link href="http://sixwolf.net/feed.xml" rel="self" type="application/rss+xml" />
+    <pubDate>Fri, 01 Apr 2016 11:54:29 +0800</pubDate>
+    <lastBuildDate>Fri, 01 Apr 2016 11:54:29 +0800</lastBuildDate>
+    <generator>Jekyll v3.1.2</generator>
+    
+      <item>
+        <title>如何产生一个随机的[0, n)范围内的Short值</title>
+        <description>&lt;h1 id=&quot;section&quot;&gt;背景&lt;/h1&gt;
+&lt;p&gt;最近在做一个Java的随机对象生成器。需要随机产生一些在[0, n)范围内的short值。&lt;/p&gt;
+
+&lt;h1 id=&quot;section-1&quot;&gt;坑&lt;/h1&gt;
+&lt;p&gt;很多人可能会说，这有什么难的，我刚学编程的时候就会了。然后给出下面代码。&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;    &lt;span class=&quot;kt&quot;&gt;short&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;value&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;short&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Random&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;nextInt&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;));&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;p&gt;看起来很棒的一段的代码，感觉完全没有问题，但是在实际测试过程中我们发现最后获取到的value值有时候会是负值。咦，怎么回事呢，nextInt(n)返回的不是[0, n)的值吗？&lt;/p&gt;
+
+&lt;h1 id=&quot;section-2&quot;&gt;爬坑&lt;/h1&gt;
+&lt;p&gt;为了解释以上问题，我们首先需要回顾下学校学的数值的表示。原码用第一位表示正负，后面的位数表示符号，正数反码，补码与原码都相同，负数除符号位外取反获得反码，反码加一获得补码。&lt;/p&gt;
+
+&lt;p&gt;int型在Java中占四个字节，short型在Java中占两个字节，int到short的强转将int的后两个字节截取，比如原本是0x0FFFFFFF，我们知道这是正数，但是如果截断获取后两个字节就编程了0xFFFF，这就是一个负数了。&lt;/p&gt;
+
+&lt;p&gt;那么判断一下如果是负数，取反行不行:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;	&lt;span class=&quot;kt&quot;&gt;short&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;value&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;short&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Random&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;nextInt&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;));&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;value&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;short&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;value&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;value&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;value&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;答案是不行，因为在Java中四则运算的最小类型是int型，short型和byte型的四则运算都是先将值转为Int型在进行的。所以value(0xFFFF -&amp;gt; 0x0000FFFF) &amp;lt; 0, NO. 即使这里取了负值，但是在经过又一次short强转之后又回到了原来的结果。&lt;/p&gt;
+
+&lt;h1 id=&quot;section-3&quot;&gt;解决&lt;/h1&gt;
+&lt;p&gt;那么如何解决这一问题呢，下面给出两种正确的解决代码。&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;	&lt;span class=&quot;n&quot;&gt;n&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;n&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Short&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;MAX_VALUE&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;n&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Short&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;MAX_VALUE&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
+	&lt;span class=&quot;kt&quot;&gt;short&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;value&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;short&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Random&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;nextInt&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;));&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;因为产生的int值在short值的范围内，所以即使强转也不会改变正负性。因为最大值是0x00007FFF，强转为short，最高位总是0；&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;	&lt;span class=&quot;kt&quot;&gt;short&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;value&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;short&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Random&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;nextInt&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&lt;/span&gt; &lt;span class=&quot;mh&quot;&gt;0x7&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;FFF&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;做位操作，只取产生值的后15位。第16位总是0，所以可以保证是正数。&lt;/p&gt;
+
+&lt;p&gt;当然只有在n &amp;gt; Short.MAX_VALUE的情况下才会有问题，如果本省n &amp;lt;= Short.MAX_VALUE，那么也不会有问题。byte与short同理。&lt;/p&gt;
+</description>
+        <pubDate>Fri, 01 Apr 2016 00:00:00 +0800</pubDate>
+        <link>http://sixwolf.net/blog/2016/04/01/%E5%A6%82%E4%BD%95%E4%BA%A7%E7%94%9F%E4%B8%80%E4%B8%AA%E9%9A%8F%E6%9C%BA%E7%9A%84-0,-n)%E7%9A%84short%E5%80%BC/</link>
+        <guid isPermaLink="true">http://sixwolf.net/blog/2016/04/01/%E5%A6%82%E4%BD%95%E4%BA%A7%E7%94%9F%E4%B8%80%E4%B8%AA%E9%9A%8F%E6%9C%BA%E7%9A%84-0,-n)%E7%9A%84short%E5%80%BC/</guid>
+        
+        <category>Java</category>
+        
+        <category>Development</category>
+        
+        
+        <category>blog</category>
+        
+      </item>
+    
+      <item>
+        <title>浅析ReactiveX的多播——实现安卓双击检测遇到的坑</title>
+        <description>&lt;h2 id=&quot;section&quot;&gt;背景&lt;/h2&gt;
+&lt;p&gt;今天需要实现一个双击检测功能，以前的实现方式是自己记录上次点击时间与本次比对，如果小于门槛值，则发出双击事件。不过自从入了Rx的坑之后，凡事都喜欢用Rx的思想思考问题。于是上Github找找代码，还真找到一段，虽然是Kotlin的&lt;a href=&quot;https://gist.github.com/imton/ee74249fabff5ac95b16&quot;&gt;一段错误的代码&lt;/a&gt;，翻译成Java如下：（注：这段代码是有问题的，请不要看到这里就复制黏贴）&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;	&lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;doubleClickDetect&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;View&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;view&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;){&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;Observable&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Void&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;observable&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;RxView&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;clicks&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;view&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;observable&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;buffer&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;observable&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;debounce&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;200&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;TimeUnit&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;MILLISECONDS&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;))&lt;/span&gt;
+                &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;observeOn&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AndroidSchedulers&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;mainThread&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;())&lt;/span&gt;
+                &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;subscribe&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Action1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;List&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Void&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&amp;gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+                    &lt;span class=&quot;nd&quot;&gt;@Override&lt;/span&gt;
+                    &lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;call&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;List&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Void&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;voids&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+                        &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;voids&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;size&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;){&lt;/span&gt;
+                        	&lt;span class=&quot;c1&quot;&gt;//double click detected&lt;/span&gt;
+                        &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+                        
+                    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+                &lt;span class=&quot;o&quot;&gt;},&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Action1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Throwable&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+                    &lt;span class=&quot;nd&quot;&gt;@Override&lt;/span&gt;
+                    &lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;call&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Throwable&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;throwable&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+                        &lt;span class=&quot;n&quot;&gt;Timber&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;throwable&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;error&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+                    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+                &lt;span class=&quot;o&quot;&gt;});&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;p&gt;我们先不讲这段代码的问题在哪，先来说说其中涉及到的几个操作符。
+其中buffer()会将observable 发射的item缓存起来，直到它的参数Observable发射一个item时，它会将之前缓存的都作为一个list发射出去，这个还是比较好理解的，如果还是不懂，请参考 &lt;a href=&quot;http://reactivex.io/documentation/operators/buffer.html&quot;&gt;buffer操作符文档&lt;/a&gt;。&lt;/p&gt;
+
+&lt;p&gt;而debounce操作符会将在那些在参数时间间隔内跟着另一个item的items过滤掉。&lt;img src=&quot;https://img.alicdn.com/imgextra/i3/754328530/TB2aHeWmXXXXXaCXXXXXXXXXXXX-754328530.png&quot; alt=&quot;&quot; /&gt;
+如图，1，5和6之后在一段时间内没有跟随其它item，所以被发射出来，而其它的都被过滤了。详见&lt;a href=&quot;http://reactivex.io/documentation/operators/debounce.html&quot;&gt;debounce操作符文档&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;所以上面代码的意思就是当有点击事件item产生的时候先缓存起来，当一段事件内没有新的事件产生的时候把之前缓存的事件作为一个列表发射出去，当发现有大于等于2的事件时，认为用户在一定时间内连续点了两次。所以这段代码在逻辑上是ok的。但是实际运行起来发现没反应，buffer后面没有item被发射。但是在buffer之前是有的，所以将问题定位到debounce没有item产生。所以问题在哪呢？我们需要明确一点，普通的Observable是不支持多播的，即使被多个Subscriber所订阅，也只会有一个Subscriber收到items。在buffer中，其实订阅了参数Observable，但是这个Observable在buffer之后又被订阅了一次，所以debounce就收不到item了。&lt;/p&gt;
+
+&lt;h2 id=&quot;section-1&quot;&gt;修改&lt;/h2&gt;
+&lt;p&gt;那么该如何修改以上代码，让它达到我们需要的效果呢。下面先来介绍几个相关的操作符。&lt;/p&gt;
+
+&lt;h3 id=&quot;publish&quot;&gt;Publish&lt;/h3&gt;
+&lt;p&gt;通过Publish操作符可以将一个普通的Observable转换为一个Connectable Observable。Connectable Observable 可以被多次订阅，被多个Subscriber共享Stream。但是和普通的Observable不同，它在被subscribe之后并不开始产生item，而需要在调用connect()之后才会产生item。&lt;/p&gt;
+
+&lt;h3 id=&quot;connect&quot;&gt;Connect&lt;/h3&gt;
+&lt;p&gt;在Publish中已经提到，用来让Connectable Observable开始产生item。&lt;/p&gt;
+
+&lt;h3 id=&quot;refcount&quot;&gt;Refcount&lt;/h3&gt;
+&lt;p&gt;除了Connect，我们有另一种方式来让Connectable Observable 产生item，那就是Refcount，refCount会在第一个subscriber订阅之后自动connect，在最后一个subscriber unsubscribe之后自动disconnect。&lt;/p&gt;
+
+&lt;h3 id=&quot;share&quot;&gt;Share&lt;/h3&gt;
+&lt;p&gt;Share 其实就是publish().refCount();&lt;/p&gt;
+
+&lt;p&gt;基于以上操作符，我们可以修正我们上面的代码了，稍微改一下就能达到我们预期的效果了，代码如下：&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;	&lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;doubleClickDetect&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;View&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;view&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;){&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;Observable&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Void&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;observable&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;RxView&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;clicks&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;view&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;share&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;observable&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;buffer&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;observable&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;debounce&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;200&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;TimeUnit&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;MILLISECONDS&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;))&lt;/span&gt;
+                &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;observeOn&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AndroidSchedulers&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;mainThread&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;())&lt;/span&gt;
+                &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;subscribe&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Action1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;List&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Void&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&amp;gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+                    &lt;span class=&quot;nd&quot;&gt;@Override&lt;/span&gt;
+                    &lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;call&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;List&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Void&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;voids&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+                        &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;voids&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;size&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;){&lt;/span&gt;
+                        	&lt;span class=&quot;c1&quot;&gt;//double click detected&lt;/span&gt;
+                        &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+                    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+                &lt;span class=&quot;o&quot;&gt;},&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Action1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Throwable&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+                    &lt;span class=&quot;nd&quot;&gt;@Override&lt;/span&gt;
+                    &lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;call&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Throwable&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;throwable&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+                        &lt;span class=&quot;n&quot;&gt;Timber&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;throwable&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;error&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+                    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+                &lt;span class=&quot;o&quot;&gt;});&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;p&gt;上面的修改在原有代码基础上使用share操作符将原本的Observable变成了可共享流的Connectable Observable。&lt;/p&gt;
+
+&lt;h2 id=&quot;section-2&quot;&gt;注意事项&lt;/h2&gt;
+&lt;p&gt;在使用refCount或者share的时候需要注意一点，那就是在第一个subscriber订阅之后Connectable Observable就被connect产生item了。所以后面subscribe 的订阅者可能就收不到之前的一些item了。如果需要所有的subscriber都收到一样的item。还是先subscribe，最后再connect吧。&lt;/p&gt;
+
+</description>
+        <pubDate>Thu, 31 Mar 2016 00:00:00 +0800</pubDate>
+        <link>http://sixwolf.net/blog/2016/03/31/%E6%B5%85%E6%9E%90ReactiveX%E7%9A%84%E5%A4%9A%E6%92%AD/</link>
+        <guid isPermaLink="true">http://sixwolf.net/blog/2016/03/31/%E6%B5%85%E6%9E%90ReactiveX%E7%9A%84%E5%A4%9A%E6%92%AD/</guid>
+        
+        <category>Android</category>
+        
+        <category>Development</category>
+        
+        <category>RxJava</category>
+        
+        
+        <category>blog</category>
+        
+      </item>
+    
+      <item>
+        <title>Android路由框架设计与实现</title>
+        <description>&lt;h1 id=&quot;section&quot;&gt;背景&lt;/h1&gt;
+&lt;p&gt;我们知道传统的网站开发框架一般支持用户设置路由表，如Django。而在Android开发中，我们打开页面的方式主要是startActivity()。使用startActivity()的缺点是需要打开的那个Activity的类已经存在，否则无法通过编译，但是在协同开发中，这往往是无法得到满足的。那么如何来解决这一问题呢，我们是否也能够像在Web开放中一样使用一个url来打开一个Activity呢？因此本文主要介绍在Android平台设计和实现一个路由框架。&lt;/p&gt;
+
+&lt;h1 id=&quot;section-1&quot;&gt;框架整体设计&lt;/h1&gt;
+&lt;p&gt;首先我们需要明确一点，那就是我们的框架不能仅仅局限于打开Activity，打开Activity只是框架中的一种行为实现，我们的框架应该是包含了Activity以及其它比较常用的路由。并支持使用者自己添加自己的路由实现的，如使用者希望使用url调用一个方法，或者调用一个Runnable，那么他就可以自己实现一个Router来支持这种行为。基于这样的思路，路由框架的整体架构设计如下。
+&lt;img src=&quot;https://img.alicdn.com/imgextra/i2/754328530/TB2XFdcepXXXXX5XXXXXXXXXXXX-754328530.jpg&quot; alt=&quot;路由框架设计&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;在以上框架中，由RouterManager维护所有的IRouter列表。我们的框架自身实现了打开Activity的ActivityRouter。同时用户可以添加自己的IRouter实现。当用户想要打开某个url时，调用RouterManager的open()方法，RouterManager遍历列表，调用IRouter的canOpenTheUrl方法找到第一个能够打开该url的IRouter，并将该open的任务dispatch给该Router。
+但是在分析实际使用情景中，我们发现这样的框架设计并不能满足实际使用需求，主要有如下几点。&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;在打开Activity可能需要设置动画。&lt;/li&gt;
+  &lt;li&gt;需要选择使用startActivityForResult()来打开Activity。&lt;/li&gt;
+  &lt;li&gt;需要传递一些无法放到url中的传递参数，如Parcelable等。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;虽然这仅仅是ActivityRouter的需求，但我们也需要让我们的框架支持这些。
+因此，我们对以上框架设计做了一些修改如下。
+&lt;img src=&quot;https://img.alicdn.com/imgextra/i1/754328530/TB20x_2epXXXXapXpXXXXXXXXXX-754328530.jpg&quot; alt=&quot;路由框架设计修改版&quot; /&gt;
+用户在需要额外设置一些参数的时候可以不选择使用open打开url，而是使用getRoute()方法获得抽象的Route对象，通过Route对象进行额外的设置，最后可以通过IRoute接口的open方法打开它自己。IRouter和IRoute的关系应该是一对一或者一对多，一种IRouter应该可以打开一或者多种不同IRoute。而一个IRoute则一般只能由一种IRouter打开。&lt;/p&gt;
+
+&lt;h1 id=&quot;section-2&quot;&gt;路由格式&lt;/h1&gt;
+&lt;p&gt;在路由框架中，url应该包含两点功能，一是唯一确定一条路由，二是提供一些参数。我们可以以一个路由的例子来讲解ActivityRouter的路由规则。本规则参考了REST。 &lt;br /&gt;
+例：activity://main/:i{key1}/path1/:f{key2}&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;scheme为activity代表该url可以被ActivityRouter打开。&lt;/li&gt;
+  &lt;li&gt;host为main一般表示决定的Activity。&lt;/li&gt;
+  &lt;li&gt;而:{key1}则表示一个值的key，这个path segment在url中会被具体的值替换，:后面的i表示该key对应的值的类型为int型。&lt;/li&gt;
+  &lt;li&gt;path1为固定的path segment，与上面的key用来传递值不同。用来区分路由，与host功能类似。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;因此一个url与路由匹配需要scheme，host以及path中的固定部分相同，而key部分被具体的值代替。以下举一个匹配上面的路由的url的例子。
+activity:main/123/path1/12.4。则会调用intent的putExtra()方法将key1=123, key2=12.4放到intent的bundle中。在被跳的Activity中就可以获取对应的值。如果有些值是不必须的，已可以放到query parameter中。如activity://main/123/path1?des=hello。但query parameter不影响路由匹配。
+以上只是我实现的ActivityRouter的路由格式，如果你需要实现自己的路由，完全可以根据自己的想法设计路由格式。&lt;/p&gt;
+
+&lt;h3 id=&quot;section-3&quot;&gt;路由表的初始化&lt;/h3&gt;
+&lt;p&gt;Router需要提供一个方法让使用者初始化路由表。如下ActivityRouter的实现，当然这并不必要，如打开网页的Router就不需要路由表，只需要调用系统浏览器打开网页即可。所以该方法没有在接口中定义。&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;	&lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;init&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Context&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;appContext&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;IActivityRouteTableInitializer&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;initializer&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;mBaseContext&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;appContext&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;initializer&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;initRouterTable&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;mRouteTable&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;interface&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;IActivityRouteTableInitializer&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;cm&quot;&gt;/**
+     * init the router table
+     * @param router the router map to
+     */&lt;/span&gt;
+    &lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;initRouterTable&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Map&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;String&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Class&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;?&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;extends&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Activity&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;router&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h1 id=&quot;section-4&quot;&gt;总结&lt;/h1&gt;
+&lt;p&gt;我们发现将原本startActivity方式替换成路由方式后，有以下几个明显的优点。&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;便于协同开发&lt;/li&gt;
+  &lt;li&gt;便于测试，可以在测试中替换一个路由表，打开测试用Activity。&lt;/li&gt;
+  &lt;li&gt;便于从外部链接跳转到app中的任意界面。我们只需要设置一个外链入口Activity，让其接收外部链接，并调用路由管理器打开该链接即可。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h1 id=&quot;section-5&quot;&gt;项目地址&lt;/h1&gt;
+&lt;p&gt;&lt;a href=&quot;https://github.com/campusappcn/AndRouter&quot;&gt;https://github.com/campusappcn/AndRouter&lt;/a&gt;&lt;/p&gt;
+</description>
+        <pubDate>Wed, 23 Mar 2016 00:00:00 +0800</pubDate>
+        <link>http://sixwolf.net/blog/2016/03/23/Android%E8%B7%AF%E7%94%B1%E6%A1%86%E6%9E%B6%E8%AE%BE%E8%AE%A1/</link>
+        <guid isPermaLink="true">http://sixwolf.net/blog/2016/03/23/Android%E8%B7%AF%E7%94%B1%E6%A1%86%E6%9E%B6%E8%AE%BE%E8%AE%A1/</guid>
+        
+        <category>Android</category>
+        
+        <category>Development</category>
+        
+        
+        <category>blog</category>
+        
+      </item>
+    
+      <item>
+        <title>Android实现多次闪退清除数据</title>
+        <description>&lt;h1 id=&quot;section&quot;&gt;背景&lt;/h1&gt;
+&lt;p&gt;很多时候由于后台返回的数据异常，可能会导致App闪退。而如果这些异常数据被App本地缓存下来，那么即使杀掉进程重新进入还是会发生闪退。唯一的解决方法就是清除App数据，但是用户可能没有这个意识或者嫌麻烦就直接不再使用了，这是我们无法接受的。在使用淘宝、追书神器等App时我发现有时候它们也会连续闪退，但是往往闪退三次后就恢复正常了，所以一般成熟的App都会做连续闪退三次后清除缓存数据的工作。而目前笔者搜不到有哪篇blog来讲这方面的事情，所以就姑且由我来讲讲此事，为希望提高App用户体验的朋友提供些许参考。&lt;/p&gt;
+
+&lt;h1 id=&quot;acra&quot;&gt;ACRA&lt;/h1&gt;
+&lt;p&gt;为了能够在闪退的时候做一些事情，我们可以使用ACRA，这是Github上的一个开源项目，允许使用者设置一些Sender在App闪退的时候做一些事情。具体使用可以直接参考&lt;a href=&quot;https://github.com/ACRA/acra&quot;&gt;Github&lt;/a&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;section-1&quot;&gt;实现清除数据&lt;/h1&gt;
+&lt;p&gt;ACRA提供了自己的一些Sender，如使用系统邮件客户端向指定邮箱发送邮件的EmailIntentSender。而我们希望记录闪退次数和清除数据则需要implements ReportSender接口。&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;CrashHandler&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;implements&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ReportSender&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;nd&quot;&gt;@Override&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;send&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Context&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;context&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;CrashReportData&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;errorContent&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;throws&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ReportSenderException&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;Timber&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;闪退,检查是否需要清空数据&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;CrashModel&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;checkAndClearData&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;p&gt;这里我们写了一个CrashModel用来记录闪退次数和时间决定是否需要清空数据，具体代码如下。
+由于在ReportSender的时候无法打开其它线程，所以我们无法使用SharedPerferences来清理数据（打开SP的时候其实打开了一个新线程）。为此需要找到数据缓存的位置并将文件删除。同样道理，记录闪退时间也只能通过文件记录。当然，你可以选择一些文件不进行删除，如用户信息等不太容易出问题的数据。&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;CrashModel&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+
+    &lt;span class=&quot;kd&quot;&gt;private&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;final&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;String&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;KEY_CRASH_TIMES&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;crash_times&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;private&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;final&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;String&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;CRASH_TIME_FILE_NAME&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;crash_time&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;//不能通过App.getPackageName来获取包名，否则会有问题，只能默认为cn.campusapp.campus。所以对于debug或者运营版本，清数据会把release的清掉&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;private&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;final&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;String&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;FILE_DIR&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;String&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;format&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;/data/data/%s/&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;BuildConfig&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;APPLICATION_ID&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;private&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;final&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;String&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ACCOUNT_FILE_NAME&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;String&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;format&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;%s%s&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;FILE_DIR&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;shared_prefs/account_pref.xml&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;private&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ArrayList&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;String&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;FILES_DONTNEED_DELETE&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ArrayList&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&amp;gt;();&lt;/span&gt;  &lt;span class=&quot;c1&quot;&gt;//该目录中的文件不会被删除&lt;/span&gt;
+
+    &lt;span class=&quot;kd&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;FILES_DONTNEED_DELETE&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;add&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ACCOUNT_FILE_NAME&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;  &lt;span class=&quot;c1&quot;&gt;//目前账号信息文件不会被删除，但是会手动改变数据，只保留userId  accessToken 和school&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+    &lt;span class=&quot;kd&quot;&gt;protected&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ArrayList&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Long&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;mCrashTimes&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;Gson&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;gson&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Gson&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;private&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;File&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;mFileDir&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
+
+    &lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;CrashModel&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;mFileDir&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;File&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;FILE_DIR&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;mCrashTimes&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;readCrashTimes&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;mCrashTimes&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;null&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;mCrashTimes&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ArrayList&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&amp;gt;();&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;storeCrashTimes&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;mCrashTimes&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+        &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+
+    &lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;checkAndClearData&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;kt&quot;&gt;long&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;timeNow&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;System&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;currentTimeMillis&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
+
+        &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;checkClearData&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;timeNow&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ArrayList&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&amp;gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;mCrashTimes&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)))&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;Timber&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;已经在5分钟之内有三次闪退，需要清理数据&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;try&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+                &lt;span class=&quot;n&quot;&gt;clearData&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
+            &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;catch&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Exception&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+                &lt;span class=&quot;n&quot;&gt;Timber&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;清空所有数据失败&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+            &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+        &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;mCrashTimes&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;add&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;timeNow&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;storeCrashTimes&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;mCrashTimes&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;Timber&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;此次不需要清空数据, %s&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;gson&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;toJson&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;mCrashTimes&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;));&lt;/span&gt;
+        &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+    &lt;span class=&quot;kd&quot;&gt;private&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;storeCrashTimes&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ArrayList&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Long&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;crashTimes&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;try&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;String&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;str&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;gson&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;toJson&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;crashTimes&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;Files&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;writeToFile&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;mFileDir&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;CRASH_TIME_FILE_NAME&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;str&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+        &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;catch&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Exception&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;Timber&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;保存闪退时间失败&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+        &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+    &lt;span class=&quot;kd&quot;&gt;private&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ArrayList&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Long&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;readCrashTimes&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;try&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;String&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;timeStr&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Files&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;readFileContent&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;mFileDir&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;CRASH_TIME_FILE_NAME&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;gson&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;fromJson&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;timeStr&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;TypeToken&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ArrayList&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Long&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&amp;gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;o&quot;&gt;}.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;getType&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;());&lt;/span&gt;
+        &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;catch&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Exception&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;Timber&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;读取闪退时间失败&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+        &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;null&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+    &lt;span class=&quot;cm&quot;&gt;/**
+     * 检查是否需要清空数据，目前的清空策略是在5分钟之内有三次闪退的就清空数据，也就是从后往前遍历，只要前两次闪退发生在5分钟之内，就清空数据
+     *
+     * @return
+     */&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;private&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;boolean&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;checkClearData&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;long&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;time&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ArrayList&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Long&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;crashTimes&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;Timber&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;gson&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;toJson&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;crashTimes&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;));&lt;/span&gt;
+        &lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;count&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;crashTimes&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;size&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;--)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;kt&quot;&gt;long&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;crashTime&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;crashTimes&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;get&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;time&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;crashTime&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;5&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;60&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1000&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+                &lt;span class=&quot;n&quot;&gt;count&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;++;&lt;/span&gt;
+                &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;count&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+                    &lt;span class=&quot;k&quot;&gt;break&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
+                &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+            &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+        &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;count&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;c1&quot;&gt;//在5分钟之内有三次闪退，这时候需要清空数据&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
+        &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;false&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
+        &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+    &lt;span class=&quot;cm&quot;&gt;/**
+     * 清空数据，包括数据库中的和SharedPreferences中的
+     *
+     * @throws Exception
+     */&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;private&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;clearData&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;throws&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Exception&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;Timber&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;开始清理数据&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;Files&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;deleteFilesExceptSomeInDirectory&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;mFileDir&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;FILES_DONTNEED_DELETE&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;然后我们需要将CrashHandler 添加到ACRA的异常处理Sender列表中。在你的Application类中添加如下代码。&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nd&quot;&gt;@ReportsCrashes&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;
+		  &lt;span class=&quot;c1&quot;&gt;//一些ACRA的设置，具体参考ACRA文档，因为我们使用自定义Sender，所以这里完全可以不用设置&lt;/span&gt;
+        &lt;span class=&quot;c1&quot;&gt;//mailTo = &quot;bugs@treeholeapp.cn&quot;,&lt;/span&gt;
+        &lt;span class=&quot;c1&quot;&gt;//mode = ReportingInteractionMode.TOAST,&lt;/span&gt;
+        &lt;span class=&quot;c1&quot;&gt;//resToastText = R.string.crash_toast_text&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;App&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;extends&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Application&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+
+    &lt;span class=&quot;nd&quot;&gt;@Override&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;onCreate&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    	&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(!&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;BuildConfig&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;DEBUG&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;  &lt;span class=&quot;c1&quot;&gt;//这里我判断只有在非DEBUG下才清除数据，主要是为了在开发过程中能够保留线程。&lt;/span&gt;
+                &lt;span class=&quot;n&quot;&gt;ACRA&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;init&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;APPLICATION_CONTEXT&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+                &lt;span class=&quot;n&quot;&gt;CrashHandler&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;handler&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;CrashHandler&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
+              	&lt;span class=&quot;n&quot;&gt;ACRA&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;getErrorReporter&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;setReportSender&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;handler&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;  &lt;span class=&quot;c1&quot;&gt;//在闪退时检查是否要清空数据&lt;/span&gt;
+        &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h1 id=&quot;section-2&quot;&gt;总结&lt;/h1&gt;
+&lt;p&gt;以上即为实现多次闪退后清除数据的实现，希望大家开发的App Bug越来越少，鲁棒性越来越强。&lt;/p&gt;
+</description>
+        <pubDate>Tue, 22 Mar 2016 00:00:00 +0800</pubDate>
+        <link>http://sixwolf.net/blog/2016/03/22/Android%E5%AE%9E%E7%8E%B0%E5%A4%9A%E6%AC%A1%E9%97%AA%E9%80%80%E6%B8%85%E9%99%A4%E6%95%B0%E6%8D%AE/</link>
+        <guid isPermaLink="true">http://sixwolf.net/blog/2016/03/22/Android%E5%AE%9E%E7%8E%B0%E5%A4%9A%E6%AC%A1%E9%97%AA%E9%80%80%E6%B8%85%E9%99%A4%E6%95%B0%E6%8D%AE/</guid>
+        
+        <category>Android</category>
+        
+        <category>Development</category>
+        
+        
+        <category>blog</category>
+        
+      </item>
+    
+      <item>
+        <title>Android单元测试详解（1）——— AndroidJunitTest</title>
+        <description>&lt;h1 id=&quot;section&quot;&gt;背景&lt;/h1&gt;
+&lt;p&gt;最近稍等空闲，考虑到我们项目测试覆盖率几乎等于0，因此痛下决心决定研究下Android单元测试。&lt;/p&gt;
+
+&lt;h1 id=&quot;section-1&quot;&gt;单元测试的类型&lt;/h1&gt;
+&lt;p&gt;首先我们需要明确安卓的单元测试主要分为两种类型：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;在开发主机Java虚拟机上运行的Junit Test&lt;/li&gt;
+  &lt;li&gt;在Android真机或者虚拟机上运行的Instrumented unit tests&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;因为Junit Test免去了将apk包安装到android设备上的步骤，因此速度上会比Instrumented unit tests快很多。但是跟android相关的一些库只能运行在android设备上，而无法再本机Java虚拟机上运行，比如很多包名中带android的库。因此我们这里需要做一个选择，如果某些类没有用到android相关的库，则完全可以使用Junit Test，加快测试速率。&lt;/p&gt;
+
+&lt;p&gt;如果是在Android Studio上开发，则文件结构应该是这样的，
+&lt;img src=&quot;https://img.alicdn.com/imgextra/i1/754328530/TB2VoYRlXXXXXc7XXXXXXXXXXXX-754328530.png&quot; alt=&quot;单元测试文件结构&quot; /&gt;
+其中androidTest包中存放的是Instrumented unit tests的文件，而test中则是Junit Test，这两个文件夹在项目创建的时候AS都会帮我们创建好。可能细心的同学已经发现了，test文件夹中的文件都不能运行。
+如图，我们需要将Test Artiface改为Unit Test
+&lt;img src=&quot;https://img.alicdn.com/imgextra/i1/754328530/TB2JdHIlXXXXXarXpXXXXXXXXXX-754328530.png&quot; alt=&quot;选择测试类型&quot; /&gt;
+另外这两种测试都只有在debugable = true的编译类型的时候才能运行。
+了解了单元测试的两个基本类型，接下来让我们来了解下目前主流的单元测试框架或者说工具。&lt;/p&gt;
+
+&lt;h1 id=&quot;androidjunit&quot;&gt;AndroidJunit&lt;/h1&gt;
+&lt;p&gt;Junit是Java开发中应用最多的单元测试框架，目前已经到Junit4。在Android的单元测试中我们同样可以使用它，如果是Junit Test，可以直接使用Java的Junit4。而如果测试的类必须使用Instrument Test，则我们需要使用AndroidJunitTest
+首先在build.gradle文件中的defaultConfig中加入如下设置，设置使用的Instrument test的runner 为AndroidJunitRunner。&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;testInstrumentationRunner &quot;android.support.test.runner.AndroidJUnitRunner&quot;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;p&gt;然后在androidTest的java文件夹中创建测试文件&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nd&quot;&gt;@RunWith&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AndroidJUnit4&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;class&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;nd&quot;&gt;@LargeTest&lt;/span&gt;
+&lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;MainActivityExprssoTest&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+
+
+    &lt;span class=&quot;nd&quot;&gt;@Rule&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ActivityTestRule&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;MainActivity&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;mActivityRule&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ActivityTestRule&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;MainActivity&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;MainActivity&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;class&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+
+
+    &lt;span class=&quot;nd&quot;&gt;@Before&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;init&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(){&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;Log&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;d&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;MainActivity test&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;init test MainActivity&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;nd&quot;&gt;@Test&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;testOnBtnClick&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(){&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;onView&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;withId&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;R&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;id&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;text_btn1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;))&lt;/span&gt;
+                &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;perform&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;click&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;())&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;Assert&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;assertTrue&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;mActivityRule&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;getActivity&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;getKey&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;());&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+    
+    &lt;span class=&quot;nd&quot;&gt;@After&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;destroy&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(){&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;p&gt;我们可以在@Before 中做一些初始化操作，在@After中做一些单元测试结束前需要做的一些工作。而带@Test的方法则是具体的测试方法。AndroidJunitRunner会逐个运行这些方法。关于其他的一些anntotation其实跟Junit中是一样的，具体可以参考&lt;a href=&quot;http://developer.android.com/intl/zh-cn/tools/testing-support-library/index.html#AndroidJUnitRunner&quot;&gt;Android官方文档&lt;/a&gt;。&lt;/p&gt;
+
+&lt;p&gt;另外以前做过Android Activity单元测试的同学可能会发现上面的代码跟你写的有些不一样。Corrcet，之前的单元测试类如果是对某个Activity做测试需要继承自ActivityInstrumentationTestCase2&lt;calculatoractivity&gt;，传入需要测试的Activity类型作为模板测试。目前该类型已被deprectd，而使用一个ActivityTestRule，作为模板参数的Activity会在@Before方法之前被launch，在@After之后被停止运行，在这之间我们可以去调用它的一些方法。&lt;/calculatoractivity&gt;&lt;/p&gt;
+
+&lt;p&gt;如果你不需要对Activity做测试，但是需要访问一些图片等resource资源，则需要让你的测试类继承自AndroidTestCase，这样你就可以通过getContext()获取应用的上下文了。&lt;/p&gt;
+
+&lt;p&gt;ok，本期对AndroidJunitTest的介绍就到这里。下一期我们将会介绍界面测试框架Expresso，敬请期待。&lt;/p&gt;
+</description>
+        <pubDate>Sun, 06 Mar 2016 00:00:00 +0800</pubDate>
+        <link>http://sixwolf.net/blog/2016/03/06/Android%E5%8D%95%E5%85%83%E6%B5%8B%E8%AF%95%E8%AF%A6%E8%A7%A31(AndroidJunitTest)/</link>
+        <guid isPermaLink="true">http://sixwolf.net/blog/2016/03/06/Android%E5%8D%95%E5%85%83%E6%B5%8B%E8%AF%95%E8%AF%A6%E8%A7%A31(AndroidJunitTest)/</guid>
+        
+        <category>Development</category>
+        
+        <category>Android</category>
+        
+        
+        <category>blog</category>
+        
+      </item>
+    
+      <item>
+        <title>Fulid Browser测评，Mac上的一心二用神器</title>
+        <description>&lt;h1 id=&quot;section&quot;&gt;背景&lt;/h1&gt;
+&lt;p&gt;今天闲来无事，逛逛Mac的app store，发现首页有款应用名叫Fulid Browser感觉很不错，单价18RMB，感觉还行，于是就果断购买。&lt;/p&gt;
+
+&lt;h1 id=&quot;section-1&quot;&gt;功能&lt;/h1&gt;
+
+&lt;h2 id=&quot;section-2&quot;&gt;浏览器功能&lt;/h2&gt;
+&lt;p&gt;Fulid Browser其实就是一款浏览器，你可以像普通的浏览器一样使用它。而它不同于其它浏览器的是它永远悬浮于界面最上层，并且不影响你对它下面层次的应用的操作。比如，你可以在Fulid Browser中打开一个视频，设置网页播放器为网页全屏，然后安静地码字或者p图。另外，你还可以设置窗口的透明度，然后你的老板就发现不了了哈哈。= =&lt;/p&gt;
+
+&lt;h2 id=&quot;section-3&quot;&gt;其它功能&lt;/h2&gt;
+&lt;p&gt;除了作为一款浏览器，你还可以用Fulid Browser打开pdf文档，各种图片，甚至视频哦。不过它现在只支持Mp4的视频，让我想起了小时候psp看视频都要用格式工厂转换格式的日子。&lt;/p&gt;
+
+&lt;h1 id=&quot;section-4&quot;&gt;结语&lt;/h1&gt;
+&lt;p&gt;好了，今天的测评就到这里，以后会发现更多更好玩更有效率的应用带给大家。&lt;/p&gt;
+
+</description>
+        <pubDate>Tue, 01 Mar 2016 00:00:00 +0800</pubDate>
+        <link>http://sixwolf.net/blog/2016/03/01/Fuild-Browser%E6%B5%8B%E8%AF%84-Mac%E4%B8%8A%E7%9A%84%E4%B8%80%E5%BF%83%E4%BA%8C%E7%94%A8%E7%A5%9E%E5%99%A8/</link>
+        <guid isPermaLink="true">http://sixwolf.net/blog/2016/03/01/Fuild-Browser%E6%B5%8B%E8%AF%84-Mac%E4%B8%8A%E7%9A%84%E4%B8%80%E5%BF%83%E4%BA%8C%E7%94%A8%E7%A5%9E%E5%99%A8/</guid>
+        
+        <category>应用测评</category>
+        
+        
+        <category>blog</category>
+        
+      </item>
+    
+      <item>
+        <title>浅谈Android开发中多进程共享数据</title>
+        <description>&lt;p&gt;&lt;br /&gt;
+&lt;br /&gt;
+# 背景
+最近在工作中遇到一个需求，需要在接收到推送的时候将推送获得的数据存起来，以供app启动时使用。我们会认为这不是So easy吗？只要把数据存到SharedPreferences中，然后让app打开同一个SharedPreferences读取数据就可以了。但是在实际的测试中，我们发现推送进程存入的数据，并不能在app进程中获得。所以这是为什么呢，也许聪明的读者从我们上面的陈述中已经发现了原因，因为我们有两个进程，推送进程负责将推送数据存入，而app进程负责读取，但是正是由于是两个进程，如果它们同时存在，它们各自在内存中保持了自己的SP对象和数据，在推送进程中的存入并不能在app进程体现出来，并且可能会被app进程刷掉更改的数据。那么我们怎么做才能让这两边共享数据呢？请看下面陈述。&lt;/p&gt;
+
+&lt;h1 id=&quot;sharedpreferences&quot;&gt;多进程支持的SharedPreferences（不推荐）&lt;/h1&gt;
+&lt;p&gt;我们原来的做法是使用SharedPreferences, 自然而然想到，SharedPreferences 在MODE_PRIVATE MODE_PUBLIC 之外其实还可以设置多进程的Flag ———— MODE_MULTI_PROCESS&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;SharedPreferences myPrefs = context.getSharedPreferences(MY_FILE_NAME, Context.MODE_MULTI_PROCESS | Context.MODE_PRIVATE);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;一旦我们设置了这个Flag，每次调用Context.getSharedPreferences 的时候系统会重新从SP文件中读入数据，因此我们在使用的时候每次读取和存入都要使用Context.getSharedPreferences 重新获取SP实例。即使是这样，由于SP本质上并不是多进程安全的，所以还是无法保证数据的同步，因此该方法我们并没有使用，我们也不推荐使用。&lt;/p&gt;
+
+&lt;h1 id=&quot;tray&quot;&gt;Tray&lt;/h1&gt;
+&lt;p&gt;如果SP不是多进程安全的，那么是否有多进程安全的，又有SP功能的第三方项目呢。答案是有的，Tray——一个多进程安全的SharedPreferences，我们可以在Github上找到它，如果是AndroidStudio,可以直接使用Gradle引入，可谓是十分方便，如下是使用的代码，十分简单，没有apply commit，看起来比SP还要简单。&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; // create a preference accessor. This is for global app preferences.
+final AppPreferences appPreferences = new AppPreferences(getContext()); // this Preference comes for free from the library
+// save a key value pair
+appPreferences.put(&quot;key&quot;, &quot;lorem ipsum&quot;);
+
+// read the value for your key. the second parameter is a fallback (optional otherwise throws)
+final String value = appPreferences.getString(&quot;key&quot;, &quot;default&quot;);
+Log.v(TAG, &quot;value: &quot; + value); // value: lorem ipsum
+
+// read a key that isn&#39;t saved. returns the default (or throws without default)
+final String defaultValue = appPreferences.getString(&quot;key2&quot;, &quot;default&quot;);
+Log.v(TAG, &quot;value: &quot; + defaultValue); // value: default
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;但是最终我们并没有选择使用它，主要的原因是它需要minSdk 为15，而我们是支持sdk14的，所以只能果断放弃了。&lt;/p&gt;
+
+&lt;h1 id=&quot;contentprovider&quot;&gt;ContentProvider&lt;/h1&gt;
+&lt;p&gt;既然Tray不支持sdk15以下的，那么我们是否可以使用Tray的原理自己实现一个呢？在阅读Tray的源码时我们发现其实它是在ContentProvider的基础上做的，而ContentProvider是Android官方支持的多进程安全的。以下是使用ContentProvider的一个例子。&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;public class ArticlesProvider extends ContentProvider {  
+    private static final String LOG_TAG = &quot;shy.luo.providers.articles.ArticlesProvider&quot;;  
+  
+    private static final String DB_NAME = &quot;Articles.db&quot;;  
+    private static final String DB_TABLE = &quot;ArticlesTable&quot;;  
+    private static final int DB_VERSION = 1;  
+  
+    private static final String DB_CREATE = &quot;create table &quot; + DB_TABLE +  
+                            &quot; (&quot; + Articles.ID + &quot; integer primary key autoincrement, &quot; +  
+                            Articles.TITLE + &quot; text not null, &quot; +  
+                            Articles.ABSTRACT + &quot; text not null, &quot; +  
+                            Articles.URL + &quot; text not null);&quot;;  
+  
+    private static final UriMatcher uriMatcher;  
+    static {  
+            uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);  
+            uriMatcher.addURI(Articles.AUTHORITY, &quot;item&quot;, Articles.ITEM);  
+            uriMatcher.addURI(Articles.AUTHORITY, &quot;item/#&quot;, Articles.ITEM_ID);  
+            uriMatcher.addURI(Articles.AUTHORITY, &quot;pos/#&quot;, Articles.ITEM_POS);  
+    }  
+  
+    private static final HashMap&amp;lt;String, String&amp;gt; articleProjectionMap;  
+    static {  
+            articleProjectionMap = new HashMap&amp;lt;String, String&amp;gt;();  
+            articleProjectionMap.put(Articles.ID, Articles.ID);  
+            articleProjectionMap.put(Articles.TITLE, Articles.TITLE);  
+            articleProjectionMap.put(Articles.ABSTRACT, Articles.ABSTRACT);  
+            articleProjectionMap.put(Articles.URL, Articles.URL);  
+    }  
+  
+    private DBHelper dbHelper = null;  
+    private ContentResolver resolver = null;  
+  
+    @Override  
+    public boolean onCreate() {  
+            Context context = getContext();  
+            resolver = context.getContentResolver();  
+            dbHelper = new DBHelper(context, DB_NAME, null, DB_VERSION);  
+  
+            Log.i(LOG_TAG, &quot;Articles Provider Create&quot;);  
+  
+            return true;  
+    }  
+  
+    @Override  
+    public String getType(Uri uri) {  
+            switch (uriMatcher.match(uri)) {  
+            case Articles.ITEM:  
+                    return Articles.CONTENT_TYPE;  
+            case Articles.ITEM_ID:  
+            case Articles.ITEM_POS:  
+                    return Articles.CONTENT_ITEM_TYPE;  
+            default:  
+                    throw new IllegalArgumentException(&quot;Error Uri: &quot; + uri);  
+            }  
+    }  
+  
+    @Override  
+    public Uri insert(Uri uri, ContentValues values) {  
+            if(uriMatcher.match(uri) != Articles.ITEM) {  
+                    throw new IllegalArgumentException(&quot;Error Uri: &quot; + uri);  
+            }  
+  
+            SQLiteDatabase db = dbHelper.getWritableDatabase();  
+  
+            long id = db.insert(DB_TABLE, Articles.ID, values);  
+            if(id &amp;lt; 0) {  
+                    throw new SQLiteException(&quot;Unable to insert &quot; + values + &quot; for &quot; + uri);  
+            }  
+  
+            Uri newUri = ContentUris.withAppendedId(uri, id);  
+            resolver.notifyChange(newUri, null);  
+  
+            return newUri;  
+    }  
+  
+    @Override  
+    public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {  
+            SQLiteDatabase db = dbHelper.getWritableDatabase();  
+            int count = 0;  
+  
+            switch(uriMatcher.match(uri)) {  
+            case Articles.ITEM: {  
+                    count = db.update(DB_TABLE, values, selection, selectionArgs);  
+                    break;  
+            }  
+            case Articles.ITEM_ID: {  
+                    String id = uri.getPathSegments().get(1);  
+                    count = db.update(DB_TABLE, values, Articles.ID + &quot;=&quot; + id  
+                                    + (!TextUtils.isEmpty(selection) ? &quot; and (&quot; + selection + &#39;)&#39; : &quot;&quot;), selectionArgs);  
+                    break;  
+            }  
+            default:  
+                    throw new IllegalArgumentException(&quot;Error Uri: &quot; + uri);  
+            }  
+  
+            resolver.notifyChange(uri, null);  
+  
+            return count;  
+    }  
+  
+    @Override  
+    public int delete(Uri uri, String selection, String[] selectionArgs) {  
+            SQLiteDatabase db = dbHelper.getWritableDatabase();  
+            int count = 0;  
+  
+            switch(uriMatcher.match(uri)) {  
+            case Articles.ITEM: {  
+                    count = db.delete(DB_TABLE, selection, selectionArgs);  
+                    break;  
+            }  
+            case Articles.ITEM_ID: {  
+                    String id = uri.getPathSegments().get(1);  
+                    count = db.delete(DB_TABLE, Articles.ID + &quot;=&quot; + id  
+                                    + (!TextUtils.isEmpty(selection) ? &quot; and (&quot; + selection + &#39;)&#39; : &quot;&quot;), selectionArgs);  
+                    break;  
+            }  
+            default:  
+                    throw new IllegalArgumentException(&quot;Error Uri: &quot; + uri);  
+            }  
+  
+            resolver.notifyChange(uri, null);  
+  
+            return count;  
+    }  
+  
+    @Override  
+    public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {  
+            Log.i(LOG_TAG, &quot;ArticlesProvider.query: &quot; + uri);  
+  
+            SQLiteDatabase db = dbHelper.getReadableDatabase();  
+  
+            SQLiteQueryBuilder sqlBuilder = new SQLiteQueryBuilder();  
+            String limit = null;  
+  
+            switch (uriMatcher.match(uri)) {  
+            case Articles.ITEM: {  
+                    sqlBuilder.setTables(DB_TABLE);  
+                    sqlBuilder.setProjectionMap(articleProjectionMap);  
+                    break;  
+            }  
+            case Articles.ITEM_ID: {  
+                    String id = uri.getPathSegments().get(1);  
+                    sqlBuilder.setTables(DB_TABLE);  
+                    sqlBuilder.setProjectionMap(articleProjectionMap);  
+                    sqlBuilder.appendWhere(Articles.ID + &quot;=&quot; + id);  
+                    break;  
+            }  
+            case Articles.ITEM_POS: {  
+                    String pos = uri.getPathSegments().get(1);  
+                    sqlBuilder.setTables(DB_TABLE);  
+                    sqlBuilder.setProjectionMap(articleProjectionMap);  
+                    limit = pos + &quot;, 1&quot;;  
+                    break;  
+            }  
+            default:  
+                    throw new IllegalArgumentException(&quot;Error Uri: &quot; + uri);  
+            }  
+  
+            Cursor cursor = sqlBuilder.query(db, projection, selection, selectionArgs, null, null, TextUtils.isEmpty(sortOrder) ? Articles.DEFAULT_SORT_ORDER : sortOrder, limit);  
+            cursor.setNotificationUri(resolver, uri);  
+  
+            return cursor;  
+    }  
+
+    @Override  
+    public Bundle call(String method, String request, Bundle args) {  
+            Log.i(LOG_TAG, &quot;ArticlesProvider.call: &quot; + method);  
+  
+            if(method.equals(Articles.METHOD_GET_ITEM_COUNT)) {  
+                    return getItemCount();  
+            }  
+  
+            throw new IllegalArgumentException(&quot;Error method call: &quot; + method);  
+    }  
+  
+    private Bundle getItemCount() {  
+            Log.i(LOG_TAG, &quot;ArticlesProvider.getItemCount&quot;);  
+  
+            SQLiteDatabase db = dbHelper.getReadableDatabase();  
+            Cursor cursor = db.rawQuery(&quot;select count(*) from &quot; + DB_TABLE, null);  
+  
+            int count = 0;  
+            if (cursor.moveToFirst()) {  
+                    count = cursor.getInt(0);  
+            }  
+  
+            Bundle bundle = new Bundle();  
+            bundle.putInt(Articles.KEY_ITEM_COUNT, count);  
+  
+            cursor.close();  
+            db.close();  
+  
+            return bundle;  
+    }  
+  
+    private static class DBHelper extends SQLiteOpenHelper {  
+            public DBHelper(Context context, String name, CursorFactory factory, int version) {  
+                    super(context, name, factory, version);  
+            }  
+  
+            @Override  
+            public void onCreate(SQLiteDatabase db) {  
+                    db.execSQL(DB_CREATE);  
+            }  
+  
+            @Override  
+            public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {  
+                    db.execSQL(&quot;DROP TABLE IF EXISTS &quot; + DB_TABLE);  
+                    onCreate(db);  
+            }  
+    }  
+}   我们需要创建一个类继承自ContentProvider，并重载以下方法。 - onCreate()，用来执行一些初始化的工作。 - query(Uri, String[], String, String[], String)，用来返回数据给调用者。 - insert(Uri, ContentValues)，用来插入新的数据。 - update(Uri, ContentValues, String, String[])，用来更新已有的数据。 - delete(Uri, String, String[])，用来删除数据。 - getType(Uri)，用来返回数据的MIME类型。
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;具体使用参考  &lt;a href=&quot;http://blog.csdn.net/luoshengyang/article/details/6950440&quot;&gt; Android应用程序组件Content Provider应用实例&lt;/a&gt;这篇博客，这里不再赘述。
+在以上对ContentProvider的使用过程中，我们发现过程比较繁琐，如果对于比较复杂的需求可能还比较使用，但是我们这里的需求其实很简单，完全不需要搞得那么复杂，所以最后我们也没有使用这个方法（你可以理解为本博主比较Lazy）。&lt;/p&gt;
+
+&lt;p&gt;#Broadcast
+那么是否有更简单的方法呢？由于想到了ContentProvider，我们不由地想到另一个android组件，BroadcastReceiver。那么我们是否可以使用Broadcast 将我们收到的推送数据发送给app进程呢。bingo，这似乎正是我们寻找的又简单又能解决问题的方法。我们来看下代码。&lt;/p&gt;
+
+&lt;p&gt;首先在推送进程收到推送消息时，我们将推送数据存入SP，如果这时候没有app进程，那么下次app进程启动的时候该存入的数据就会被app进程读取到。而如果这时候app进程存在，那么之后的代码就会生效，它使用LocalBroadcastManager 发送一个广播。LocalBroadcastManager发送的广播不会被app之外接收到，通过它注册的Receiver也不会接收到app之外的广播，因此拥有更高的效率。&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;pushPref.add(push);
+
+Intent intent = new Intent(PushHandler.KEY_GET_PUSH);
+intent.putExtra(PushHandler.KEY_PUSH_CONTENT, d);
+LocalBroadcastManager.getInstance(context).sendBroadcastSync(intent);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;而我们在app进程则注册了一个BroadReceiver来接收上面发出的广播。在收到广播之后将推送数据存入SP。&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;public class PushHandler {
+
+public static String KEY_GET_PUSH = &quot;PUSH_RECEIVED&quot;;
+public static String KEY_PUSH_CONTENT = &quot;PUSH_CONTENT&quot;;
+
+// region 推送处理push
+/**
+ * 当有推送时，发一次请求mPushReceiver
+ */
+private static BroadcastReceiver mPushReceiver = new BroadcastReceiver() {
+    @Override
+    public void onReceive(Context context, Intent intent) {
+        Timber.i(&quot;在NoticeAction中收到广播&quot;);
+        PushPref pushPref = App.DI().pushPref();
+        try {
+            String pushContent = intent.getStringExtra(KEY_PUSH_CONTENT);
+            PushEntity pushEntity = App.DI().gson().fromJson(pushContent, PushEntity.class);
+            pushPref.add(pushEntity);
+        } catch (Exception e){
+            Timber.e(e, &quot;存储推送内容出错&quot;);
+        }
+    }
+};
+
+public static  void startListeningToPush(){
+    try {
+        LocalBroadcastManager.getInstance(App.getContext()).registerReceiver(mPushReceiver, new IntentFilter(KEY_GET_PUSH));
+    } catch (Exception e) {
+        Timber.e(e, &quot;wtf&quot;);
+    }
+}
+public static void stopListeningToPush(){
+    try {
+        LocalBroadcastManager.getInstance(App.getContext()).unregisterReceiver(mPushReceiver);
+    } catch (Exception e) {
+        Timber.e(e, &quot;wtf&quot;);
+    }
+}
+// endregion
+} 该方法相对于上面的方法使用简单，安全可靠，能够比较好的实现我们的需求。不过，在需求比较复杂的时候还是建议使用ContentProvider，因为毕竟这样的方法不是堂堂正道，有种剑走偏锋的感觉。
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h1 id=&quot;section&quot;&gt;总结&lt;/h1&gt;
+&lt;p&gt;实现一个需求可以有很多方法，而我们需要寻找的是又简单有可靠的方法，在写代码之前不如多找找资料，多听听别人的意见。&lt;/p&gt;
+</description>
+        <pubDate>Sun, 28 Feb 2016 00:00:00 +0800</pubDate>
+        <link>http://sixwolf.net/blog/2016/02/28/%E6%B5%85%E8%B0%88Android%E5%BC%80%E5%8F%91%E4%B8%AD%E5%A4%9A%E8%BF%9B%E7%A8%8B%E5%85%B1%E4%BA%AB%E6%95%B0%E6%8D%AE/</link>
+        <guid isPermaLink="true">http://sixwolf.net/blog/2016/02/28/%E6%B5%85%E8%B0%88Android%E5%BC%80%E5%8F%91%E4%B8%AD%E5%A4%9A%E8%BF%9B%E7%A8%8B%E5%85%B1%E4%BA%AB%E6%95%B0%E6%8D%AE/</guid>
+        
+        <category>Development</category>
+        
+        <category>Android</category>
+        
+        
+        <category>blog</category>
+        
+      </item>
+    
+      <item>
+        <title>如何在网页端和移动端播放rtmp和hls视频流</title>
+        <description>&lt;p&gt;&lt;br /&gt;
+&lt;br /&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;section&quot;&gt;背景&lt;/h1&gt;
+&lt;p&gt;我们已经在&lt;a href=&quot;http://sixwolf.net/2016/01/29/%E7%9B%B4%E6%92%AD%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88-%E6%90%AD%E5%BB%BA%E4%BD%A0%E8%87%AA%E5%B7%B1%E7%9A%84%E7%9B%B4%E6%92%AD%E5%B9%B3%E5%8F%B0/&quot;&gt;视频直播解决方案&lt;/a&gt;讨论了如何实现自己的直播平台以及&lt;a href=&quot;http://sixwolf.net/2016/01/30/Android%E4%BD%BF%E7%94%A8FFMpeg%E5%AE%9E%E7%8E%B0%E6%8E%A8%E9%80%81%E8%A7%86%E9%A2%91%E7%9B%B4%E6%92%AD%E6%B5%81%E5%88%B0%E6%9C%8D%E5%8A%A1%E5%99%A8/&quot;&gt;如何实现从安卓设备上推流到服务器&lt;/a&gt;。那么我们还剩下最后一波，就是如何将精彩的视频内容展现出来，在本文中将会介绍如何在网页端和安卓设备上实现直播的播放。&lt;/p&gt;
+
+&lt;h1 id=&quot;vitamio&quot;&gt;安卓设备上的播放——Vitamio&lt;/h1&gt;
+&lt;p&gt;安卓设备3.0以上原生支持hls，但是不支持rtmp，为了统一以及低版本兼容，我们使用第三方的一个播放器库——&lt;a href=&quot;https://github.com/yixia/VitamioBundle&quot;&gt;vitamio&lt;/a&gt;。
+下面是实例代码&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;public class PlayerActivity extends AppCompatActivity {
+
+private static final String KEY_PATH = &quot;key_path&quot;;
+
+
+@Bind(R.id.vitamio_videoView)
+VideoView vVideoView;
+
+
+public static Intent makeIntent(String rtmpPath){
+    Intent intent = new Intent(App.getContext(), PlayerActivity.class);
+    intent.putExtra(KEY_PATH, rtmpPath);
+    return intent;
+}
+
+
+@Override
+protected void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    if (!LibsChecker.checkVitamioLibs(this))
+        return;
+    setContentView(R.layout.activity_player);
+    ButterKnife.bind(this);
+    String path = getIntent().getStringExtra(KEY_PATH);
+    initVideo(path);
+}
+
+
+private void initVideo(String path){
+    HashMap&amp;lt;String, String&amp;gt; options = new HashMap&amp;lt;&amp;gt;();
+    options.put(&quot;rtmp_live&quot;, &quot;1&quot;);
+    vVideoView.setVideoURI(Uri.parse(path), options);
+    vVideoView.setMediaController(new MediaController(this));
+    vVideoView.requestFocus();
+
+    vVideoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+        @Override
+        public void onPrepared(MediaPlayer mediaPlayer) {
+            mediaPlayer.setPlaybackSpeed(1.0f);
+        }
+    });
+} }
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;该Activity能够接收一个rtmp或者hls的流地址播放。完整项目地址 &lt;a href=&quot;https://github.com/beautifulSoup/RtmpHlsPlayer/tree/master&quot;&gt;RtmpHlsPlayer&lt;/a&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;hls&quot;&gt;hls播放&lt;/h1&gt;
+&lt;p&gt;如果仅需要在移动设备的WebView上播放，我们可以选择使用html中嵌入hls播放。如下html能够在所有Safari或者安卓3.0以上的WebView上播放。这样就不需要使用第三方的播放器。&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nt&quot;&gt;&amp;lt;html&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;lang=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;en&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;head&amp;gt;&lt;/span&gt;
+       &lt;span class=&quot;nt&quot;&gt;&amp;lt;meta&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;charset=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;utf-8/&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;/head&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;body&amp;gt;&lt;/span&gt;
+        &lt;span class=&quot;nt&quot;&gt;&amp;lt;div&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;id=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&#39;player&#39;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
+           &lt;span class=&quot;nt&quot;&gt;&amp;lt;video&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;width=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;640&quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;height=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;320&quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;controls&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
+                &lt;span class=&quot;nt&quot;&gt;&amp;lt;source&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;src=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;http://10.10.5.119/live/livestream.m3u8&quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;type=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;application/x-mpegURL&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
+           &lt;span class=&quot;nt&quot;&gt;&amp;lt;/video&amp;gt;&lt;/span&gt;
+        &lt;span class=&quot;nt&quot;&gt;&amp;lt;/div&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;/body&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;&amp;lt;/html&amp;gt;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h1 id=&quot;videojs&quot;&gt;VideoJS&lt;/h1&gt;
+&lt;p&gt;如果我们要让我们的网页支持在所有浏览器上播放，我们就需要使用第三方的播放器。VideoJs是一个较好的播放器库，完全免费，不像JWPlayer一样需要付费才能使用一些高级功能。下面是一个播放的例子。你可以将source标签下的src换成你自己的直播流地址。需要注意的是rtmp流的type是rtmp/flv（flv 跟推流的时候FFmpegFrameRecorder设置的format有关）, hls 的type是application/x-mpegURL。&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nt&quot;&gt;&amp;lt;html&amp;gt;&lt;/span&gt;
+  &lt;span class=&quot;nt&quot;&gt;&amp;lt;head&amp;gt;&lt;/span&gt;
+  &lt;span class=&quot;nt&quot;&gt;&amp;lt;link&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;href=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;http://vjs.zencdn.net/5.5.3/video-js.css&quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;rel=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;stylesheet&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
+
+  &lt;span class=&quot;c&quot;&gt;&amp;lt;!-- If you&#39;d like to support IE8 --&amp;gt;&lt;/span&gt;
+  &lt;span class=&quot;nt&quot;&gt;&amp;lt;script &lt;/span&gt;&lt;span class=&quot;na&quot;&gt;src=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;http://vjs.zencdn.net/ie8/1.1.1/videojs-ie8.min.js&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&amp;lt;/script&amp;gt;&lt;/span&gt;
+
+
+&lt;span class=&quot;nt&quot;&gt;&amp;lt;/head&amp;gt;&lt;/span&gt;
+
+
+&lt;span class=&quot;nt&quot;&gt;&amp;lt;body&amp;gt;&lt;/span&gt;
+
+  &lt;span class=&quot;nt&quot;&gt;&amp;lt;h1&amp;gt;&lt;/span&gt;康康的直播间&lt;span class=&quot;nt&quot;&gt;&amp;lt;/h1&amp;gt;&lt;/span&gt;
+ &lt;span class=&quot;nt&quot;&gt;&amp;lt;video&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;id=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;my-video&quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;class=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;video-js&quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;controls&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;preload=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;auto&quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;width=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;640&quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;height=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;264&quot;&lt;/span&gt;
+ &lt;span class=&quot;na&quot;&gt;poster=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;https://img.alicdn.com/imgextra/i2/754328530/TB2FpxhkXXXXXa5XXXXXXXXXXXX_!!754328530.jpg&quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;data-setup=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;{}&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;source&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;src=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;rtmp://10.10.5.119/live/livestream&quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;type=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;rtmp/flv&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;c&quot;&gt;&amp;lt;!-- 如果上面的rtmp流无法播放，就播放hls流 --&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;source&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;src=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;http://10.10.5.119/live/livestream.m3u8&quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;type=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&#39;application/x-mpegURL&#39;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;p&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;class=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;vjs-no-js&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
+      To view this video please enable JavaScript, and consider upgrading to a web browser that
+      &lt;span class=&quot;nt&quot;&gt;&amp;lt;a&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;href=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;http://videojs.com/html5-video-support/&quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;target=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;_blank&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;supports HTML5 video&lt;span class=&quot;nt&quot;&gt;&amp;lt;/a&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;/p&amp;gt;&lt;/span&gt;
+ &lt;span class=&quot;nt&quot;&gt;&amp;lt;/video&amp;gt;&lt;/span&gt;
+
+ &lt;span class=&quot;nt&quot;&gt;&amp;lt;script &lt;/span&gt;&lt;span class=&quot;na&quot;&gt;src=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;http://vjs.zencdn.net/5.5.3/video.js&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&amp;lt;/script&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;&amp;lt;/body&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;&amp;lt;/html&amp;gt;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+</description>
+        <pubDate>Sat, 30 Jan 2016 00:00:00 +0800</pubDate>
+        <link>http://sixwolf.net/blog/2016/01/30/%E5%9C%A8%E5%90%84%E7%AB%AF%E5%AE%9E%E7%8E%B0Rtmp%E5%92%8Chls%E6%B5%81%E8%A7%86%E9%A2%91%E7%9A%84%E6%92%AD%E6%94%BE/</link>
+        <guid isPermaLink="true">http://sixwolf.net/blog/2016/01/30/%E5%9C%A8%E5%90%84%E7%AB%AF%E5%AE%9E%E7%8E%B0Rtmp%E5%92%8Chls%E6%B5%81%E8%A7%86%E9%A2%91%E7%9A%84%E6%92%AD%E6%94%BE/</guid>
+        
+        <category>Development</category>
+        
+        <category>rtmp</category>
+        
+        <category>hls</category>
+        
+        <category>player</category>
+        
+        
+        <category>blog</category>
+        
+      </item>
+    
+      <item>
+        <title>Android使用FFMpeg实现推送视频直播流到服务器</title>
+        <description>&lt;p&gt;&lt;br /&gt;
+&lt;br /&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;section&quot;&gt;背景&lt;/h1&gt;
+&lt;p&gt;在过去的2015年中，视频直播页的新宠无疑是户外直播。随着4G网络的普及和覆盖率的提升，主播可以在户外通过手机进行直播。而观众也愿意为这种可以足不出户而观天下事的服务买单。基于这样的背景，本文主要实现在Android设备上采集视频并推流到服务器。&lt;/p&gt;
+
+&lt;h1 id=&quot;section-1&quot;&gt;概览&lt;/h1&gt;
+&lt;p&gt;如下图所示，在安卓上采集并推流主要应用到两个类。首先是安卓Api自带的Camera，实现从摄像头采集图像。然后是Javacv
+中的FFMpegFrameRecorder类实现对Camera采集到的帧编码并推流。
+&lt;img src=&quot;https://img.alicdn.com/imgextra/i2/754328530/TB2zdpskXXXXXbTXXXXXXXXXXXX_!!754328530.jpg&quot; alt=&quot;安卓视频采集图&quot; /&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;section-2&quot;&gt;关键步骤与代码&lt;/h1&gt;
+&lt;p&gt;下面结合上面的流程图给出视频采集的关键步骤。
+首先是Camera类的初始化。&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;// 初始化Camera设备
+cameraDevice = Camera.open();
+     Log.i(LOG_TAG, &quot;cameara open&quot;);
+     cameraView = new CameraView(this, cameraDevice);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;上面的CameraView类是我们实现的负责预览视频采集和将采集到的帧写入FFMpegFrameRecorder的类。具体代码如下：&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;class CameraView extends SurfaceView implements SurfaceHolder.Callback, PreviewCallback {
+
+    private SurfaceHolder mHolder;
+    private Camera mCamera;
+
+    public CameraView(Context context, Camera camera) {
+        super(context);
+        Log.w(&quot;camera&quot;, &quot;camera view&quot;);
+        mCamera = camera;
+        mHolder = getHolder();
+        //设置SurfaceView 的SurfaceHolder的回调函数
+        mHolder.addCallback(CameraView.this);
+        mHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+        //设置Camera预览的回调函数
+        mCamera.setPreviewCallback(CameraView.this);
+    }
+
+    @Override
+    public void surfaceCreated(SurfaceHolder holder) {
+        try {
+            stopPreview();
+            mCamera.setPreviewDisplay(holder);
+        } catch (IOException exception) {
+            mCamera.release();
+            mCamera = null;
+        }
+    }
+
+    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+        stopPreview();
+
+        Camera.Parameters camParams = mCamera.getParameters();
+        List&amp;lt;Camera.Size&amp;gt; sizes = camParams.getSupportedPreviewSizes();
+        // Sort the list in ascending order
+        Collections.sort(sizes, new Comparator&amp;lt;Camera.Size&amp;gt;() {
+
+            public int compare(final Camera.Size a, final Camera.Size b) {
+                return a.width * a.height - b.width * b.height;
+            }
+        });
+
+        // Pick the first preview size that is equal or bigger, or pick the last (biggest) option if we cannot
+        // reach the initial settings of imageWidth/imageHeight.
+        for (int i = 0; i &amp;lt; sizes.size(); i++) {
+            if ((sizes.get(i).width &amp;gt;= imageWidth &amp;amp;&amp;amp; sizes.get(i).height &amp;gt;= imageHeight) || i == sizes.size() - 1) {
+                imageWidth = sizes.get(i).width;
+                imageHeight = sizes.get(i).height;
+                Log.v(LOG_TAG, &quot;Changed to supported resolution: &quot; + imageWidth + &quot;x&quot; + imageHeight);
+                break;
+            }
+        }
+        camParams.setPreviewSize(imageWidth, imageHeight);
+
+        Log.v(LOG_TAG, &quot;Setting imageWidth: &quot; + imageWidth + &quot; imageHeight: &quot; + imageHeight + &quot; frameRate: &quot; + frameRate);
+
+        camParams.setPreviewFrameRate(frameRate);
+        Log.v(LOG_TAG, &quot;Preview Framerate: &quot; + camParams.getPreviewFrameRate());
+
+        mCamera.setParameters(camParams);
+
+        // Set the holder (which might have changed) again
+        try {
+            mCamera.setPreviewDisplay(holder);
+            mCamera.setPreviewCallback(CameraView.this);
+            startPreview();
+        } catch (Exception e) {
+            Log.e(LOG_TAG, &quot;Could not set preview display in surfaceChanged&quot;);
+        }
+    }
+
+    @Override
+    public void surfaceDestroyed(SurfaceHolder holder) {
+        try {
+            mHolder.addCallback(null);
+            mCamera.setPreviewCallback(null);
+        } catch (RuntimeException e) {
+            // The camera has probably just been released, ignore.
+        }
+    }
+
+    public void startPreview() {
+        if (!isPreviewOn &amp;amp;&amp;amp; mCamera != null) {
+            isPreviewOn = true;
+            mCamera.startPreview();
+        }
+    }
+
+    public void stopPreview() {
+        if (isPreviewOn &amp;amp;&amp;amp; mCamera != null) {
+            isPreviewOn = false;
+            mCamera.stopPreview();
+        }
+    }
+
+    @Override
+    public void onPreviewFrame(byte[] data, Camera camera) {
+        if (audioRecord == null || audioRecord.getRecordingState() != AudioRecord.RECORDSTATE_RECORDING) {
+            startTime = System.currentTimeMillis();
+            return;
+        }
+        //如果是录播，则把该帧先存在内存中
+        if (RECORD_LENGTH &amp;gt; 0) {
+            int i = imagesIndex++ % images.length;
+            yuvImage = images[i];
+            timestamps[i] = 1000 * (System.currentTimeMillis() - startTime);
+        }
+        if (yuvImage != null &amp;amp;&amp;amp; recording) {
+            ((ByteBuffer) yuvImage.image[0].position(0)).put(data);
+			//如果是直播则直接写入到FFmpegFrameRecorder中
+            if (RECORD_LENGTH &amp;lt;= 0) try {
+                Log.v(LOG_TAG, &quot;Writing Frame&quot;);
+                long t = 1000 * (System.currentTimeMillis() - startTime);
+                if (t &amp;gt; recorder.getTimestamp()) {
+                    recorder.setTimestamp(t);
+                }
+                recorder.record(yuvImage);
+            } catch (FFmpegFrameRecorder.Exception e) {
+                Log.v(LOG_TAG, e.getMessage());
+                e.printStackTrace();
+            }
+        }
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;初始化FFmpegFrameRecorder类&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;    recorder = new FFmpegFrameRecorder(ffmpeg_link, imageWidth, imageHeight, 1);
+    //设置视频编码  28 指代h.264
+    recorder.setVideoCodec(28);
+    recorder.setFormat(&quot;flv&quot;);
+    //设置采样频率
+    recorder.setSampleRate(sampleAudioRateInHz);
+    // 设置帧率，即每秒的图像数
+    recorder.setFrameRate(frameRate);
+    //音频采集线程
+	audioRecordRunnable = new AudioRecordRunnable();
+    audioThread = new Thread(audioRecordRunnable);
+    runAudioThread = true;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;其中的AudioRecordRunnable是我们自己实现的音频采集线程，代码如下&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; class AudioRecordRunnable implements Runnable {
+
+    @Override
+    public void run() {
+        android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_URGENT_AUDIO);
+
+        // Audio
+        int bufferSize;
+        ShortBuffer audioData;
+        int bufferReadResult;
+
+        bufferSize = AudioRecord.getMinBufferSize(sampleAudioRateInHz,
+                AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT);
+        audioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC, sampleAudioRateInHz,
+                AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, bufferSize);
+		//如果是录播，则需要录播长度的缓存
+        if (RECORD_LENGTH &amp;gt; 0) {
+            samplesIndex = 0;
+            samples = new ShortBuffer[RECORD_LENGTH * sampleAudioRateInHz * 2 / bufferSize + 1];
+            for (int i = 0; i &amp;lt; samples.length; i++) {
+                samples[i] = ShortBuffer.allocate(bufferSize);
+            }
+        } else {
+        //直播只需要相当于一帧的音频的数据缓存
+            audioData = ShortBuffer.allocate(bufferSize);
+        }
+
+        Log.d(LOG_TAG, &quot;audioRecord.startRecording()&quot;);
+        audioRecord.startRecording();
+
+        /* ffmpeg_audio encoding loop */
+        while (runAudioThread) {
+            if (RECORD_LENGTH &amp;gt; 0) {
+                audioData = samples[samplesIndex++ % samples.length];
+                audioData.position(0).limit(0);
+            }
+            //Log.v(LOG_TAG,&quot;recording? &quot; + recording);
+            bufferReadResult = audioRecord.read(audioData.array(), 0, audioData.capacity());
+            audioData.limit(bufferReadResult);
+            if (bufferReadResult &amp;gt; 0) {
+                Log.v(LOG_TAG, &quot;bufferReadResult: &quot; + bufferReadResult);
+                // If &quot;recording&quot; isn&#39;t true when start this thread, it never get&#39;s set according to this if statement...!!!
+                // Why?  Good question...
+                if (recording) {
+               		//如果是直播，则直接调用recordSamples 将音频写入Recorder
+                    if (RECORD_LENGTH &amp;lt;= 0) try {
+                        recorder.recordSamples(audioData);
+                        //Log.v(LOG_TAG,&quot;recording &quot; + 1024*i + &quot; to &quot; + 1024*i+1024);
+                    } catch (FFmpegFrameRecorder.Exception e) {
+                        Log.v(LOG_TAG, e.getMessage());
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+        Log.v(LOG_TAG, &quot;AudioThread Finished, release audioRecord&quot;);
+
+        /* encoding finish, release recorder */
+        if (audioRecord != null) {
+            audioRecord.stop();
+            audioRecord.release();
+            audioRecord = null;
+            Log.v(LOG_TAG, &quot;audioRecord released&quot;);
+        }
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;接下来是开始直播和停止直播的方法&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;//开始直播
+public void startRecording() {
+
+    initRecorder();
+
+    try {
+        recorder.start();
+        startTime = System.currentTimeMillis();
+        recording = true;
+        audioThread.start();
+
+    } catch (FFmpegFrameRecorder.Exception e) {
+        e.printStackTrace();
+    }
+}
+
+public void stopRecording() {
+	//停止音频线程
+    runAudioThread = false;
+    try {
+        audioThread.join();
+    } catch (InterruptedException e) {
+        e.printStackTrace();
+    }
+    audioRecordRunnable = null;
+    audioThread = null;
+
+    if (recorder != null &amp;amp;&amp;amp; recording) {
+    //如果是录播，则将缓存中的帧加上时间戳后写入
+        if (RECORD_LENGTH &amp;gt; 0) {
+            Log.v(LOG_TAG, &quot;Writing frames&quot;);
+            try {
+                int firstIndex = imagesIndex % samples.length;
+                int lastIndex = (imagesIndex - 1) % images.length;
+                if (imagesIndex &amp;lt;= images.length) {
+                    firstIndex = 0;
+                    lastIndex = imagesIndex - 1;
+                }
+                if ((startTime = timestamps[lastIndex] - RECORD_LENGTH * 1000000L) &amp;lt; 0) {
+                    startTime = 0;
+                }
+                if (lastIndex &amp;lt; firstIndex) {
+                    lastIndex += images.length;
+                }
+                for (int i = firstIndex; i &amp;lt;= lastIndex; i++) {
+                    long t = timestamps[i % timestamps.length] - startTime;
+                    if (t &amp;gt;= 0) {
+                        if (t &amp;gt; recorder.getTimestamp()) {
+                            recorder.setTimestamp(t);
+                        }
+                        recorder.record(images[i % images.length]);
+                    }
+                }
+
+                firstIndex = samplesIndex % samples.length;
+                lastIndex = (samplesIndex - 1) % samples.length;
+                if (samplesIndex &amp;lt;= samples.length) {
+                    firstIndex = 0;
+                    lastIndex = samplesIndex - 1;
+                }
+                if (lastIndex &amp;lt; firstIndex) {
+                    lastIndex += samples.length;
+                }
+                for (int i = firstIndex; i &amp;lt;= lastIndex; i++) {
+                    recorder.recordSamples(samples[i % samples.length]);
+                }
+            } catch (FFmpegFrameRecorder.Exception e) {
+                Log.v(LOG_TAG, e.getMessage());
+                e.printStackTrace();
+            }
+        }
+
+        recording = false;
+        Log.v(LOG_TAG, &quot;Finishing recording, calling stop and release on recorder&quot;);
+        try {
+            recorder.stop();
+            recorder.release();
+        } catch (FFmpegFrameRecorder.Exception e) {
+            e.printStackTrace();
+        }
+        recorder = null;
+
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;以上即为关键的步骤和代码，下面给出完整项目地址 &lt;a href=&quot;https://github.com/beautifulSoup/RtmpRecoder/tree/master&quot;&gt;RtmpRecorder&lt;/a&gt;&lt;/p&gt;
+</description>
+        <pubDate>Sat, 30 Jan 2016 00:00:00 +0800</pubDate>
+        <link>http://sixwolf.net/blog/2016/01/30/Android%E4%BD%BF%E7%94%A8FFMpeg%E5%AE%9E%E7%8E%B0%E6%8E%A8%E9%80%81%E8%A7%86%E9%A2%91%E7%9B%B4%E6%92%AD%E6%B5%81%E5%88%B0%E6%9C%8D%E5%8A%A1%E5%99%A8/</link>
+        <guid isPermaLink="true">http://sixwolf.net/blog/2016/01/30/Android%E4%BD%BF%E7%94%A8FFMpeg%E5%AE%9E%E7%8E%B0%E6%8E%A8%E9%80%81%E8%A7%86%E9%A2%91%E7%9B%B4%E6%92%AD%E6%B5%81%E5%88%B0%E6%9C%8D%E5%8A%A1%E5%99%A8/</guid>
+        
+        <category>Development</category>
+        
+        <category>rtmp</category>
+        
+        <category>hls</category>
+        
+        <category>live-stream</category>
+        
+        
+        <category>blog</category>
+        
+      </item>
+    
+      <item>
+        <title>视频直播解决方案</title>
+        <description>&lt;p&gt;&lt;br /&gt;
+&lt;br /&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;section&quot;&gt;背景&lt;/h1&gt;
+&lt;p&gt;当下，视频直播行业在中国逐渐走红。在刚刚过去的2015年，视频直播成为互联网行业最抢眼的领域之一。从游戏到秀场，从传统的网页端到移动互联网，各大直播平台包括斗鱼、熊猫tv、虎牙战旗还有纯移动端的印客、易直播等，群雄割据。言归正转，毕竟本文是一篇技术博客，接下来让我们从技术的角度分析如何搭建一个自己的直播平台。&lt;/p&gt;
+
+&lt;h1 id=&quot;section-1&quot;&gt;流程图&lt;/h1&gt;
+&lt;p&gt;首先让我们看一下直播整体流程。
+&lt;img src=&quot;https://img.alicdn.com/imgextra/i2/754328530/TB2mp.yjVXXXXaqXFXXXXXXXXXX_!!754328530.jpg&quot; alt=&quot;直播流程图&quot; /&gt; &lt;br /&gt;
+首先是直播视频采集端，由主播通过摄像头手机等采集设备，采集视音频流，编码后采用RTMP协议&lt;sup id=&quot;fnref:RTMP&quot;&gt;&lt;a href=&quot;#fn:RTMP&quot; class=&quot;footnote&quot;&gt;1&lt;/a&gt;&lt;/sup&gt;推流到直播流服务器。这里采用H.264[^H.264]编码对视频流进行编码，使用AAC&lt;sup id=&quot;fnref:AAC&quot;&gt;&lt;a href=&quot;#fn:AAC&quot; class=&quot;footnote&quot;&gt;2&lt;/a&gt;&lt;/sup&gt;对音频流进行编码，采用这两种编码的原因是hls协议&lt;sup id=&quot;fnref:hls&quot;&gt;&lt;a href=&quot;#fn:hls&quot; class=&quot;footnote&quot;&gt;3&lt;/a&gt;&lt;/sup&gt;要求使用这两种编码。
+接下来直播服务器会对从采集端推送的流进行一定的处理。比如，hls协议会将视频流切片成一个个的TS视频文件缓存在服务器中，同时生成一个m3u8文件记录了视频流中的包含的TS文件。
+之后如果有播放器请求某一个直播链接，服务器会使用RTMP或者hls协议将流推送到播放器。那么我们该如果根据情况选择这两种协议呢。首先，我们需要明确一点，这两种协议各有利弊。如下所示：&lt;/p&gt;
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th style=&quot;text-align: center&quot;&gt; &lt;/th&gt;
+      &lt;th style=&quot;text-align: center&quot;&gt;RTMP&lt;/th&gt;
+      &lt;th style=&quot;text-align: center&quot;&gt;hls&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;Company&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;Adobe&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;Apple&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;平台支持&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;FlashPlayer &lt;br /&gt;等一些网页端的播放器 &lt;br /&gt;移动端 Vitamio&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;Apple产品原生支持，&lt;br /&gt;Android3.0以上原生支持 桌面机的浏览器需要使用一些第三方库，如JWPlayer&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;延迟&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;三秒左右的延迟，实时性较高&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;根据TS长度不同而不同，一般会有10s以上的延迟&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;综合以上因素，我们认为如果对实时性要求较高，那么使用RTMP会比较好。网页端使用RTMP会比较好，因为Flash Player原生支持，而大多数的浏览器都会安装Flash player。而在移动端如果对实时性要求不高，那么采用hls比较好，因为ios包括3.0以上的安卓都原生支持hls协议。接下来本文将根据以上的三个步骤的具体实现分别展开说明，为了篇幅考虑，我们会将一些内容放到子文章中。&lt;/p&gt;
+
+&lt;h1 id=&quot;section-2&quot;&gt;视频采集与编码&lt;/h1&gt;
+&lt;p&gt;视频采集可以有多重途径，比如通过电脑摄像头，通过OBS等录屏软件进行录屏，通过手机摄像头采集。由于目前户外直播和移动互联网很火，所以我们就选择实现在安卓设备上通过摄像头采集视频流（其实是因为我是写安卓的= =）。
+为了实现这一功能，我们使用了一个开源项目&lt;a href=&quot;https://github.com/bytedeco/javacv&quot;&gt;javacv&lt;/a&gt; 它包含了一些在计算机视觉领域应用比较多的库，我们主要使用的是它的FFMpeg库。使用FFMpeg的FFMpegFrameRecoder类，我们能够方便地将从android摄像头采集到的帧传输到服务器。具体的通过Camera和FFMpeg推流到服务器的实现请看我们的另一篇文章&lt;a href=&quot;http://sixwolf.net/blog/2016/01/30/Android%E4%BD%BF%E7%94%A8FFMpeg%E5%AE%9E%E7%8E%B0%E6%8E%A8%E9%80%81%E8%A7%86%E9%A2%91%E7%9B%B4%E6%92%AD%E6%B5%81%E5%88%B0%E6%9C%8D%E5%8A%A1%E5%99%A8/&quot;&gt;Android使用FFMpeg实现推送视频直播流到服务器&lt;/a&gt;。另外FFMpeg也支持H.264和AAC编码。&lt;/p&gt;
+
+&lt;h1 id=&quot;section-3&quot;&gt;直播流服务器&lt;/h1&gt;
+&lt;p&gt;关于直播服务器，我们选择使用我们中国人开发的一个开源项目——&lt;a href=&quot;https://github.com/ossrs/srs&quot;&gt;srs&lt;/a&gt;，它支持RTMP/HTTP/RTSP等协议的流输入，支持RTMP/HDS/HLS/HTTP等协议的流输出，同时它也支持集群。给作者点赞。  &lt;br /&gt;
+关于srs的安装和使用可以直接看它在github上的wiki，这里不再赘述。需要注意的一点是该项目在centos 6.x 和ubunut12.x上能正常编译通过，但是在比如我使用的ubuntu14.04上会有一些依赖包的缺失。所以为了方便考虑的话，读者可以在centos和ubuntu12.x上进行test。&lt;/p&gt;
+
+&lt;h1 id=&quot;section-4&quot;&gt;播放器&lt;/h1&gt;
+&lt;p&gt;我们在试验的过程中，使用多种播放器和库在全平台实现了rtmp和hls的播放。在网页端使用了&lt;a href=&quot;http://videojs.com/&quot;&gt;videojs&lt;/a&gt;，在安卓端使用&lt;a href=&quot;https://github.com/yixia/VitamioBundle&quot;&gt;vitamio&lt;/a&gt;。具体的实现请看我们的另外一篇&lt;a href=&quot;http://sixwolf.net/blog/2016/01/30/%E5%9C%A8%E5%90%84%E7%AB%AF%E5%AE%9E%E7%8E%B0Rtmp%E5%92%8Chls%E6%B5%81%E8%A7%86%E9%A2%91%E7%9A%84%E6%92%AD%E6%94%BE/&quot;&gt;如何在网页端和移动端播放rtmp和hls视频流&lt;/a&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;section-5&quot;&gt;总结&lt;/h1&gt;
+&lt;p&gt;当然本文中的解决方案只是最简单的，对于直播服务器集群，直播间的创建和管理，直播间直播密码和权限，内容分发网络CDN都没有进行深入的研究。但是通过本实验性项目，我认为对于我们了解整个直播的业务流程还是很有帮助的。&lt;/p&gt;
+
+&lt;h1 id=&quot;section-6&quot;&gt;相关文件推荐&lt;/h1&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;http://www.infoq.com/cn/articles/alibaba-broadcast-platform-technology-challenges&quot;&gt;鏖战双十一-阿里直播平台面临的技术挑战&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h1 id=&quot;section-7&quot;&gt;相关项目&lt;/h1&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/bytedeco/javacv&quot;&gt;javacv&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/ossrs/srs&quot;&gt;srs&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/yixia/VitamioBundle&quot;&gt;Vitamio&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;footnotes&quot;&gt;
+  &lt;ol&gt;
+    &lt;li id=&quot;fn:RTMP&quot;&gt;
+      &lt;p&gt;Real Time Messaging Protocol (RTMP) was initially a proprietary protocol developed by Macromedia for streaming audio, video and data over the Internet, between a Flash player and a server. Macromedia is now owned by Adobe, which has released an incomplete version of the specification of the protocol for public use. (reference from wikipedia )&lt;br /&gt;Flash Player是天生能够播放RTMP流的，所以RTMP流可以在网页上得到很好的支持，另外也有很多其他浏览器能够支持播放RTMP流，如比较知名的JW player，videoJS。另外RTMP流的延迟只有3s，比较适合一些实时性和互动性较高的直播。 &lt;a href=&quot;#fnref:RTMP&quot; class=&quot;reversefootnote&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
+    &lt;/li&gt;
+    &lt;li id=&quot;fn:AAC&quot;&gt;
+      &lt;p&gt;AAC（Advanced Audio Coding），中文名：高级音频编码，出现于1997年，基于MPEG-2的音频编码技术。由Fraunhofer IIS、杜比实验室、AT&amp;amp;T、Sony等公司共同开发，目的是取代MP3格式。2000年，MPEG-4标准出现后，AAC重新集成了其特性，加入了SBR技术和PS技术，为了区别于传统的MPEG-2 AAC又称为MPEG-4 AAC。 &lt;a href=&quot;#fnref:AAC&quot; class=&quot;reversefootnote&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
+    &lt;/li&gt;
+    &lt;li id=&quot;fn:hls&quot;&gt;
+      &lt;p&gt;HLS (HTTP Live Streaming)，Apple的动态码率自适应技术。主要用于PC和Apple终端的音视频服务。包括一个m3u(8)的索引文件，TS媒体分片文件和key加密串文件。 &lt;a href=&quot;#fnref:hls&quot; class=&quot;reversefootnote&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
+    &lt;/li&gt;
+  &lt;/ol&gt;
+&lt;/div&gt;
+</description>
+        <pubDate>Fri, 29 Jan 2016 00:00:00 +0800</pubDate>
+        <link>http://sixwolf.net/blog/2016/01/29/%E7%9B%B4%E6%92%AD%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88-%E6%90%AD%E5%BB%BA%E4%BD%A0%E8%87%AA%E5%B7%B1%E7%9A%84%E7%9B%B4%E6%92%AD%E5%B9%B3%E5%8F%B0/</link>
+        <guid isPermaLink="true">http://sixwolf.net/blog/2016/01/29/%E7%9B%B4%E6%92%AD%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88-%E6%90%AD%E5%BB%BA%E4%BD%A0%E8%87%AA%E5%B7%B1%E7%9A%84%E7%9B%B4%E6%92%AD%E5%B9%B3%E5%8F%B0/</guid>
+        
+        <category>Development</category>
+        
+        <category>rtmp</category>
+        
+        <category>hls</category>
+        
+        <category>live-stream</category>
+        
+        
+        <category>blog</category>
+        
+      </item>
+    
+  </channel>
+</rss>

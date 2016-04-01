@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A chinese man, detemined in Android and Python">
+    <meta name="baidu-site-verification" content="KonQRkt3nq" />
+    <title>Android单元测试详解（1）——— AndroidJunitTest - In Coding</title>
+
+    <link rel="canonical" href="http://sixwolf.net/blog/2016/03/06/Android%E5%8D%95%E5%85%83%E6%B5%8B%E8%AF%95%E8%AF%A6%E8%A7%A31(AndroidJunitTest)/">
+
+    <!-- Icons -->
+  <link rel="shortcut icon" href="img/logo.ico">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/clean-blog.css">
+
+    <!-- Pygments Github CSS -->
+    <link rel="stylesheet" href="/css/syntax.css">
+
+    <!-- Custom Fonts -->
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href='//fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "//hm.baidu.com/hm.js?ad37e90f12e85cec39277b32f2653dfd";
+            var s = document.getElementsByTagName("script")[0];
+            s.parentNode.insertBefore(hm, s);
+        })();
+    </script>
+
+</head>
+
+
+
+
+
+
+<body ontouchstart="">
+
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">In Coding</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav navbar-right">
+                <li>
+                    <a href="/">Home</a>
+                </li>
+                
+                <li>
+                    <a href="/about/">About</a>
+                </li>
+                
+                <li>
+                    <a href="/archive/">Archive</a>
+                </li>
+                
+                <li>
+                    <a href="/milestone/">milestone</a>
+                </li>
+                
+                <li>
+                    <a href="/tags/">Tags</a>
+                </li>
+                
+            </ul>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+
+
+    <!-- Post Header -->
+<style type="text/css">
+    header.intro-header{
+        background-image: url('https://img.alicdn.com/imgextra/i4/754328530/TB2GEa3cVXXXXbUXpXXXXXXXXXX-754328530.jpg')
+    }
+</style>
+<header class="intro-header" >
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+	           <!-- <div class="Tags">
+                        
+                        <a class="tag" href="/Tags/#Development" title="Development">Development</a>
+                        
+                        <a class="tag" href="/Tags/#Android" title="Android">Android</a>
+                        
+                    </div> -->
+                    <h1>Android单元测试详解（1）——— AndroidJunitTest</h1>
+                    
+                    <span class="meta">Posted by BeautifulSoup on March 6, 2016</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+
+
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1 post-container">
+
+                <h1 id="section">背景</h1>
+<p>最近稍等空闲，考虑到我们项目测试覆盖率几乎等于0，因此痛下决心决定研究下Android单元测试。</p>
+
+<h1 id="section-1">单元测试的类型</h1>
+<p>首先我们需要明确安卓的单元测试主要分为两种类型：</p>
+
+<ul>
+  <li>在开发主机Java虚拟机上运行的Junit Test</li>
+  <li>在Android真机或者虚拟机上运行的Instrumented unit tests</li>
+</ul>
+
+<p>因为Junit Test免去了将apk包安装到android设备上的步骤，因此速度上会比Instrumented unit tests快很多。但是跟android相关的一些库只能运行在android设备上，而无法再本机Java虚拟机上运行，比如很多包名中带android的库。因此我们这里需要做一个选择，如果某些类没有用到android相关的库，则完全可以使用Junit Test，加快测试速率。</p>
+
+<p>如果是在Android Studio上开发，则文件结构应该是这样的，
+<img src="https://img.alicdn.com/imgextra/i1/754328530/TB2VoYRlXXXXXc7XXXXXXXXXXXX-754328530.png" alt="单元测试文件结构" />
+其中androidTest包中存放的是Instrumented unit tests的文件，而test中则是Junit Test，这两个文件夹在项目创建的时候AS都会帮我们创建好。可能细心的同学已经发现了，test文件夹中的文件都不能运行。
+如图，我们需要将Test Artiface改为Unit Test
+<img src="https://img.alicdn.com/imgextra/i1/754328530/TB2JdHIlXXXXXarXpXXXXXXXXXX-754328530.png" alt="选择测试类型" />
+另外这两种测试都只有在debugable = true的编译类型的时候才能运行。
+了解了单元测试的两个基本类型，接下来让我们来了解下目前主流的单元测试框架或者说工具。</p>
+
+<h1 id="androidjunit">AndroidJunit</h1>
+<p>Junit是Java开发中应用最多的单元测试框架，目前已经到Junit4。在Android的单元测试中我们同样可以使用它，如果是Junit Test，可以直接使用Java的Junit4。而如果测试的类必须使用Instrument Test，则我们需要使用AndroidJunitTest
+首先在build.gradle文件中的defaultConfig中加入如下设置，设置使用的Instrument test的runner 为AndroidJunitRunner。</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+</code></pre>
+</div>
+<p>然后在androidTest的java文件夹中创建测试文件</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="nd">@RunWith</span><span class="o">(</span><span class="n">AndroidJUnit4</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
+<span class="nd">@LargeTest</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">MainActivityExprssoTest</span> <span class="o">{</span>
+
+
+    <span class="nd">@Rule</span>
+    <span class="kd">public</span> <span class="n">ActivityTestRule</span><span class="o">&lt;</span><span class="n">MainActivity</span><span class="o">&gt;</span> <span class="n">mActivityRule</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ActivityTestRule</span><span class="o">&lt;</span><span class="n">MainActivity</span><span class="o">&gt;(</span><span class="n">MainActivity</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+
+
+    <span class="nd">@Before</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="n">init</span><span class="o">(){</span>
+        <span class="n">Log</span><span class="o">.</span><span class="na">d</span><span class="o">(</span><span class="s">"MainActivity test"</span><span class="o">,</span> <span class="s">"init test MainActivity"</span><span class="o">);</span>
+    <span class="o">}</span>
+    <span class="nd">@Test</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="n">testOnBtnClick</span><span class="o">(){</span>
+        <span class="n">onView</span><span class="o">(</span><span class="n">withId</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">text_btn1</span><span class="o">))</span>
+                <span class="o">.</span><span class="na">perform</span><span class="o">(</span><span class="n">click</span><span class="o">())</span> <span class="o">;</span>
+        <span class="n">Assert</span><span class="o">.</span><span class="na">assertTrue</span><span class="o">(</span><span class="n">mActivityRule</span><span class="o">.</span><span class="na">getActivity</span><span class="o">().</span><span class="na">getKey</span><span class="o">());</span>
+    <span class="o">}</span>
+    
+    <span class="nd">@After</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="n">destroy</span><span class="o">(){</span>
+    <span class="o">}</span>
+
+
+<span class="o">}</span>
+</code></pre>
+</div>
+<p>我们可以在@Before 中做一些初始化操作，在@After中做一些单元测试结束前需要做的一些工作。而带@Test的方法则是具体的测试方法。AndroidJunitRunner会逐个运行这些方法。关于其他的一些anntotation其实跟Junit中是一样的，具体可以参考<a href="http://developer.android.com/intl/zh-cn/tools/testing-support-library/index.html#AndroidJUnitRunner">Android官方文档</a>。</p>
+
+<p>另外以前做过Android Activity单元测试的同学可能会发现上面的代码跟你写的有些不一样。Corrcet，之前的单元测试类如果是对某个Activity做测试需要继承自ActivityInstrumentationTestCase2<calculatoractivity>，传入需要测试的Activity类型作为模板测试。目前该类型已被deprectd，而使用一个ActivityTestRule，作为模板参数的Activity会在@Before方法之前被launch，在@After之后被停止运行，在这之间我们可以去调用它的一些方法。</calculatoractivity></p>
+
+<p>如果你不需要对Activity做测试，但是需要访问一些图片等resource资源，则需要让你的测试类继承自AndroidTestCase，这样你就可以通过getContext()获取应用的上下文了。</p>
+
+<p>ok，本期对AndroidJunitTest的介绍就到这里。下一期我们将会介绍界面测试框架Expresso，敬请期待。</p>
+
+
+                <hr>
+
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/blog/2016/03/01/Fuild-Browser%E6%B5%8B%E8%AF%84-Mac%E4%B8%8A%E7%9A%84%E4%B8%80%E5%BF%83%E4%BA%8C%E7%94%A8%E7%A5%9E%E5%99%A8/" data-toggle="tooltip" data-placement="top" title="Fulid Browser测评，Mac上的一心二用神器">&larr; Previous Post</a>
+                    </li>
+                    
+                    
+                    <li class="next">
+                        <a href="/blog/2016/03/22/Android%E5%AE%9E%E7%8E%B0%E5%A4%9A%E6%AC%A1%E9%97%AA%E9%80%80%E6%B8%85%E9%99%A4%E6%95%B0%E6%8D%AE/" data-toggle="tooltip" data-placement="top" title="Android实现多次闪退清除数据">Next Post &rarr;</a>
+                    </li>
+                    
+                </ul>
+
+                <!-- Duoshuo Share start -->
+                <style>
+                    .ds-share{
+                        text-align: right;
+                    }
+
+                    @media only screen and (max-width: 700px) {
+                        .ds-share {
+
+                        }
+                    }
+                </style>
+
+                <div class="ds-share"
+                    data-thread-key="/blog/2016/03/06/Android单元测试详解1(AndroidJunitTest)" data-title="Android单元测试详解（1）——— AndroidJunitTest"
+                    data-images="http://sixwolf.net/https://img.alicdn.com/imgextra/i4/754328530/TB2GEa3cVXXXXbUXpXXXXXXXXXX-754328530.jpg"
+                    data-content="背景
+最近稍等空闲，考虑到我们项目测试覆盖率几乎等于0，因此痛下决心决定研究下Android单元测试。
+
+单元测试的类型
+首先我们需要明确安卓的单元测试主... | Microdust:Azeril's blog"
+                    data-url="http://sixwolf.net/blog/2016/03/06/Android%E5%8D%95%E5%85%83%E6%B5%8B%E8%AF%95%E8%AF%A6%E8%A7%A31(AndroidJunitTest)/">
+                    <div class="ds-share-inline">
+                      <ul  class="ds-share-icons-16">
+
+                        <li data-toggle="ds-share-icons-more"><a class="ds-more" href="#">分享到：</a></li>
+                        <li><a class="ds-wechat flat" href="javascript:void(0);" data-service="wechat">微信</a></li>
+                        <li><a class="ds-weibo flat" href="javascript:void(0);" data-service="weibo">微博</a></li>
+                        <li><a class="ds-douban flat" href="javascript:void(0);" data-service="douban">豆瓣</a></li>
+                      </ul>
+                      <div class="ds-share-icons-more">
+                      </div>
+                    </div>
+                <hr>
+                </div>
+                <!-- Duoshuo Share end-->
+
+
+                <!-- 多说评论框 start -->
+                <div class="comment">
+                    <div class="ds-thread" data-thread-key="/blog/2016/03/06/Android单元测试详解1(AndroidJunitTest)" data-title="Android单元测试详解（1）——— AndroidJunitTest" data-url="http://sixwolf.net/blog/2016/03/06/Android%E5%8D%95%E5%85%83%E6%B5%8B%E8%AF%95%E8%AF%A6%E8%A7%A31(AndroidJunitTest)/"></div>
+                </div>
+                <!-- 多说评论框 end -->
+
+
+
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"sixwolf"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0]
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+<!-- 多说公共JS代码 end -->
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("http://cdn.bootcss.com/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'always',
+          placement: 'right',
+          icon: '#'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
+
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                    <!-- kill the Facebook and Weibo -->
+                    <li>
+                        <a href="/feed.xml">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-rss fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="https://twitter.com/SuperTwoDog">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+
+                    
+                    <li>
+                        <a href="https://github.com/beautifulSoup">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                    
+                    <!--
+                    
+                    <li>
+                        <a href="http://www.douban.com/people/汤利康">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-douban fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                    -->
+
+                    <!--
+                    
+                    <li>
+                        <a href="https://www.facebook.com/汤利康">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-facebook fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                    -->
+
+                    
+                    <li>
+                        <a target="_blank" href="https://www.zhihu.com/people/汤利康">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa  fa-stack-1x fa-inverse">知</i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                    <!--
+                    
+                    <li>
+                        <a target="_blank" href="http://weibo.com/不知菌">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-weibo fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                    -->
+
+                </ul>
+                <p class="copyright text-muted">
+                &copy; 2016  Klojure ❖ Powered by Jekyll.
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/js/jquery.min.js "></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="/js/bootstrap.min.js "></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/js/clean-blog.min.js "></script>
+
+
+
+<!-- Highlight.js -->
+<script>
+    async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js",function(){
+        hljs.initHighlightingOnLoad();
+    })
+</script>
+<link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+
+
+</body>
+
+</html>

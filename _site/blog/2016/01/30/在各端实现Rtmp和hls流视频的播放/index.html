@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A chinese man, detemined in Android and Python">
+    <meta name="baidu-site-verification" content="KonQRkt3nq" />
+    <title>如何在网页端和移动端播放rtmp和hls视频流 - In Coding</title>
+
+    <link rel="canonical" href="http://sixwolf.net/blog/2016/01/30/%E5%9C%A8%E5%90%84%E7%AB%AF%E5%AE%9E%E7%8E%B0Rtmp%E5%92%8Chls%E6%B5%81%E8%A7%86%E9%A2%91%E7%9A%84%E6%92%AD%E6%94%BE/">
+
+    <!-- Icons -->
+  <link rel="shortcut icon" href="img/logo.ico">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/clean-blog.css">
+
+    <!-- Pygments Github CSS -->
+    <link rel="stylesheet" href="/css/syntax.css">
+
+    <!-- Custom Fonts -->
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href='//fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "//hm.baidu.com/hm.js?ad37e90f12e85cec39277b32f2653dfd";
+            var s = document.getElementsByTagName("script")[0];
+            s.parentNode.insertBefore(hm, s);
+        })();
+    </script>
+
+</head>
+
+
+
+
+
+
+<body ontouchstart="">
+
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">In Coding</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav navbar-right">
+                <li>
+                    <a href="/">Home</a>
+                </li>
+                
+                <li>
+                    <a href="/about/">About</a>
+                </li>
+                
+                <li>
+                    <a href="/archive/">Archive</a>
+                </li>
+                
+                <li>
+                    <a href="/milestone/">milestone</a>
+                </li>
+                
+                <li>
+                    <a href="/tags/">Tags</a>
+                </li>
+                
+            </ul>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+
+
+    <!-- Post Header -->
+<style type="text/css">
+    header.intro-header{
+        background-image: url('https://img.alicdn.com/imgextra/i4/754328530/TB2GEa3cVXXXXbUXpXXXXXXXXXX-754328530.jpg')
+    }
+</style>
+<header class="intro-header" >
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+	           <!-- <div class="Tags">
+                        
+                        <a class="tag" href="/Tags/#Development" title="Development">Development</a>
+                        
+                        <a class="tag" href="/Tags/#rtmp" title="rtmp">rtmp</a>
+                        
+                        <a class="tag" href="/Tags/#hls" title="hls">hls</a>
+                        
+                        <a class="tag" href="/Tags/#player" title="player">player</a>
+                        
+                    </div> -->
+                    <h1>如何在网页端和移动端播放rtmp和hls视频流</h1>
+                    
+                    <span class="meta">Posted by Klojure on January 30, 2016</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+
+
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1 post-container">
+
+                <p><br />
+<br /></p>
+
+<h1 id="section">背景</h1>
+<p>我们已经在<a href="http://sixwolf.net/2016/01/29/%E7%9B%B4%E6%92%AD%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88-%E6%90%AD%E5%BB%BA%E4%BD%A0%E8%87%AA%E5%B7%B1%E7%9A%84%E7%9B%B4%E6%92%AD%E5%B9%B3%E5%8F%B0/">视频直播解决方案</a>讨论了如何实现自己的直播平台以及<a href="http://sixwolf.net/2016/01/30/Android%E4%BD%BF%E7%94%A8FFMpeg%E5%AE%9E%E7%8E%B0%E6%8E%A8%E9%80%81%E8%A7%86%E9%A2%91%E7%9B%B4%E6%92%AD%E6%B5%81%E5%88%B0%E6%9C%8D%E5%8A%A1%E5%99%A8/">如何实现从安卓设备上推流到服务器</a>。那么我们还剩下最后一波，就是如何将精彩的视频内容展现出来，在本文中将会介绍如何在网页端和安卓设备上实现直播的播放。</p>
+
+<h1 id="vitamio">安卓设备上的播放——Vitamio</h1>
+<p>安卓设备3.0以上原生支持hls，但是不支持rtmp，为了统一以及低版本兼容，我们使用第三方的一个播放器库——<a href="https://github.com/yixia/VitamioBundle">vitamio</a>。
+下面是实例代码</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>public class PlayerActivity extends AppCompatActivity {
+
+private static final String KEY_PATH = "key_path";
+
+
+@Bind(R.id.vitamio_videoView)
+VideoView vVideoView;
+
+
+public static Intent makeIntent(String rtmpPath){
+    Intent intent = new Intent(App.getContext(), PlayerActivity.class);
+    intent.putExtra(KEY_PATH, rtmpPath);
+    return intent;
+}
+
+
+@Override
+protected void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    if (!LibsChecker.checkVitamioLibs(this))
+        return;
+    setContentView(R.layout.activity_player);
+    ButterKnife.bind(this);
+    String path = getIntent().getStringExtra(KEY_PATH);
+    initVideo(path);
+}
+
+
+private void initVideo(String path){
+    HashMap&lt;String, String&gt; options = new HashMap&lt;&gt;();
+    options.put("rtmp_live", "1");
+    vVideoView.setVideoURI(Uri.parse(path), options);
+    vVideoView.setMediaController(new MediaController(this));
+    vVideoView.requestFocus();
+
+    vVideoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+        @Override
+        public void onPrepared(MediaPlayer mediaPlayer) {
+            mediaPlayer.setPlaybackSpeed(1.0f);
+        }
+    });
+} }
+</code></pre>
+</div>
+
+<p>该Activity能够接收一个rtmp或者hls的流地址播放。完整项目地址 <a href="https://github.com/beautifulSoup/RtmpHlsPlayer/tree/master">RtmpHlsPlayer</a></p>
+
+<h1 id="hls">hls播放</h1>
+<p>如果仅需要在移动设备的WebView上播放，我们可以选择使用html中嵌入hls播放。如下html能够在所有Safari或者安卓3.0以上的WebView上播放。这样就不需要使用第三方的播放器。</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="nt">&lt;html</span> <span class="na">lang=</span><span class="s">"en"</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;head&gt;</span>
+       <span class="nt">&lt;meta</span> <span class="na">charset=</span><span class="s">utf-8/</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;/head&gt;</span>
+    <span class="nt">&lt;body&gt;</span>
+        <span class="nt">&lt;div</span> <span class="na">id=</span><span class="s">'player'</span><span class="nt">&gt;</span>
+           <span class="nt">&lt;video</span> <span class="na">width=</span><span class="s">"640"</span> <span class="na">height=</span><span class="s">"320"</span> <span class="na">controls</span><span class="nt">&gt;</span>
+                <span class="nt">&lt;source</span> <span class="na">src=</span><span class="s">"http://10.10.5.119/live/livestream.m3u8"</span> <span class="na">type=</span><span class="s">"application/x-mpegURL"</span><span class="nt">&gt;</span>
+           <span class="nt">&lt;/video&gt;</span>
+        <span class="nt">&lt;/div&gt;</span>
+    <span class="nt">&lt;/body&gt;</span>
+<span class="nt">&lt;/html&gt;</span>
+</code></pre>
+</div>
+
+<h1 id="videojs">VideoJS</h1>
+<p>如果我们要让我们的网页支持在所有浏览器上播放，我们就需要使用第三方的播放器。VideoJs是一个较好的播放器库，完全免费，不像JWPlayer一样需要付费才能使用一些高级功能。下面是一个播放的例子。你可以将source标签下的src换成你自己的直播流地址。需要注意的是rtmp流的type是rtmp/flv（flv 跟推流的时候FFmpegFrameRecorder设置的format有关）, hls 的type是application/x-mpegURL。</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="nt">&lt;html&gt;</span>
+  <span class="nt">&lt;head&gt;</span>
+  <span class="nt">&lt;link</span> <span class="na">href=</span><span class="s">"http://vjs.zencdn.net/5.5.3/video-js.css"</span> <span class="na">rel=</span><span class="s">"stylesheet"</span><span class="nt">&gt;</span>
+
+  <span class="c">&lt;!-- If you'd like to support IE8 --&gt;</span>
+  <span class="nt">&lt;script </span><span class="na">src=</span><span class="s">"http://vjs.zencdn.net/ie8/1.1.1/videojs-ie8.min.js"</span><span class="nt">&gt;&lt;/script&gt;</span>
+
+
+<span class="nt">&lt;/head&gt;</span>
+
+
+<span class="nt">&lt;body&gt;</span>
+
+  <span class="nt">&lt;h1&gt;</span>康康的直播间<span class="nt">&lt;/h1&gt;</span>
+ <span class="nt">&lt;video</span> <span class="na">id=</span><span class="s">"my-video"</span> <span class="na">class=</span><span class="s">"video-js"</span> <span class="na">controls</span> <span class="na">preload=</span><span class="s">"auto"</span> <span class="na">width=</span><span class="s">"640"</span> <span class="na">height=</span><span class="s">"264"</span>
+ <span class="na">poster=</span><span class="s">"https://img.alicdn.com/imgextra/i2/754328530/TB2FpxhkXXXXXa5XXXXXXXXXXXX_!!754328530.jpg"</span> <span class="na">data-setup=</span><span class="s">"{}"</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;source</span> <span class="na">src=</span><span class="s">"rtmp://10.10.5.119/live/livestream"</span> <span class="na">type=</span><span class="s">"rtmp/flv"</span><span class="nt">&gt;</span>
+    <span class="c">&lt;!-- 如果上面的rtmp流无法播放，就播放hls流 --&gt;</span>
+    <span class="nt">&lt;source</span> <span class="na">src=</span><span class="s">"http://10.10.5.119/live/livestream.m3u8"</span> <span class="na">type=</span><span class="s">'application/x-mpegURL'</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;p</span> <span class="na">class=</span><span class="s">"vjs-no-js"</span><span class="nt">&gt;</span>
+      To view this video please enable JavaScript, and consider upgrading to a web browser that
+      <span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">"http://videojs.com/html5-video-support/"</span> <span class="na">target=</span><span class="s">"_blank"</span><span class="nt">&gt;</span>supports HTML5 video<span class="nt">&lt;/a&gt;</span>
+    <span class="nt">&lt;/p&gt;</span>
+ <span class="nt">&lt;/video&gt;</span>
+
+ <span class="nt">&lt;script </span><span class="na">src=</span><span class="s">"http://vjs.zencdn.net/5.5.3/video.js"</span><span class="nt">&gt;&lt;/script&gt;</span>
+<span class="nt">&lt;/body&gt;</span>
+<span class="nt">&lt;/html&gt;</span>
+</code></pre>
+</div>
+
+
+
+                <hr>
+
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/blog/2016/01/30/Android%E4%BD%BF%E7%94%A8FFMpeg%E5%AE%9E%E7%8E%B0%E6%8E%A8%E9%80%81%E8%A7%86%E9%A2%91%E7%9B%B4%E6%92%AD%E6%B5%81%E5%88%B0%E6%9C%8D%E5%8A%A1%E5%99%A8/" data-toggle="tooltip" data-placement="top" title="Android使用FFMpeg实现推送视频直播流到服务器">&larr; Previous Post</a>
+                    </li>
+                    
+                    
+                    <li class="next">
+                        <a href="/blog/2016/02/28/%E6%B5%85%E8%B0%88Android%E5%BC%80%E5%8F%91%E4%B8%AD%E5%A4%9A%E8%BF%9B%E7%A8%8B%E5%85%B1%E4%BA%AB%E6%95%B0%E6%8D%AE/" data-toggle="tooltip" data-placement="top" title="浅谈Android开发中多进程共享数据">Next Post &rarr;</a>
+                    </li>
+                    
+                </ul>
+
+                <!-- Duoshuo Share start -->
+                <style>
+                    .ds-share{
+                        text-align: right;
+                    }
+
+                    @media only screen and (max-width: 700px) {
+                        .ds-share {
+
+                        }
+                    }
+                </style>
+
+                <div class="ds-share"
+                    data-thread-key="/blog/2016/01/30/在各端实现Rtmp和hls流视频的播放" data-title="如何在网页端和移动端播放rtmp和hls视频流"
+                    data-images="http://sixwolf.net/https://img.alicdn.com/imgextra/i4/754328530/TB2GEa3cVXXXXbUXpXXXXXXXXXX-754328530.jpg"
+                    data-content="
+
+
+背景
+我们已经在视频直播解决方案讨论了如何实现自己的直播平台以及如何实现从安卓设备上推流到服务器。那么我们还剩下最后一波，就是如何将精彩的视频内容展... | Microdust:Azeril's blog"
+                    data-url="http://sixwolf.net/blog/2016/01/30/%E5%9C%A8%E5%90%84%E7%AB%AF%E5%AE%9E%E7%8E%B0Rtmp%E5%92%8Chls%E6%B5%81%E8%A7%86%E9%A2%91%E7%9A%84%E6%92%AD%E6%94%BE/">
+                    <div class="ds-share-inline">
+                      <ul  class="ds-share-icons-16">
+
+                        <li data-toggle="ds-share-icons-more"><a class="ds-more" href="#">分享到：</a></li>
+                        <li><a class="ds-wechat flat" href="javascript:void(0);" data-service="wechat">微信</a></li>
+                        <li><a class="ds-weibo flat" href="javascript:void(0);" data-service="weibo">微博</a></li>
+                        <li><a class="ds-douban flat" href="javascript:void(0);" data-service="douban">豆瓣</a></li>
+                      </ul>
+                      <div class="ds-share-icons-more">
+                      </div>
+                    </div>
+                <hr>
+                </div>
+                <!-- Duoshuo Share end-->
+
+
+                <!-- 多说评论框 start -->
+                <div class="comment">
+                    <div class="ds-thread" data-thread-key="/blog/2016/01/30/在各端实现Rtmp和hls流视频的播放" data-title="如何在网页端和移动端播放rtmp和hls视频流" data-url="http://sixwolf.net/blog/2016/01/30/%E5%9C%A8%E5%90%84%E7%AB%AF%E5%AE%9E%E7%8E%B0Rtmp%E5%92%8Chls%E6%B5%81%E8%A7%86%E9%A2%91%E7%9A%84%E6%92%AD%E6%94%BE/"></div>
+                </div>
+                <!-- 多说评论框 end -->
+
+
+
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"sixwolf"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0]
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+<!-- 多说公共JS代码 end -->
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("http://cdn.bootcss.com/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'always',
+          placement: 'right',
+          icon: '#'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
+
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                    <!-- kill the Facebook and Weibo -->
+                    <li>
+                        <a href="/feed.xml">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-rss fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="https://twitter.com/SuperTwoDog">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+
+                    
+                    <li>
+                        <a href="https://github.com/beautifulSoup">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                    
+                    <!--
+                    
+                    <li>
+                        <a href="http://www.douban.com/people/汤利康">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-douban fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                    -->
+
+                    <!--
+                    
+                    <li>
+                        <a href="https://www.facebook.com/汤利康">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-facebook fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                    -->
+
+                    
+                    <li>
+                        <a target="_blank" href="https://www.zhihu.com/people/汤利康">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa  fa-stack-1x fa-inverse">知</i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                    <!--
+                    
+                    <li>
+                        <a target="_blank" href="http://weibo.com/不知菌">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-weibo fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                    -->
+
+                </ul>
+                <p class="copyright text-muted">
+                &copy; 2016  Klojure ❖ Powered by Jekyll.
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/js/jquery.min.js "></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="/js/bootstrap.min.js "></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/js/clean-blog.min.js "></script>
+
+
+
+<!-- Highlight.js -->
+<script>
+    async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js",function(){
+        hljs.initHighlightingOnLoad();
+    })
+</script>
+<link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+
+
+</body>
+
+</html>

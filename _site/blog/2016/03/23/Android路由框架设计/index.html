@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A chinese man, detemined in Android and Python">
+    <meta name="baidu-site-verification" content="KonQRkt3nq" />
+    <title>Android路由框架设计与实现 - In Coding</title>
+
+    <link rel="canonical" href="http://sixwolf.net/blog/2016/03/23/Android%E8%B7%AF%E7%94%B1%E6%A1%86%E6%9E%B6%E8%AE%BE%E8%AE%A1/">
+
+    <!-- Icons -->
+  <link rel="shortcut icon" href="img/logo.ico">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/clean-blog.css">
+
+    <!-- Pygments Github CSS -->
+    <link rel="stylesheet" href="/css/syntax.css">
+
+    <!-- Custom Fonts -->
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href='//fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "//hm.baidu.com/hm.js?ad37e90f12e85cec39277b32f2653dfd";
+            var s = document.getElementsByTagName("script")[0];
+            s.parentNode.insertBefore(hm, s);
+        })();
+    </script>
+
+</head>
+
+
+
+
+
+
+<body ontouchstart="">
+
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">In Coding</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav navbar-right">
+                <li>
+                    <a href="/">Home</a>
+                </li>
+                
+                <li>
+                    <a href="/about/">About</a>
+                </li>
+                
+                <li>
+                    <a href="/archive/">Archive</a>
+                </li>
+                
+                <li>
+                    <a href="/milestone/">milestone</a>
+                </li>
+                
+                <li>
+                    <a href="/tags/">Tags</a>
+                </li>
+                
+            </ul>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+
+
+    <!-- Post Header -->
+<style type="text/css">
+    header.intro-header{
+        background-image: url('https://img.alicdn.com/imgextra/i4/754328530/TB2GEa3cVXXXXbUXpXXXXXXXXXX-754328530.jpg')
+    }
+</style>
+<header class="intro-header" >
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+	           <!-- <div class="Tags">
+                        
+                        <a class="tag" href="/Tags/#Android" title="Android">Android</a>
+                        
+                        <a class="tag" href="/Tags/#Development" title="Development">Development</a>
+                        
+                    </div> -->
+                    <h1>Android路由框架设计与实现</h1>
+                    
+                    <span class="meta">Posted by beautifulSoup on March 23, 2016</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+
+
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1 post-container">
+
+                <h1 id="section">背景</h1>
+<p>我们知道传统的网站开发框架一般支持用户设置路由表，如Django。而在Android开发中，我们打开页面的方式主要是startActivity()。使用startActivity()的缺点是需要打开的那个Activity的类已经存在，否则无法通过编译，但是在协同开发中，这往往是无法得到满足的。那么如何来解决这一问题呢，我们是否也能够像在Web开放中一样使用一个url来打开一个Activity呢？因此本文主要介绍在Android平台设计和实现一个路由框架。</p>
+
+<h1 id="section-1">框架整体设计</h1>
+<p>首先我们需要明确一点，那就是我们的框架不能仅仅局限于打开Activity，打开Activity只是框架中的一种行为实现，我们的框架应该是包含了Activity以及其它比较常用的路由。并支持使用者自己添加自己的路由实现的，如使用者希望使用url调用一个方法，或者调用一个Runnable，那么他就可以自己实现一个Router来支持这种行为。基于这样的思路，路由框架的整体架构设计如下。
+<img src="https://img.alicdn.com/imgextra/i2/754328530/TB2XFdcepXXXXX5XXXXXXXXXXXX-754328530.jpg" alt="路由框架设计" /></p>
+
+<p>在以上框架中，由RouterManager维护所有的IRouter列表。我们的框架自身实现了打开Activity的ActivityRouter。同时用户可以添加自己的IRouter实现。当用户想要打开某个url时，调用RouterManager的open()方法，RouterManager遍历列表，调用IRouter的canOpenTheUrl方法找到第一个能够打开该url的IRouter，并将该open的任务dispatch给该Router。
+但是在分析实际使用情景中，我们发现这样的框架设计并不能满足实际使用需求，主要有如下几点。</p>
+
+<ul>
+  <li>在打开Activity可能需要设置动画。</li>
+  <li>需要选择使用startActivityForResult()来打开Activity。</li>
+  <li>需要传递一些无法放到url中的传递参数，如Parcelable等。</li>
+</ul>
+
+<p>虽然这仅仅是ActivityRouter的需求，但我们也需要让我们的框架支持这些。
+因此，我们对以上框架设计做了一些修改如下。
+<img src="https://img.alicdn.com/imgextra/i1/754328530/TB20x_2epXXXXapXpXXXXXXXXXX-754328530.jpg" alt="路由框架设计修改版" />
+用户在需要额外设置一些参数的时候可以不选择使用open打开url，而是使用getRoute()方法获得抽象的Route对象，通过Route对象进行额外的设置，最后可以通过IRoute接口的open方法打开它自己。IRouter和IRoute的关系应该是一对一或者一对多，一种IRouter应该可以打开一或者多种不同IRoute。而一个IRoute则一般只能由一种IRouter打开。</p>
+
+<h1 id="section-2">路由格式</h1>
+<p>在路由框架中，url应该包含两点功能，一是唯一确定一条路由，二是提供一些参数。我们可以以一个路由的例子来讲解ActivityRouter的路由规则。本规则参考了REST。 <br />
+例：activity://main/:i{key1}/path1/:f{key2}</p>
+
+<ul>
+  <li>scheme为activity代表该url可以被ActivityRouter打开。</li>
+  <li>host为main一般表示决定的Activity。</li>
+  <li>而:{key1}则表示一个值的key，这个path segment在url中会被具体的值替换，:后面的i表示该key对应的值的类型为int型。</li>
+  <li>path1为固定的path segment，与上面的key用来传递值不同。用来区分路由，与host功能类似。</li>
+</ul>
+
+<p>因此一个url与路由匹配需要scheme，host以及path中的固定部分相同，而key部分被具体的值代替。以下举一个匹配上面的路由的url的例子。
+activity:main/123/path1/12.4。则会调用intent的putExtra()方法将key1=123, key2=12.4放到intent的bundle中。在被跳的Activity中就可以获取对应的值。如果有些值是不必须的，已可以放到query parameter中。如activity://main/123/path1?des=hello。但query parameter不影响路由匹配。
+以上只是我实现的ActivityRouter的路由格式，如果你需要实现自己的路由，完全可以根据自己的想法设计路由格式。</p>
+
+<h3 id="section-3">路由表的初始化</h3>
+<p>Router需要提供一个方法让使用者初始化路由表。如下ActivityRouter的实现，当然这并不必要，如打开网页的Router就不需要路由表，只需要调用系统浏览器打开网页即可。所以该方法没有在接口中定义。</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>	<span class="kd">public</span> <span class="kt">void</span> <span class="nf">init</span><span class="p">(</span><span class="n">Context</span> <span class="n">appContext</span><span class="o">,</span> <span class="n">IActivityRouteTableInitializer</span> <span class="n">initializer</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">mBaseContext</span> <span class="o">=</span> <span class="n">appContext</span><span class="o">;</span>
+        <span class="n">initializer</span><span class="o">.</span><span class="na">initRouterTable</span><span class="o">(</span><span class="n">mRouteTable</span><span class="o">);</span>
+    <span class="o">}</span>
+</code></pre>
+</div>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">interface</span> <span class="nc">IActivityRouteTableInitializer</span> <span class="o">{</span>
+    <span class="cm">/**
+     * init the router table
+     * @param router the router map to
+     */</span>
+    <span class="kt">void</span> <span class="n">initRouterTable</span><span class="o">(</span><span class="n">Map</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">Class</span><span class="o">&lt;?</span> <span class="kd">extends</span> <span class="n">Activity</span><span class="o">&gt;&gt;</span> <span class="n">router</span><span class="o">);</span>
+<span class="o">}</span>
+</code></pre>
+</div>
+
+<h1 id="section-4">总结</h1>
+<p>我们发现将原本startActivity方式替换成路由方式后，有以下几个明显的优点。</p>
+
+<ul>
+  <li>便于协同开发</li>
+  <li>便于测试，可以在测试中替换一个路由表，打开测试用Activity。</li>
+  <li>便于从外部链接跳转到app中的任意界面。我们只需要设置一个外链入口Activity，让其接收外部链接，并调用路由管理器打开该链接即可。</li>
+</ul>
+
+<h1 id="section-5">项目地址</h1>
+<p><a href="https://github.com/campusappcn/AndRouter">https://github.com/campusappcn/AndRouter</a></p>
+
+
+                <hr>
+
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/blog/2016/03/22/Android%E5%AE%9E%E7%8E%B0%E5%A4%9A%E6%AC%A1%E9%97%AA%E9%80%80%E6%B8%85%E9%99%A4%E6%95%B0%E6%8D%AE/" data-toggle="tooltip" data-placement="top" title="Android实现多次闪退清除数据">&larr; Previous Post</a>
+                    </li>
+                    
+                    
+                    <li class="next">
+                        <a href="/blog/2016/03/31/%E6%B5%85%E6%9E%90ReactiveX%E7%9A%84%E5%A4%9A%E6%92%AD/" data-toggle="tooltip" data-placement="top" title="浅析ReactiveX的多播——实现安卓双击检测遇到的坑">Next Post &rarr;</a>
+                    </li>
+                    
+                </ul>
+
+                <!-- Duoshuo Share start -->
+                <style>
+                    .ds-share{
+                        text-align: right;
+                    }
+
+                    @media only screen and (max-width: 700px) {
+                        .ds-share {
+
+                        }
+                    }
+                </style>
+
+                <div class="ds-share"
+                    data-thread-key="/blog/2016/03/23/Android路由框架设计" data-title="Android路由框架设计与实现"
+                    data-images="http://sixwolf.net/https://img.alicdn.com/imgextra/i4/754328530/TB2GEa3cVXXXXbUXpXXXXXXXXXX-754328530.jpg"
+                    data-content="背景
+我们知道传统的网站开发框架一般支持用户设置路由表，如Django。而在Android开发中，我们打开页面的方式主要是startActivity()。... | Microdust:Azeril's blog"
+                    data-url="http://sixwolf.net/blog/2016/03/23/Android%E8%B7%AF%E7%94%B1%E6%A1%86%E6%9E%B6%E8%AE%BE%E8%AE%A1/">
+                    <div class="ds-share-inline">
+                      <ul  class="ds-share-icons-16">
+
+                        <li data-toggle="ds-share-icons-more"><a class="ds-more" href="#">分享到：</a></li>
+                        <li><a class="ds-wechat flat" href="javascript:void(0);" data-service="wechat">微信</a></li>
+                        <li><a class="ds-weibo flat" href="javascript:void(0);" data-service="weibo">微博</a></li>
+                        <li><a class="ds-douban flat" href="javascript:void(0);" data-service="douban">豆瓣</a></li>
+                      </ul>
+                      <div class="ds-share-icons-more">
+                      </div>
+                    </div>
+                <hr>
+                </div>
+                <!-- Duoshuo Share end-->
+
+
+                <!-- 多说评论框 start -->
+                <div class="comment">
+                    <div class="ds-thread" data-thread-key="/blog/2016/03/23/Android路由框架设计" data-title="Android路由框架设计与实现" data-url="http://sixwolf.net/blog/2016/03/23/Android%E8%B7%AF%E7%94%B1%E6%A1%86%E6%9E%B6%E8%AE%BE%E8%AE%A1/"></div>
+                </div>
+                <!-- 多说评论框 end -->
+
+
+
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"sixwolf"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0]
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+<!-- 多说公共JS代码 end -->
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("http://cdn.bootcss.com/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'always',
+          placement: 'right',
+          icon: '#'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
+
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                    <!-- kill the Facebook and Weibo -->
+                    <li>
+                        <a href="/feed.xml">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-rss fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="https://twitter.com/SuperTwoDog">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+
+                    
+                    <li>
+                        <a href="https://github.com/beautifulSoup">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                    
+                    <!--
+                    
+                    <li>
+                        <a href="http://www.douban.com/people/汤利康">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-douban fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                    -->
+
+                    <!--
+                    
+                    <li>
+                        <a href="https://www.facebook.com/汤利康">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-facebook fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                    -->
+
+                    
+                    <li>
+                        <a target="_blank" href="https://www.zhihu.com/people/汤利康">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa  fa-stack-1x fa-inverse">知</i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                    <!--
+                    
+                    <li>
+                        <a target="_blank" href="http://weibo.com/不知菌">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-weibo fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                    -->
+
+                </ul>
+                <p class="copyright text-muted">
+                &copy; 2016  Klojure ❖ Powered by Jekyll.
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/js/jquery.min.js "></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="/js/bootstrap.min.js "></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/js/clean-blog.min.js "></script>
+
+
+
+<!-- Highlight.js -->
+<script>
+    async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js",function(){
+        hljs.initHighlightingOnLoad();
+    })
+</script>
+<link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+
+
+</body>
+
+</html>
