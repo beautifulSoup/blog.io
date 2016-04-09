@@ -5,9 +5,71 @@
     <description>A chinese man, detemined in Android and Python</description>
     <link>http://sixwolf.net/</link>
     <atom:link href="http://sixwolf.net/feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Fri, 01 Apr 2016 11:54:29 +0800</pubDate>
-    <lastBuildDate>Fri, 01 Apr 2016 11:54:29 +0800</lastBuildDate>
+    <pubDate>Sat, 09 Apr 2016 17:14:04 +0800</pubDate>
+    <lastBuildDate>Sat, 09 Apr 2016 17:14:04 +0800</lastBuildDate>
     <generator>Jekyll v3.1.2</generator>
+    
+      <item>
+        <title>Android随机对象生成器的设计与实现</title>
+        <description>&lt;h2 id=&quot;section&quot;&gt;目标&lt;/h2&gt;
+&lt;p&gt;当完成一个新的Feature的时候，需要对其进行测试。但是由于服务器还没有部署该功能，或者单元测试的限制，往往需要程序员自己去伪造一些数据。但是手工伪造数据往往效率不高并且没有代表性。因此希望能够实现一个对象生成器，生成对象并往里面填充随机值。&lt;/p&gt;
+
+&lt;h2 id=&quot;section-1&quot;&gt;项目地址&lt;/h2&gt;
+&lt;p&gt;&lt;a href=&quot;https://github.com/campusappcn/rog&quot;&gt;rog&lt;/a&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;section-2&quot;&gt;设计要点&lt;/h2&gt;
+&lt;p&gt;对象生成器的总体思路是清晰的，获取到类，使用反射获取到其所有的域，采用dfs(深度优先搜索)遍历类的域树，在遍历过程中设置随机值。&lt;/p&gt;
+
+&lt;h3 id=&quot;section-3&quot;&gt;类型分类&lt;/h3&gt;
+&lt;p&gt;针对Java类的特点，可以将其简单分为几种类型。
+#### 基础类型
+基础类型包括int、float、double、short、long、byte、char、boolean、String，需要针对这些基础类型提供默认的随机产生器。&lt;/p&gt;
+
+&lt;h4 id=&quot;array&quot;&gt;Array&lt;/h4&gt;
+&lt;p&gt;数组类型，默认随机产生器能够产生一个指定类的对象数组，并能够对数组成员赋随机对象。&lt;/p&gt;
+
+&lt;h4 id=&quot;enum&quot;&gt;Enum&lt;/h4&gt;
+&lt;p&gt;枚举类型。默认构造器能够随机产生一个枚举值。&lt;/p&gt;
+
+&lt;h3 id=&quot;interface-or-abstract&quot;&gt;Interface Or Abstract&lt;/h3&gt;
+&lt;p&gt;对于接口和抽象类，我们需要首先知道它们的子类，否则无法产生其实例。在这里，有两种方案，方案一是扫描类路径下的所有类，找到该接口或抽象类的所有非抽象的子类，或者在编译期就生成继承树并记录下来。但是考虑到这样实现会比较复杂，所以在第一个版本，并没有按照这样的方案实现。如果读者对该方案有兴趣的，可以参考&lt;a href=&quot;https://github.com/ronmamo/reflections&quot;&gt;reflections&lt;/a&gt;。它是一个Java的开源项目，但是由于使用了Java7的一些特性，所以无法直接使用到Android项目中。接下来，我们说方案二，其实很简单，就是由使用者通过接口告诉rog某接口或者抽象类的非抽象子类有哪些，Rog会从中随机选择一个并产生它的实例返回。&lt;/p&gt;
+
+&lt;h3 id=&quot;section-4&quot;&gt;其它类&lt;/h3&gt;
+&lt;p&gt;除开上面提到的一些特殊的类，剩下的就是普通的一些类了，其它类的构造器ClassGenerator需要依赖于以上提到的构造器，将对应的一些的类对象的产生作业代理给以上产生器。&lt;/p&gt;
+
+&lt;h3 id=&quot;uml&quot;&gt;UML图&lt;/h3&gt;
+&lt;p&gt;&lt;img src=&quot;https://img.alicdn.com/imgextra/i1/754328530/TB2113WmFXXXXb7XXXXXXXXXXXX_!!754328530.png&quot; alt=&quot;&quot; /&gt;
+上图是rog的整体UML图，从图中我们可以看到所有的Generator都继承自IGenerator接口，接口包含两个方法，generate()方法用来产生随机对象，getClassToGenerate()获取该Genreator所产生的对象类型。&lt;/p&gt;
+
+&lt;p&gt;针对所有基本类型都实现了相对应的Generator，并提供了一些方法用于限制随机值的产生，比如设置最大值，设置不产生负数等。这些基本类型对象产生器通过BasicTypeGeneratorFactory进行管理。这是一个全局的单例。&lt;/p&gt;
+
+&lt;p&gt;上面的BasicTypeGeneratorFactory实现了ITypeGeneratorFactory接口。同样实现了该接口的还有TypeGeneratorFactory，该类用来缓存对象生成器，之前的Generator都会缓存到该Factory中，提升性能。该类依赖了BasicTypeGeneratorFactory，对于基本类型的产生器的获取会代理给BasicTypeGeneratorFactory。&lt;/p&gt;
+
+&lt;p&gt;在整个rog中，最重要的类就是ClassGenerator，该类可以产生所有类型的对象，不管是基本类型，还是抽象类。它依赖了以上提到的所有默认提供的Generator，将对应的一些的类对象的产生作业代理给以上产生器。&lt;/p&gt;
+
+&lt;h2 id=&quot;section-5&quot;&gt;注意事项&lt;/h2&gt;
+
+&lt;h3 id=&quot;final&quot;&gt;final的处理&lt;/h3&gt;
+&lt;p&gt;对于有final修饰的域不再进行赋值。&lt;/p&gt;
+
+&lt;h3 id=&quot;section-6&quot;&gt;产生层级限制&lt;/h3&gt;
+&lt;p&gt;层级定义类引用的层数，比如Class1 为0层，且它有一个Class2的域，则该域的值对象的层级为1。如果不进行限制，则可能因为递归次数太多，而导致StackOverFlow或者无限循环无法结束程序。比如Class1有一个Class1类型的域。默认的最大层级为5，我们建议最大层级不要超过10。&lt;/p&gt;
+
+&lt;h3 id=&quot;section-7&quot;&gt;域的缓存&lt;/h3&gt;
+&lt;p&gt;由于反射效率低下，所以通过反射获取到某个类的域列表时，应该将其缓存起来。&lt;/p&gt;
+</description>
+        <pubDate>Fri, 08 Apr 2016 00:00:00 +0800</pubDate>
+        <link>http://sixwolf.net/blog/2016/04/08/Android%E9%9A%8F%E6%9C%BA%E5%AF%B9%E8%B1%A1%E7%94%9F%E6%88%90%E5%99%A8%E7%9A%84%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0/</link>
+        <guid isPermaLink="true">http://sixwolf.net/blog/2016/04/08/Android%E9%9A%8F%E6%9C%BA%E5%AF%B9%E8%B1%A1%E7%94%9F%E6%88%90%E5%99%A8%E7%9A%84%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0/</guid>
+        
+        <category>Development</category>
+        
+        <category>Android</category>
+        
+        
+        <category>blog</category>
+        
+      </item>
     
       <item>
         <title>如何产生一个随机的[0, n)范围内的Short值</title>
@@ -1317,107 +1379,6 @@ public void stopRecording() {
         <pubDate>Sat, 30 Jan 2016 00:00:00 +0800</pubDate>
         <link>http://sixwolf.net/blog/2016/01/30/Android%E4%BD%BF%E7%94%A8FFMpeg%E5%AE%9E%E7%8E%B0%E6%8E%A8%E9%80%81%E8%A7%86%E9%A2%91%E7%9B%B4%E6%92%AD%E6%B5%81%E5%88%B0%E6%9C%8D%E5%8A%A1%E5%99%A8/</link>
         <guid isPermaLink="true">http://sixwolf.net/blog/2016/01/30/Android%E4%BD%BF%E7%94%A8FFMpeg%E5%AE%9E%E7%8E%B0%E6%8E%A8%E9%80%81%E8%A7%86%E9%A2%91%E7%9B%B4%E6%92%AD%E6%B5%81%E5%88%B0%E6%9C%8D%E5%8A%A1%E5%99%A8/</guid>
-        
-        <category>Development</category>
-        
-        <category>rtmp</category>
-        
-        <category>hls</category>
-        
-        <category>live-stream</category>
-        
-        
-        <category>blog</category>
-        
-      </item>
-    
-      <item>
-        <title>视频直播解决方案</title>
-        <description>&lt;p&gt;&lt;br /&gt;
-&lt;br /&gt;&lt;/p&gt;
-
-&lt;h1 id=&quot;section&quot;&gt;背景&lt;/h1&gt;
-&lt;p&gt;当下，视频直播行业在中国逐渐走红。在刚刚过去的2015年，视频直播成为互联网行业最抢眼的领域之一。从游戏到秀场，从传统的网页端到移动互联网，各大直播平台包括斗鱼、熊猫tv、虎牙战旗还有纯移动端的印客、易直播等，群雄割据。言归正转，毕竟本文是一篇技术博客，接下来让我们从技术的角度分析如何搭建一个自己的直播平台。&lt;/p&gt;
-
-&lt;h1 id=&quot;section-1&quot;&gt;流程图&lt;/h1&gt;
-&lt;p&gt;首先让我们看一下直播整体流程。
-&lt;img src=&quot;https://img.alicdn.com/imgextra/i2/754328530/TB2mp.yjVXXXXaqXFXXXXXXXXXX_!!754328530.jpg&quot; alt=&quot;直播流程图&quot; /&gt; &lt;br /&gt;
-首先是直播视频采集端，由主播通过摄像头手机等采集设备，采集视音频流，编码后采用RTMP协议&lt;sup id=&quot;fnref:RTMP&quot;&gt;&lt;a href=&quot;#fn:RTMP&quot; class=&quot;footnote&quot;&gt;1&lt;/a&gt;&lt;/sup&gt;推流到直播流服务器。这里采用H.264[^H.264]编码对视频流进行编码，使用AAC&lt;sup id=&quot;fnref:AAC&quot;&gt;&lt;a href=&quot;#fn:AAC&quot; class=&quot;footnote&quot;&gt;2&lt;/a&gt;&lt;/sup&gt;对音频流进行编码，采用这两种编码的原因是hls协议&lt;sup id=&quot;fnref:hls&quot;&gt;&lt;a href=&quot;#fn:hls&quot; class=&quot;footnote&quot;&gt;3&lt;/a&gt;&lt;/sup&gt;要求使用这两种编码。
-接下来直播服务器会对从采集端推送的流进行一定的处理。比如，hls协议会将视频流切片成一个个的TS视频文件缓存在服务器中，同时生成一个m3u8文件记录了视频流中的包含的TS文件。
-之后如果有播放器请求某一个直播链接，服务器会使用RTMP或者hls协议将流推送到播放器。那么我们该如果根据情况选择这两种协议呢。首先，我们需要明确一点，这两种协议各有利弊。如下所示：&lt;/p&gt;
-
-&lt;table&gt;
-  &lt;thead&gt;
-    &lt;tr&gt;
-      &lt;th style=&quot;text-align: center&quot;&gt; &lt;/th&gt;
-      &lt;th style=&quot;text-align: center&quot;&gt;RTMP&lt;/th&gt;
-      &lt;th style=&quot;text-align: center&quot;&gt;hls&lt;/th&gt;
-    &lt;/tr&gt;
-  &lt;/thead&gt;
-  &lt;tbody&gt;
-    &lt;tr&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;Company&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;Adobe&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;Apple&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;平台支持&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;FlashPlayer &lt;br /&gt;等一些网页端的播放器 &lt;br /&gt;移动端 Vitamio&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;Apple产品原生支持，&lt;br /&gt;Android3.0以上原生支持 桌面机的浏览器需要使用一些第三方库，如JWPlayer&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;延迟&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;三秒左右的延迟，实时性较高&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;根据TS长度不同而不同，一般会有10s以上的延迟&lt;/td&gt;
-    &lt;/tr&gt;
-  &lt;/tbody&gt;
-&lt;/table&gt;
-
-&lt;p&gt;综合以上因素，我们认为如果对实时性要求较高，那么使用RTMP会比较好。网页端使用RTMP会比较好，因为Flash Player原生支持，而大多数的浏览器都会安装Flash player。而在移动端如果对实时性要求不高，那么采用hls比较好，因为ios包括3.0以上的安卓都原生支持hls协议。接下来本文将根据以上的三个步骤的具体实现分别展开说明，为了篇幅考虑，我们会将一些内容放到子文章中。&lt;/p&gt;
-
-&lt;h1 id=&quot;section-2&quot;&gt;视频采集与编码&lt;/h1&gt;
-&lt;p&gt;视频采集可以有多重途径，比如通过电脑摄像头，通过OBS等录屏软件进行录屏，通过手机摄像头采集。由于目前户外直播和移动互联网很火，所以我们就选择实现在安卓设备上通过摄像头采集视频流（其实是因为我是写安卓的= =）。
-为了实现这一功能，我们使用了一个开源项目&lt;a href=&quot;https://github.com/bytedeco/javacv&quot;&gt;javacv&lt;/a&gt; 它包含了一些在计算机视觉领域应用比较多的库，我们主要使用的是它的FFMpeg库。使用FFMpeg的FFMpegFrameRecoder类，我们能够方便地将从android摄像头采集到的帧传输到服务器。具体的通过Camera和FFMpeg推流到服务器的实现请看我们的另一篇文章&lt;a href=&quot;http://sixwolf.net/blog/2016/01/30/Android%E4%BD%BF%E7%94%A8FFMpeg%E5%AE%9E%E7%8E%B0%E6%8E%A8%E9%80%81%E8%A7%86%E9%A2%91%E7%9B%B4%E6%92%AD%E6%B5%81%E5%88%B0%E6%9C%8D%E5%8A%A1%E5%99%A8/&quot;&gt;Android使用FFMpeg实现推送视频直播流到服务器&lt;/a&gt;。另外FFMpeg也支持H.264和AAC编码。&lt;/p&gt;
-
-&lt;h1 id=&quot;section-3&quot;&gt;直播流服务器&lt;/h1&gt;
-&lt;p&gt;关于直播服务器，我们选择使用我们中国人开发的一个开源项目——&lt;a href=&quot;https://github.com/ossrs/srs&quot;&gt;srs&lt;/a&gt;，它支持RTMP/HTTP/RTSP等协议的流输入，支持RTMP/HDS/HLS/HTTP等协议的流输出，同时它也支持集群。给作者点赞。  &lt;br /&gt;
-关于srs的安装和使用可以直接看它在github上的wiki，这里不再赘述。需要注意的一点是该项目在centos 6.x 和ubunut12.x上能正常编译通过，但是在比如我使用的ubuntu14.04上会有一些依赖包的缺失。所以为了方便考虑的话，读者可以在centos和ubuntu12.x上进行test。&lt;/p&gt;
-
-&lt;h1 id=&quot;section-4&quot;&gt;播放器&lt;/h1&gt;
-&lt;p&gt;我们在试验的过程中，使用多种播放器和库在全平台实现了rtmp和hls的播放。在网页端使用了&lt;a href=&quot;http://videojs.com/&quot;&gt;videojs&lt;/a&gt;，在安卓端使用&lt;a href=&quot;https://github.com/yixia/VitamioBundle&quot;&gt;vitamio&lt;/a&gt;。具体的实现请看我们的另外一篇&lt;a href=&quot;http://sixwolf.net/blog/2016/01/30/%E5%9C%A8%E5%90%84%E7%AB%AF%E5%AE%9E%E7%8E%B0Rtmp%E5%92%8Chls%E6%B5%81%E8%A7%86%E9%A2%91%E7%9A%84%E6%92%AD%E6%94%BE/&quot;&gt;如何在网页端和移动端播放rtmp和hls视频流&lt;/a&gt;&lt;/p&gt;
-
-&lt;h1 id=&quot;section-5&quot;&gt;总结&lt;/h1&gt;
-&lt;p&gt;当然本文中的解决方案只是最简单的，对于直播服务器集群，直播间的创建和管理，直播间直播密码和权限，内容分发网络CDN都没有进行深入的研究。但是通过本实验性项目，我认为对于我们了解整个直播的业务流程还是很有帮助的。&lt;/p&gt;
-
-&lt;h1 id=&quot;section-6&quot;&gt;相关文件推荐&lt;/h1&gt;
-&lt;ul&gt;
-  &lt;li&gt;&lt;a href=&quot;http://www.infoq.com/cn/articles/alibaba-broadcast-platform-technology-challenges&quot;&gt;鏖战双十一-阿里直播平台面临的技术挑战&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h1 id=&quot;section-7&quot;&gt;相关项目&lt;/h1&gt;
-&lt;ul&gt;
-  &lt;li&gt;&lt;a href=&quot;https://github.com/bytedeco/javacv&quot;&gt;javacv&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;https://github.com/ossrs/srs&quot;&gt;srs&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;https://github.com/yixia/VitamioBundle&quot;&gt;Vitamio&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;div class=&quot;footnotes&quot;&gt;
-  &lt;ol&gt;
-    &lt;li id=&quot;fn:RTMP&quot;&gt;
-      &lt;p&gt;Real Time Messaging Protocol (RTMP) was initially a proprietary protocol developed by Macromedia for streaming audio, video and data over the Internet, between a Flash player and a server. Macromedia is now owned by Adobe, which has released an incomplete version of the specification of the protocol for public use. (reference from wikipedia )&lt;br /&gt;Flash Player是天生能够播放RTMP流的，所以RTMP流可以在网页上得到很好的支持，另外也有很多其他浏览器能够支持播放RTMP流，如比较知名的JW player，videoJS。另外RTMP流的延迟只有3s，比较适合一些实时性和互动性较高的直播。 &lt;a href=&quot;#fnref:RTMP&quot; class=&quot;reversefootnote&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
-    &lt;/li&gt;
-    &lt;li id=&quot;fn:AAC&quot;&gt;
-      &lt;p&gt;AAC（Advanced Audio Coding），中文名：高级音频编码，出现于1997年，基于MPEG-2的音频编码技术。由Fraunhofer IIS、杜比实验室、AT&amp;amp;T、Sony等公司共同开发，目的是取代MP3格式。2000年，MPEG-4标准出现后，AAC重新集成了其特性，加入了SBR技术和PS技术，为了区别于传统的MPEG-2 AAC又称为MPEG-4 AAC。 &lt;a href=&quot;#fnref:AAC&quot; class=&quot;reversefootnote&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
-    &lt;/li&gt;
-    &lt;li id=&quot;fn:hls&quot;&gt;
-      &lt;p&gt;HLS (HTTP Live Streaming)，Apple的动态码率自适应技术。主要用于PC和Apple终端的音视频服务。包括一个m3u(8)的索引文件，TS媒体分片文件和key加密串文件。 &lt;a href=&quot;#fnref:hls&quot; class=&quot;reversefootnote&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
-    &lt;/li&gt;
-  &lt;/ol&gt;
-&lt;/div&gt;
-</description>
-        <pubDate>Fri, 29 Jan 2016 00:00:00 +0800</pubDate>
-        <link>http://sixwolf.net/blog/2016/01/29/%E7%9B%B4%E6%92%AD%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88-%E6%90%AD%E5%BB%BA%E4%BD%A0%E8%87%AA%E5%B7%B1%E7%9A%84%E7%9B%B4%E6%92%AD%E5%B9%B3%E5%8F%B0/</link>
-        <guid isPermaLink="true">http://sixwolf.net/blog/2016/01/29/%E7%9B%B4%E6%92%AD%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88-%E6%90%AD%E5%BB%BA%E4%BD%A0%E8%87%AA%E5%B7%B1%E7%9A%84%E7%9B%B4%E6%92%AD%E5%B9%B3%E5%8F%B0/</guid>
         
         <category>Development</category>
         

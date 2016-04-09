@@ -1,0 +1,328 @@
+<p><br />
+<br /></p>
+
+<h1 id="section">背景</h1>
+<p>在过去的2015年中，视频直播页的新宠无疑是户外直播。随着4G网络的普及和覆盖率的提升，主播可以在户外通过手机进行直播。而观众也愿意为这种可以足不出户而观天下事的服务买单。基于这样的背景，本文主要实现在Android设备上采集视频并推流到服务器。</p>
+
+<h1 id="section-1">概览</h1>
+<p>如下图所示，在安卓上采集并推流主要应用到两个类。首先是安卓Api自带的Camera，实现从摄像头采集图像。然后是Javacv
+中的FFMpegFrameRecorder类实现对Camera采集到的帧编码并推流。
+<img src="https://img.alicdn.com/imgextra/i2/754328530/TB2zdpskXXXXXbTXXXXXXXXXXXX_!!754328530.jpg" alt="安卓视频采集图" /></p>
+
+<h1 id="section-2">关键步骤与代码</h1>
+<p>下面结合上面的流程图给出视频采集的关键步骤。
+首先是Camera类的初始化。</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>// 初始化Camera设备
+cameraDevice = Camera.open();
+     Log.i(LOG_TAG, "cameara open");
+     cameraView = new CameraView(this, cameraDevice);
+</code></pre>
+</div>
+
+<p>上面的CameraView类是我们实现的负责预览视频采集和将采集到的帧写入FFMpegFrameRecorder的类。具体代码如下：</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>class CameraView extends SurfaceView implements SurfaceHolder.Callback, PreviewCallback {
+
+    private SurfaceHolder mHolder;
+    private Camera mCamera;
+
+    public CameraView(Context context, Camera camera) {
+        super(context);
+        Log.w("camera", "camera view");
+        mCamera = camera;
+        mHolder = getHolder();
+        //设置SurfaceView 的SurfaceHolder的回调函数
+        mHolder.addCallback(CameraView.this);
+        mHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+        //设置Camera预览的回调函数
+        mCamera.setPreviewCallback(CameraView.this);
+    }
+
+    @Override
+    public void surfaceCreated(SurfaceHolder holder) {
+        try {
+            stopPreview();
+            mCamera.setPreviewDisplay(holder);
+        } catch (IOException exception) {
+            mCamera.release();
+            mCamera = null;
+        }
+    }
+
+    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+        stopPreview();
+
+        Camera.Parameters camParams = mCamera.getParameters();
+        List&lt;Camera.Size&gt; sizes = camParams.getSupportedPreviewSizes();
+        // Sort the list in ascending order
+        Collections.sort(sizes, new Comparator&lt;Camera.Size&gt;() {
+
+            public int compare(final Camera.Size a, final Camera.Size b) {
+                return a.width * a.height - b.width * b.height;
+            }
+        });
+
+        // Pick the first preview size that is equal or bigger, or pick the last (biggest) option if we cannot
+        // reach the initial settings of imageWidth/imageHeight.
+        for (int i = 0; i &lt; sizes.size(); i++) {
+            if ((sizes.get(i).width &gt;= imageWidth &amp;&amp; sizes.get(i).height &gt;= imageHeight) || i == sizes.size() - 1) {
+                imageWidth = sizes.get(i).width;
+                imageHeight = sizes.get(i).height;
+                Log.v(LOG_TAG, "Changed to supported resolution: " + imageWidth + "x" + imageHeight);
+                break;
+            }
+        }
+        camParams.setPreviewSize(imageWidth, imageHeight);
+
+        Log.v(LOG_TAG, "Setting imageWidth: " + imageWidth + " imageHeight: " + imageHeight + " frameRate: " + frameRate);
+
+        camParams.setPreviewFrameRate(frameRate);
+        Log.v(LOG_TAG, "Preview Framerate: " + camParams.getPreviewFrameRate());
+
+        mCamera.setParameters(camParams);
+
+        // Set the holder (which might have changed) again
+        try {
+            mCamera.setPreviewDisplay(holder);
+            mCamera.setPreviewCallback(CameraView.this);
+            startPreview();
+        } catch (Exception e) {
+            Log.e(LOG_TAG, "Could not set preview display in surfaceChanged");
+        }
+    }
+
+    @Override
+    public void surfaceDestroyed(SurfaceHolder holder) {
+        try {
+            mHolder.addCallback(null);
+            mCamera.setPreviewCallback(null);
+        } catch (RuntimeException e) {
+            // The camera has probably just been released, ignore.
+        }
+    }
+
+    public void startPreview() {
+        if (!isPreviewOn &amp;&amp; mCamera != null) {
+            isPreviewOn = true;
+            mCamera.startPreview();
+        }
+    }
+
+    public void stopPreview() {
+        if (isPreviewOn &amp;&amp; mCamera != null) {
+            isPreviewOn = false;
+            mCamera.stopPreview();
+        }
+    }
+
+    @Override
+    public void onPreviewFrame(byte[] data, Camera camera) {
+        if (audioRecord == null || audioRecord.getRecordingState() != AudioRecord.RECORDSTATE_RECORDING) {
+            startTime = System.currentTimeMillis();
+            return;
+        }
+        //如果是录播，则把该帧先存在内存中
+        if (RECORD_LENGTH &gt; 0) {
+            int i = imagesIndex++ % images.length;
+            yuvImage = images[i];
+            timestamps[i] = 1000 * (System.currentTimeMillis() - startTime);
+        }
+        if (yuvImage != null &amp;&amp; recording) {
+            ((ByteBuffer) yuvImage.image[0].position(0)).put(data);
+			//如果是直播则直接写入到FFmpegFrameRecorder中
+            if (RECORD_LENGTH &lt;= 0) try {
+                Log.v(LOG_TAG, "Writing Frame");
+                long t = 1000 * (System.currentTimeMillis() - startTime);
+                if (t &gt; recorder.getTimestamp()) {
+                    recorder.setTimestamp(t);
+                }
+                recorder.record(yuvImage);
+            } catch (FFmpegFrameRecorder.Exception e) {
+                Log.v(LOG_TAG, e.getMessage());
+                e.printStackTrace();
+            }
+        }
+    }
+}
+</code></pre>
+</div>
+
+<p>初始化FFmpegFrameRecorder类</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>    recorder = new FFmpegFrameRecorder(ffmpeg_link, imageWidth, imageHeight, 1);
+    //设置视频编码  28 指代h.264
+    recorder.setVideoCodec(28);
+    recorder.setFormat("flv");
+    //设置采样频率
+    recorder.setSampleRate(sampleAudioRateInHz);
+    // 设置帧率，即每秒的图像数
+    recorder.setFrameRate(frameRate);
+    //音频采集线程
+	audioRecordRunnable = new AudioRecordRunnable();
+    audioThread = new Thread(audioRecordRunnable);
+    runAudioThread = true;
+</code></pre>
+</div>
+
+<p>其中的AudioRecordRunnable是我们自己实现的音频采集线程，代码如下</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code> class AudioRecordRunnable implements Runnable {
+
+    @Override
+    public void run() {
+        android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_URGENT_AUDIO);
+
+        // Audio
+        int bufferSize;
+        ShortBuffer audioData;
+        int bufferReadResult;
+
+        bufferSize = AudioRecord.getMinBufferSize(sampleAudioRateInHz,
+                AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT);
+        audioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC, sampleAudioRateInHz,
+                AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, bufferSize);
+		//如果是录播，则需要录播长度的缓存
+        if (RECORD_LENGTH &gt; 0) {
+            samplesIndex = 0;
+            samples = new ShortBuffer[RECORD_LENGTH * sampleAudioRateInHz * 2 / bufferSize + 1];
+            for (int i = 0; i &lt; samples.length; i++) {
+                samples[i] = ShortBuffer.allocate(bufferSize);
+            }
+        } else {
+        //直播只需要相当于一帧的音频的数据缓存
+            audioData = ShortBuffer.allocate(bufferSize);
+        }
+
+        Log.d(LOG_TAG, "audioRecord.startRecording()");
+        audioRecord.startRecording();
+
+        /* ffmpeg_audio encoding loop */
+        while (runAudioThread) {
+            if (RECORD_LENGTH &gt; 0) {
+                audioData = samples[samplesIndex++ % samples.length];
+                audioData.position(0).limit(0);
+            }
+            //Log.v(LOG_TAG,"recording? " + recording);
+            bufferReadResult = audioRecord.read(audioData.array(), 0, audioData.capacity());
+            audioData.limit(bufferReadResult);
+            if (bufferReadResult &gt; 0) {
+                Log.v(LOG_TAG, "bufferReadResult: " + bufferReadResult);
+                // If "recording" isn't true when start this thread, it never get's set according to this if statement...!!!
+                // Why?  Good question...
+                if (recording) {
+               		//如果是直播，则直接调用recordSamples 将音频写入Recorder
+                    if (RECORD_LENGTH &lt;= 0) try {
+                        recorder.recordSamples(audioData);
+                        //Log.v(LOG_TAG,"recording " + 1024*i + " to " + 1024*i+1024);
+                    } catch (FFmpegFrameRecorder.Exception e) {
+                        Log.v(LOG_TAG, e.getMessage());
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+        Log.v(LOG_TAG, "AudioThread Finished, release audioRecord");
+
+        /* encoding finish, release recorder */
+        if (audioRecord != null) {
+            audioRecord.stop();
+            audioRecord.release();
+            audioRecord = null;
+            Log.v(LOG_TAG, "audioRecord released");
+        }
+    }
+}
+</code></pre>
+</div>
+
+<p>接下来是开始直播和停止直播的方法</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>//开始直播
+public void startRecording() {
+
+    initRecorder();
+
+    try {
+        recorder.start();
+        startTime = System.currentTimeMillis();
+        recording = true;
+        audioThread.start();
+
+    } catch (FFmpegFrameRecorder.Exception e) {
+        e.printStackTrace();
+    }
+}
+
+public void stopRecording() {
+	//停止音频线程
+    runAudioThread = false;
+    try {
+        audioThread.join();
+    } catch (InterruptedException e) {
+        e.printStackTrace();
+    }
+    audioRecordRunnable = null;
+    audioThread = null;
+
+    if (recorder != null &amp;&amp; recording) {
+    //如果是录播，则将缓存中的帧加上时间戳后写入
+        if (RECORD_LENGTH &gt; 0) {
+            Log.v(LOG_TAG, "Writing frames");
+            try {
+                int firstIndex = imagesIndex % samples.length;
+                int lastIndex = (imagesIndex - 1) % images.length;
+                if (imagesIndex &lt;= images.length) {
+                    firstIndex = 0;
+                    lastIndex = imagesIndex - 1;
+                }
+                if ((startTime = timestamps[lastIndex] - RECORD_LENGTH * 1000000L) &lt; 0) {
+                    startTime = 0;
+                }
+                if (lastIndex &lt; firstIndex) {
+                    lastIndex += images.length;
+                }
+                for (int i = firstIndex; i &lt;= lastIndex; i++) {
+                    long t = timestamps[i % timestamps.length] - startTime;
+                    if (t &gt;= 0) {
+                        if (t &gt; recorder.getTimestamp()) {
+                            recorder.setTimestamp(t);
+                        }
+                        recorder.record(images[i % images.length]);
+                    }
+                }
+
+                firstIndex = samplesIndex % samples.length;
+                lastIndex = (samplesIndex - 1) % samples.length;
+                if (samplesIndex &lt;= samples.length) {
+                    firstIndex = 0;
+                    lastIndex = samplesIndex - 1;
+                }
+                if (lastIndex &lt; firstIndex) {
+                    lastIndex += samples.length;
+                }
+                for (int i = firstIndex; i &lt;= lastIndex; i++) {
+                    recorder.recordSamples(samples[i % samples.length]);
+                }
+            } catch (FFmpegFrameRecorder.Exception e) {
+                Log.v(LOG_TAG, e.getMessage());
+                e.printStackTrace();
+            }
+        }
+
+        recording = false;
+        Log.v(LOG_TAG, "Finishing recording, calling stop and release on recorder");
+        try {
+            recorder.stop();
+            recorder.release();
+        } catch (FFmpegFrameRecorder.Exception e) {
+            e.printStackTrace();
+        }
+        recorder = null;
+
+    }
+}
+</code></pre>
+</div>
+
+<p>以上即为关键的步骤和代码，下面给出完整项目地址 <a href="https://github.com/beautifulSoup/RtmpRecoder/tree/master">RtmpRecorder</a></p>

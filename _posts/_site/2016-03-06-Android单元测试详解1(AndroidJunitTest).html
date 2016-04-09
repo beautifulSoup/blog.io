@@ -1,0 +1,65 @@
+<h1 id="section">背景</h1>
+<p>最近稍等空闲，考虑到我们项目测试覆盖率几乎等于0，因此痛下决心决定研究下Android单元测试。</p>
+
+<h1 id="section-1">单元测试的类型</h1>
+<p>首先我们需要明确安卓的单元测试主要分为两种类型：</p>
+
+<ul>
+  <li>在开发主机Java虚拟机上运行的Junit Test</li>
+  <li>在Android真机或者虚拟机上运行的Instrumented unit tests</li>
+</ul>
+
+<p>因为Junit Test免去了将apk包安装到android设备上的步骤，因此速度上会比Instrumented unit tests快很多。但是跟android相关的一些库只能运行在android设备上，而无法再本机Java虚拟机上运行，比如很多包名中带android的库。因此我们这里需要做一个选择，如果某些类没有用到android相关的库，则完全可以使用Junit Test，加快测试速率。</p>
+
+<p>如果是在Android Studio上开发，则文件结构应该是这样的，
+<img src="https://img.alicdn.com/imgextra/i1/754328530/TB2VoYRlXXXXXc7XXXXXXXXXXXX-754328530.png" alt="单元测试文件结构" />
+其中androidTest包中存放的是Instrumented unit tests的文件，而test中则是Junit Test，这两个文件夹在项目创建的时候AS都会帮我们创建好。可能细心的同学已经发现了，test文件夹中的文件都不能运行。
+如图，我们需要将Test Artiface改为Unit Test
+<img src="https://img.alicdn.com/imgextra/i1/754328530/TB2JdHIlXXXXXarXpXXXXXXXXXX-754328530.png" alt="选择测试类型" />
+另外这两种测试都只有在debugable = true的编译类型的时候才能运行。
+了解了单元测试的两个基本类型，接下来让我们来了解下目前主流的单元测试框架或者说工具。</p>
+
+<h1 id="androidjunit">AndroidJunit</h1>
+<p>Junit是Java开发中应用最多的单元测试框架，目前已经到Junit4。在Android的单元测试中我们同样可以使用它，如果是Junit Test，可以直接使用Java的Junit4。而如果测试的类必须使用Instrument Test，则我们需要使用AndroidJunitTest
+首先在build.gradle文件中的defaultConfig中加入如下设置，设置使用的Instrument test的runner 为AndroidJunitRunner。</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+</code></pre>
+</div>
+<p>然后在androidTest的java文件夹中创建测试文件</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="nd">@RunWith</span><span class="o">(</span><span class="n">AndroidJUnit4</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
+<span class="nd">@LargeTest</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">MainActivityExprssoTest</span> <span class="o">{</span>
+
+
+    <span class="nd">@Rule</span>
+    <span class="kd">public</span> <span class="n">ActivityTestRule</span><span class="o">&lt;</span><span class="n">MainActivity</span><span class="o">&gt;</span> <span class="n">mActivityRule</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ActivityTestRule</span><span class="o">&lt;</span><span class="n">MainActivity</span><span class="o">&gt;(</span><span class="n">MainActivity</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+
+
+    <span class="nd">@Before</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="n">init</span><span class="o">(){</span>
+        <span class="n">Log</span><span class="o">.</span><span class="na">d</span><span class="o">(</span><span class="s">"MainActivity test"</span><span class="o">,</span> <span class="s">"init test MainActivity"</span><span class="o">);</span>
+    <span class="o">}</span>
+    <span class="nd">@Test</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="n">testOnBtnClick</span><span class="o">(){</span>
+        <span class="n">onView</span><span class="o">(</span><span class="n">withId</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">text_btn1</span><span class="o">))</span>
+                <span class="o">.</span><span class="na">perform</span><span class="o">(</span><span class="n">click</span><span class="o">())</span> <span class="o">;</span>
+        <span class="n">Assert</span><span class="o">.</span><span class="na">assertTrue</span><span class="o">(</span><span class="n">mActivityRule</span><span class="o">.</span><span class="na">getActivity</span><span class="o">().</span><span class="na">getKey</span><span class="o">());</span>
+    <span class="o">}</span>
+    
+    <span class="nd">@After</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="n">destroy</span><span class="o">(){</span>
+    <span class="o">}</span>
+
+
+<span class="o">}</span>
+</code></pre>
+</div>
+<p>我们可以在@Before 中做一些初始化操作，在@After中做一些单元测试结束前需要做的一些工作。而带@Test的方法则是具体的测试方法。AndroidJunitRunner会逐个运行这些方法。关于其他的一些anntotation其实跟Junit中是一样的，具体可以参考<a href="http://developer.android.com/intl/zh-cn/tools/testing-support-library/index.html#AndroidJUnitRunner">Android官方文档</a>。</p>
+
+<p>另外以前做过Android Activity单元测试的同学可能会发现上面的代码跟你写的有些不一样。Corrcet，之前的单元测试类如果是对某个Activity做测试需要继承自ActivityInstrumentationTestCase2<calculatoractivity>，传入需要测试的Activity类型作为模板测试。目前该类型已被deprectd，而使用一个ActivityTestRule，作为模板参数的Activity会在@Before方法之前被launch，在@After之后被停止运行，在这之间我们可以去调用它的一些方法。</calculatoractivity></p>
+
+<p>如果你不需要对Activity做测试，但是需要访问一些图片等resource资源，则需要让你的测试类继承自AndroidTestCase，这样你就可以通过getContext()获取应用的上下文了。</p>
+
+<p>ok，本期对AndroidJunitTest的介绍就到这里。下一期我们将会介绍界面测试框架Expresso，敬请期待。</p>

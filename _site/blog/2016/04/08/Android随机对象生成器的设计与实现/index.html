@@ -8,9 +8,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="A chinese man, detemined in Android and Python">
     <meta name="baidu-site-verification" content="KonQRkt3nq" />
-    <title>如何产生一个随机的[0, n)范围内的Short值 - In Coding</title>
+    <title>Android随机对象生成器的设计与实现 - In Coding</title>
 
-    <link rel="canonical" href="http://sixwolf.net/blog/2016/04/01/%E5%A6%82%E4%BD%95%E4%BA%A7%E7%94%9F%E4%B8%80%E4%B8%AA%E9%9A%8F%E6%9C%BA%E7%9A%84-0,-n)%E7%9A%84short%E5%80%BC/">
+    <link rel="canonical" href="http://sixwolf.net/blog/2016/04/08/Android%E9%9A%8F%E6%9C%BA%E5%AF%B9%E8%B1%A1%E7%94%9F%E6%88%90%E5%99%A8%E7%9A%84%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0/">
 
     <!-- Icons -->
   <link rel="shortcut icon" href="img/logo.ico">
@@ -113,14 +113,14 @@
                 <div class="post-heading">
 	           <!-- <div class="Tags">
                         
-                        <a class="tag" href="/Tags/#Java" title="Java">Java</a>
-                        
                         <a class="tag" href="/Tags/#Development" title="Development">Development</a>
                         
+                        <a class="tag" href="/Tags/#Android" title="Android">Android</a>
+                        
                     </div> -->
-                    <h1>如何产生一个随机的[0, n)范围内的Short值</h1>
+                    <h1>Android随机对象生成器的设计与实现</h1>
                     
-                    <span class="meta">Posted by beautifulSoup on April 1, 2016</span>
+                    <span class="meta">Posted by beautifulSoup on April 8, 2016</span>
                 </div>
             </div>
         </div>
@@ -136,48 +136,52 @@
         <div class="row">
             <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1 post-container">
 
-                <h1 id="section">背景</h1>
-<p>最近在做一个Java的随机对象生成器。需要随机产生一些在[0, n)范围内的short值。</p>
+                <h2 id="section">目标</h2>
+<p>当完成一个新的Feature的时候，需要对其进行测试。但是由于服务器还没有部署该功能，或者单元测试的限制，往往需要程序员自己去伪造一些数据。但是手工伪造数据往往效率不高并且没有代表性。因此希望能够实现一个对象生成器，生成对象并往里面填充随机值。</p>
 
-<h1 id="section-1">坑</h1>
-<p>很多人可能会说，这有什么难的，我刚学编程的时候就会了。然后给出下面代码。</p>
+<h2 id="section-1">项目地址</h2>
+<p><a href="https://github.com/campusappcn/rog">rog</a></p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>    <span class="kt">short</span> <span class="n">value</span> <span class="o">=</span> <span class="o">(</span><span class="kt">short</span><span class="o">)</span> <span class="o">(</span><span class="k">new</span> <span class="n">Random</span><span class="o">().</span><span class="na">nextInt</span><span class="o">(</span><span class="n">n</span><span class="o">));</span>
-</code></pre>
-</div>
-<p>看起来很棒的一段的代码，感觉完全没有问题，但是在实际测试过程中我们发现最后获取到的value值有时候会是负值。咦，怎么回事呢，nextInt(n)返回的不是[0, n)的值吗？</p>
+<h2 id="section-2">设计要点</h2>
+<p>对象生成器的总体思路是清晰的，获取到类，使用反射获取到其所有的域，采用dfs(深度优先搜索)遍历类的域树，在遍历过程中设置随机值。</p>
 
-<h1 id="section-2">爬坑</h1>
-<p>为了解释以上问题，我们首先需要回顾下学校学的数值的表示。原码用第一位表示正负，后面的位数表示符号，正数反码，补码与原码都相同，负数除符号位外取反获得反码，反码加一获得补码。</p>
+<h3 id="section-3">类型分类</h3>
+<p>针对Java类的特点，可以将其简单分为几种类型。
+#### 基础类型
+基础类型包括int、float、double、short、long、byte、char、boolean、String，需要针对这些基础类型提供默认的随机产生器。</p>
 
-<p>int型在Java中占四个字节，short型在Java中占两个字节，int到short的强转将int的后两个字节截取，比如原本是0x0FFFFFFF，我们知道这是正数，但是如果截断获取后两个字节就编程了0xFFFF，这就是一个负数了。</p>
+<h4 id="array">Array</h4>
+<p>数组类型，默认随机产生器能够产生一个指定类的对象数组，并能够对数组成员赋随机对象。</p>
 
-<p>那么判断一下如果是负数，取反行不行:</p>
+<h4 id="enum">Enum</h4>
+<p>枚举类型。默认构造器能够随机产生一个枚举值。</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>	<span class="kt">short</span> <span class="n">value</span> <span class="o">=</span> <span class="o">(</span><span class="kt">short</span><span class="o">)</span> <span class="o">(</span><span class="k">new</span> <span class="n">Random</span><span class="o">().</span><span class="na">nextInt</span><span class="o">(</span><span class="n">n</span><span class="o">));</span>
-    <span class="n">value</span> <span class="o">=</span> <span class="o">(</span><span class="kt">short</span><span class="o">)(</span><span class="n">value</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="o">?</span> <span class="o">-</span><span class="n">value</span> <span class="o">:</span> <span class="n">value</span><span class="o">);</span>
-</code></pre>
-</div>
+<h3 id="interface-or-abstract">Interface Or Abstract</h3>
+<p>对于接口和抽象类，我们需要首先知道它们的子类，否则无法产生其实例。在这里，有两种方案，方案一是扫描类路径下的所有类，找到该接口或抽象类的所有非抽象的子类，或者在编译期就生成继承树并记录下来。但是考虑到这样实现会比较复杂，所以在第一个版本，并没有按照这样的方案实现。如果读者对该方案有兴趣的，可以参考<a href="https://github.com/ronmamo/reflections">reflections</a>。它是一个Java的开源项目，但是由于使用了Java7的一些特性，所以无法直接使用到Android项目中。接下来，我们说方案二，其实很简单，就是由使用者通过接口告诉rog某接口或者抽象类的非抽象子类有哪些，Rog会从中随机选择一个并产生它的实例返回。</p>
 
-<p>答案是不行，因为在Java中四则运算的最小类型是int型，short型和byte型的四则运算都是先将值转为Int型在进行的。所以value(0xFFFF -&gt; 0x0000FFFF) &lt; 0, NO. 即使这里取了负值，但是在经过又一次short强转之后又回到了原来的结果。</p>
+<h3 id="section-4">其它类</h3>
+<p>除开上面提到的一些特殊的类，剩下的就是普通的一些类了，其它类的构造器ClassGenerator需要依赖于以上提到的构造器，将对应的一些的类对象的产生作业代理给以上产生器。</p>
 
-<h1 id="section-3">解决</h1>
-<p>那么如何解决这一问题呢，下面给出两种正确的解决代码。</p>
+<h3 id="uml">UML图</h3>
+<p><img src="https://img.alicdn.com/imgextra/i1/754328530/TB2113WmFXXXXb7XXXXXXXXXXXX_!!754328530.png" alt="" />
+上图是rog的整体UML图，从图中我们可以看到所有的Generator都继承自IGenerator接口，接口包含两个方法，generate()方法用来产生随机对象，getClassToGenerate()获取该Genreator所产生的对象类型。</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>	<span class="n">n</span> <span class="o">=</span> <span class="n">n</span> <span class="o">&lt;</span> <span class="n">Short</span><span class="o">.</span><span class="na">MAX_VALUE</span> <span class="o">?</span> <span class="n">n</span> <span class="o">:</span> <span class="n">Short</span><span class="o">.</span><span class="na">MAX_VALUE</span><span class="o">;</span>
-	<span class="kt">short</span> <span class="n">value</span> <span class="o">=</span> <span class="o">(</span><span class="kt">short</span><span class="o">)</span> <span class="o">(</span><span class="k">new</span> <span class="n">Random</span><span class="o">().</span><span class="na">nextInt</span><span class="o">(</span><span class="n">n</span><span class="o">));</span>
-</code></pre>
-</div>
+<p>针对所有基本类型都实现了相对应的Generator，并提供了一些方法用于限制随机值的产生，比如设置最大值，设置不产生负数等。这些基本类型对象产生器通过BasicTypeGeneratorFactory进行管理。这是一个全局的单例。</p>
 
-<p>因为产生的int值在short值的范围内，所以即使强转也不会改变正负性。因为最大值是0x00007FFF，强转为short，最高位总是0；</p>
+<p>上面的BasicTypeGeneratorFactory实现了ITypeGeneratorFactory接口。同样实现了该接口的还有TypeGeneratorFactory，该类用来缓存对象生成器，之前的Generator都会缓存到该Factory中，提升性能。该类依赖了BasicTypeGeneratorFactory，对于基本类型的产生器的获取会代理给BasicTypeGeneratorFactory。</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>	<span class="kt">short</span> <span class="n">value</span> <span class="o">=</span> <span class="o">(</span><span class="kt">short</span><span class="o">)</span> <span class="o">(</span><span class="k">new</span> <span class="n">Random</span><span class="o">().</span><span class="na">nextInt</span><span class="o">(</span><span class="n">n</span><span class="o">))</span> <span class="o">&amp;</span> <span class="mh">0x7</span><span class="n">FFF</span><span class="o">;</span>
-</code></pre>
-</div>
+<p>在整个rog中，最重要的类就是ClassGenerator，该类可以产生所有类型的对象，不管是基本类型，还是抽象类。它依赖了以上提到的所有默认提供的Generator，将对应的一些的类对象的产生作业代理给以上产生器。</p>
 
-<p>做位操作，只取产生值的后15位。第16位总是0，所以可以保证是正数。</p>
+<h2 id="section-5">注意事项</h2>
 
-<p>当然只有在n &gt; Short.MAX_VALUE的情况下才会有问题，如果本省n &lt;= Short.MAX_VALUE，那么也不会有问题。byte与short同理。</p>
+<h3 id="final">final的处理</h3>
+<p>对于有final修饰的域不再进行赋值。</p>
+
+<h3 id="section-6">产生层级限制</h3>
+<p>层级定义类引用的层数，比如Class1 为0层，且它有一个Class2的域，则该域的值对象的层级为1。如果不进行限制，则可能因为递归次数太多，而导致StackOverFlow或者无限循环无法结束程序。比如Class1有一个Class1类型的域。默认的最大层级为5，我们建议最大层级不要超过10。</p>
+
+<h3 id="section-7">域的缓存</h3>
+<p>由于反射效率低下，所以通过反射获取到某个类的域列表时，应该将其缓存起来。</p>
 
 
                 <hr>
@@ -185,13 +189,9 @@
                 <ul class="pager">
                     
                     <li class="previous">
-                        <a href="/blog/2016/03/31/%E6%B5%85%E6%9E%90ReactiveX%E7%9A%84%E5%A4%9A%E6%92%AD/" data-toggle="tooltip" data-placement="top" title="浅析ReactiveX的多播——实现安卓双击检测遇到的坑">&larr; Previous Post</a>
+                        <a href="/blog/2016/04/01/%E5%A6%82%E4%BD%95%E4%BA%A7%E7%94%9F%E4%B8%80%E4%B8%AA%E9%9A%8F%E6%9C%BA%E7%9A%84-0,-n)%E7%9A%84short%E5%80%BC/" data-toggle="tooltip" data-placement="top" title="如何产生一个随机的[0, n)范围内的Short值">&larr; Previous Post</a>
                     </li>
                     
-                    
-                    <li class="next">
-                        <a href="/blog/2016/04/08/Android%E9%9A%8F%E6%9C%BA%E5%AF%B9%E8%B1%A1%E7%94%9F%E6%88%90%E5%99%A8%E7%9A%84%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0/" data-toggle="tooltip" data-placement="top" title="Android随机对象生成器的设计与实现">Next Post &rarr;</a>
-                    </li>
                     
                 </ul>
 
@@ -209,14 +209,11 @@
                 </style>
 
                 <div class="ds-share"
-                    data-thread-key="/blog/2016/04/01/如何产生一个随机的[0, n)的short值" data-title="如何产生一个随机的[0, n)范围内的Short值"
+                    data-thread-key="/blog/2016/04/08/Android随机对象生成器的设计与实现" data-title="Android随机对象生成器的设计与实现"
                     data-images="http://sixwolf.net/https://img.alicdn.com/imgextra/i4/754328530/TB2GEa3cVXXXXbUXpXXXXXXXXXX-754328530.jpg"
-                    data-content="背景
-最近在做一个Java的随机对象生成器。需要随机产生一些在[0, n)范围内的short值。
-
-坑
-很多人可能会说，这有什么难的，我刚学编程的时候就会... | Microdust:Azeril's blog"
-                    data-url="http://sixwolf.net/blog/2016/04/01/%E5%A6%82%E4%BD%95%E4%BA%A7%E7%94%9F%E4%B8%80%E4%B8%AA%E9%9A%8F%E6%9C%BA%E7%9A%84-0,-n)%E7%9A%84short%E5%80%BC/">
+                    data-content="目标
+当完成一个新的Feature的时候，需要对其进行测试。但是由于服务器还没有部署该功能，或者单元测试的限制，往往需要程序员自己去伪造一些数据。但是手工... | Microdust:Azeril's blog"
+                    data-url="http://sixwolf.net/blog/2016/04/08/Android%E9%9A%8F%E6%9C%BA%E5%AF%B9%E8%B1%A1%E7%94%9F%E6%88%90%E5%99%A8%E7%9A%84%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0/">
                     <div class="ds-share-inline">
                       <ul  class="ds-share-icons-16">
 
@@ -235,7 +232,7 @@
 
                 <!-- 多说评论框 start -->
                 <div class="comment">
-                    <div class="ds-thread" data-thread-key="/blog/2016/04/01/如何产生一个随机的[0, n)的short值" data-title="如何产生一个随机的[0, n)范围内的Short值" data-url="http://sixwolf.net/blog/2016/04/01/%E5%A6%82%E4%BD%95%E4%BA%A7%E7%94%9F%E4%B8%80%E4%B8%AA%E9%9A%8F%E6%9C%BA%E7%9A%84-0,-n)%E7%9A%84short%E5%80%BC/"></div>
+                    <div class="ds-thread" data-thread-key="/blog/2016/04/08/Android随机对象生成器的设计与实现" data-title="Android随机对象生成器的设计与实现" data-url="http://sixwolf.net/blog/2016/04/08/Android%E9%9A%8F%E6%9C%BA%E5%AF%B9%E8%B1%A1%E7%94%9F%E6%88%90%E5%99%A8%E7%9A%84%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0/"></div>
                 </div>
                 <!-- 多说评论框 end -->
 
