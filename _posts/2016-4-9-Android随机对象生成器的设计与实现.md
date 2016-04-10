@@ -18,6 +18,7 @@ description: 本篇博客主要阐述如何实现一个随机对象生成器，�
 
 ### 类型分类
 针对Java类的特点，可以将其简单分为几种类型。
+
 #### 基础类型
 基础类型包括int、float、double、short、long、byte、char、boolean、String，需要针对这些基础类型提供默认的随机产生器。
 
