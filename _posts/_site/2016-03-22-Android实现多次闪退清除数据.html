@@ -2,7 +2,7 @@
 <p>很多时候由于后台返回的数据异常，可能会导致App闪退。而如果这些异常数据被App本地缓存下来，那么即使杀掉进程重新进入还是会发生闪退。唯一的解决方法就是清除App数据，但是用户可能没有这个意识或者嫌麻烦就直接不再使用了，这是我们无法接受的。在使用淘宝、追书神器等App时我发现有时候它们也会连续闪退，但是往往闪退三次后就恢复正常了，所以一般成熟的App都会做连续闪退三次后清除缓存数据的工作。而目前笔者搜不到有哪篇blog来讲这方面的事情，所以就姑且由我来讲讲此事，为希望提高App用户体验的朋友提供些许参考。</p>
 
 <h1 id="acra">ACRA</h1>
-<p>为了能够在闪退的时候做一些事情，我们可以使用ACRA，这是Github上的一个开源项目，允许使用者设置一些Sender在App闪退的时候做一些事情。具体使用可以直接参考<a href="https://github.com/ACRA/acra">Github</a></p>
+<p>为了能够在闪退的时候做一些事情，我们可以使用ACRA，这是Github上的一个开源项目，允许使用者设置一些Sender在App闪退的时候做一些事情。具体使用可以直接参考<a href="https://github.com/ACRA/acra">Github</a>。如果不希望使用ACRA，那么也可以自己实现一个UncachedExceptionHandler并替换系统默认的Handler，并在这个Handler里面对数据进行处理。</p>
 
 <h1 id="section-1">实现清除数据</h1>
 <p>ACRA提供了自己的一些Sender，如使用系统邮件客户端向指定邮箱发送邮件的EmailIntentSender。而我们希望记录闪退次数和清除数据则需要implements ReportSender接口。</p>

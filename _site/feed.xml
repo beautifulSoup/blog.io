@@ -5,9 +5,108 @@
     <description>A chinese man, detemined in Android and Python</description>
     <link>http://sixwolf.net/</link>
     <atom:link href="http://sixwolf.net/feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Sat, 09 Apr 2016 17:14:04 +0800</pubDate>
-    <lastBuildDate>Sat, 09 Apr 2016 17:14:04 +0800</lastBuildDate>
+    <pubDate>Mon, 11 Apr 2016 11:02:49 +0800</pubDate>
+    <lastBuildDate>Mon, 11 Apr 2016 11:02:49 +0800</lastBuildDate>
     <generator>Jekyll v3.1.2</generator>
+    
+      <item>
+        <title>Android去除默认闪退Dialog</title>
+        <description>&lt;h2 id=&quot;section&quot;&gt;背景&lt;/h2&gt;
+
+&lt;p&gt;安卓应用闪退后总会出现一个“抱歉，App已经停止运行”的弹窗，这样的用户体验并不好。很多大厂的App都去除了这个弹窗，因此本文主要介绍如何去除默认闪退弹窗，以及在闪退时做一些必要的善后工作。&lt;/p&gt;
+
+&lt;h2 id=&quot;uncaughtexceptionhandler&quot;&gt;UnCaughtExceptionHandler&lt;/h2&gt;
+&lt;p&gt;UnCaughtExceptionHandler能够在Thread遇到未catch住的Exception而终止前做一些善后工作。但是它无法阻止线程停止运行，线程最后还是要退出。&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;	&lt;span class=&quot;n&quot;&gt;Thread&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;setDefaultUncaughtExceptionHandler&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Thread&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;UncaughtExceptionHandler&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;nd&quot;&gt;@Override&lt;/span&gt;
+            &lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;uncaughtException&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Thread&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;thread&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Throwable&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ex&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+                &lt;span class=&quot;n&quot;&gt;System&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;exit&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+            &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+        &lt;span class=&quot;o&quot;&gt;});&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h2 id=&quot;dialog&quot;&gt;去除Dialog&lt;/h2&gt;
+&lt;p&gt;Android系统默认设置了一个UnCaughtExceptionHandler，而弹出闪退弹窗的工作就是在这个handler做的。所以如果要去除弹窗，只要实现一个UnCaughtExceptionHandler并替换掉系统默认的就可以了，代码如下。&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;	&lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;App&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;extends&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Application&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+
+
+    &lt;span class=&quot;nd&quot;&gt;@Override&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;onCreate&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;kd&quot;&gt;super&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;onCreate&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;Thread&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;setDefaultUncaughtExceptionHandler&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;MyUnCaughtExceptionHandler&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;());&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+
+
+    &lt;span class=&quot;kd&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;MyUnCaughtExceptionHandler&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;implements&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Thread&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;UncaughtExceptionHandler&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+
+        &lt;span class=&quot;nd&quot;&gt;@Override&lt;/span&gt;
+        &lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;uncaughtException&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Thread&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;thread&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Throwable&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ex&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;ex&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;printStackTrace&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
+            &lt;span class=&quot;c1&quot;&gt;// do some work here&lt;/span&gt;
+
+  			&lt;span class=&quot;n&quot;&gt;android&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;os&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;Process&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;killProcess&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;android&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;os&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;Process&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;myPid&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;());&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;System&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;exit&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+        &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;以上的替换UnCaughtExceptionHandler的工作是在Application中统一做的，当然你也可以在每一个Activity中做。对于单个Activity还好，当Activity很多的时候就必需实现一个BaseActivity，在BaseActivity中替换，其它Activity要集成BaseActivity。&lt;/p&gt;
+
+&lt;h2 id=&quot;section-1&quot;&gt;必要的善后工作&lt;/h2&gt;
+&lt;p&gt;为了处理闪退，提升用户体验，有必要做一些善后工作，主要有几条罗列如下：&lt;/p&gt;
+
+&lt;h3 id=&quot;section-2&quot;&gt;异常上报&lt;/h3&gt;
+&lt;p&gt;可以采用邮件或者通过服务器接口上传的方式。两者各有优缺点，邮件方式开发简单，但需要用户额外操作，用户体验较差。如果用上传服务器方式，因为在UnCaughtExceptionHandler中不能打开一个新的线程，所以只能同步请求，在网络情况不好的时候花费时间会较长而阻塞运行。也可能因为网络原因而上报失败。当然总体下来还是上传服务器好一点。具体实现留给读者。&lt;/p&gt;
+
+&lt;h3 id=&quot;section-3&quot;&gt;记录日志&lt;/h3&gt;
+&lt;p&gt;将闪退信息存储到文件系统中。不能存到SharedPreferences中，因为打开SP需要使用一个新的线程（Android内部实现），而这在UnCaughtExceptionHandler中，这是不被允许的。&lt;/p&gt;
+
+&lt;h3 id=&quot;section-4&quot;&gt;闪退三次清除数据&lt;/h3&gt;
+&lt;p&gt;很多时候是由于后台返回数据错误导致的闪退。如果这些数据被缓存下来，那么用户即使再次打开还是会发生闪退，这时候就只能通过重装或者清除数据的方式才能解决闪退问题，用户体验十分不好。所以在多次闪退后自动清除缓存数据十分必要。具体实现可以参考我的另一篇博客&lt;a href=&quot;http://sixwolf.net/blog/2016/03/22/Android%E5%AE%9E%E7%8E%B0%E5%A4%9A%E6%AC%A1%E9%97%AA%E9%80%80%E6%B8%85%E9%99%A4%E6%95%B0%E6%8D%AE/&quot;&gt;Android实现多次闪退清除数据&lt;/a&gt;。不过该博客中使用的是ACRA，一个对UnCaughtExceptionHandler再次封装的开源项目，读者可以将ACRA替换为UnCaughtExceptionHandler来实现。&lt;/p&gt;
+
+&lt;h3 id=&quot;app&quot;&gt;重新打开App&lt;/h3&gt;
+&lt;p&gt;可以在UnCaughtExceptionHandler中重新打开App或者弹出自定义弹窗。&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; &lt;span class=&quot;kd&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;MyUnCaughtExceptionHandler&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;implements&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Thread&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;UncaughtExceptionHandler&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+
+        &lt;span class=&quot;nd&quot;&gt;@Override&lt;/span&gt;
+        &lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;uncaughtException&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Thread&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;thread&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Throwable&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ex&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;ex&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;printStackTrace&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
+            
+            &lt;span class=&quot;n&quot;&gt;Intent&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;intent&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Intent&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;App&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;MainActivity&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;class&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;intent&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;setFlags&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Intent&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;FLAG_ACTIVITY_NEW_TASK&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;App&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;startActivity&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;intent&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+
+            &lt;span class=&quot;n&quot;&gt;android&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;os&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;Process&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;killProcess&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;android&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;os&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;Process&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;myPid&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;());&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;System&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;exit&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+        &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;p&gt;注意setFlags这一步是必需的，因为使用的Context是App的Context，所以必需打开一个新的任务队列，否则打开Activity无法生效，如果你替换Handler是在Activity做的，拿到的Context是Activity的Context，则无需这一步。&lt;/p&gt;
+
+&lt;h2 id=&quot;section-5&quot;&gt;注意事项&lt;/h2&gt;
+
+&lt;p&gt;最主要的注意点我之前已经提到，不要在UnCaughtExceptionHandler中新开一个线程，会抛出异常。&lt;/p&gt;
+</description>
+        <pubDate>Mon, 11 Apr 2016 00:00:00 +0800</pubDate>
+        <link>http://sixwolf.net/blog/2016/04/11/Android%E5%8E%BB%E9%99%A4%E7%83%A6%E4%BA%BA%E7%9A%84%E9%97%AA%E9%80%80%E5%BC%B9%E7%AA%97/</link>
+        <guid isPermaLink="true">http://sixwolf.net/blog/2016/04/11/Android%E5%8E%BB%E9%99%A4%E7%83%A6%E4%BA%BA%E7%9A%84%E9%97%AA%E9%80%80%E5%BC%B9%E7%AA%97/</guid>
+        
+        <category>Development</category>
+        
+        <category>Android</category>
+        
+        
+        <category>blog</category>
+        
+      </item>
     
       <item>
         <title>Android随机对象生成器的设计与实现</title>
@@ -21,9 +120,10 @@
 &lt;p&gt;对象生成器的总体思路是清晰的，获取到类，使用反射获取到其所有的域，采用dfs(深度优先搜索)遍历类的域树，在遍历过程中设置随机值。&lt;/p&gt;
 
 &lt;h3 id=&quot;section-3&quot;&gt;类型分类&lt;/h3&gt;
-&lt;p&gt;针对Java类的特点，可以将其简单分为几种类型。
-#### 基础类型
-基础类型包括int、float、double、short、long、byte、char、boolean、String，需要针对这些基础类型提供默认的随机产生器。&lt;/p&gt;
+&lt;p&gt;针对Java类的特点，可以将其简单分为几种类型。&lt;/p&gt;
+
+&lt;h4 id=&quot;section-4&quot;&gt;基础类型&lt;/h4&gt;
+&lt;p&gt;基础类型包括int、float、double、short、long、byte、char、boolean、String，需要针对这些基础类型提供默认的随机产生器。&lt;/p&gt;
 
 &lt;h4 id=&quot;array&quot;&gt;Array&lt;/h4&gt;
 &lt;p&gt;数组类型，默认随机产生器能够产生一个指定类的对象数组，并能够对数组成员赋随机对象。&lt;/p&gt;
@@ -34,7 +134,7 @@
 &lt;h3 id=&quot;interface-or-abstract&quot;&gt;Interface Or Abstract&lt;/h3&gt;
 &lt;p&gt;对于接口和抽象类，我们需要首先知道它们的子类，否则无法产生其实例。在这里，有两种方案，方案一是扫描类路径下的所有类，找到该接口或抽象类的所有非抽象的子类，或者在编译期就生成继承树并记录下来。但是考虑到这样实现会比较复杂，所以在第一个版本，并没有按照这样的方案实现。如果读者对该方案有兴趣的，可以参考&lt;a href=&quot;https://github.com/ronmamo/reflections&quot;&gt;reflections&lt;/a&gt;。它是一个Java的开源项目，但是由于使用了Java7的一些特性，所以无法直接使用到Android项目中。接下来，我们说方案二，其实很简单，就是由使用者通过接口告诉rog某接口或者抽象类的非抽象子类有哪些，Rog会从中随机选择一个并产生它的实例返回。&lt;/p&gt;
 
-&lt;h3 id=&quot;section-4&quot;&gt;其它类&lt;/h3&gt;
+&lt;h3 id=&quot;section-5&quot;&gt;其它类&lt;/h3&gt;
 &lt;p&gt;除开上面提到的一些特殊的类，剩下的就是普通的一些类了，其它类的构造器ClassGenerator需要依赖于以上提到的构造器，将对应的一些的类对象的产生作业代理给以上产生器。&lt;/p&gt;
 
 &lt;h3 id=&quot;uml&quot;&gt;UML图&lt;/h3&gt;
@@ -47,15 +147,15 @@
 
 &lt;p&gt;在整个rog中，最重要的类就是ClassGenerator，该类可以产生所有类型的对象，不管是基本类型，还是抽象类。它依赖了以上提到的所有默认提供的Generator，将对应的一些的类对象的产生作业代理给以上产生器。&lt;/p&gt;
 
-&lt;h2 id=&quot;section-5&quot;&gt;注意事项&lt;/h2&gt;
+&lt;h2 id=&quot;section-6&quot;&gt;注意事项&lt;/h2&gt;
 
 &lt;h3 id=&quot;final&quot;&gt;final的处理&lt;/h3&gt;
 &lt;p&gt;对于有final修饰的域不再进行赋值。&lt;/p&gt;
 
-&lt;h3 id=&quot;section-6&quot;&gt;产生层级限制&lt;/h3&gt;
+&lt;h3 id=&quot;section-7&quot;&gt;产生层级限制&lt;/h3&gt;
 &lt;p&gt;层级定义类引用的层数，比如Class1 为0层，且它有一个Class2的域，则该域的值对象的层级为1。如果不进行限制，则可能因为递归次数太多，而导致StackOverFlow或者无限循环无法结束程序。比如Class1有一个Class1类型的域。默认的最大层级为5，我们建议最大层级不要超过10。&lt;/p&gt;
 
-&lt;h3 id=&quot;section-7&quot;&gt;域的缓存&lt;/h3&gt;
+&lt;h3 id=&quot;section-8&quot;&gt;域的缓存&lt;/h3&gt;
 &lt;p&gt;由于反射效率低下，所以通过反射获取到某个类的域列表时，应该将其缓存起来。&lt;/p&gt;
 </description>
         <pubDate>Fri, 08 Apr 2016 00:00:00 +0800</pubDate>
@@ -312,7 +412,7 @@ activity:main/123/path1/12.4。则会调用intent的putExtra()方法将key1=123,
 &lt;p&gt;很多时候由于后台返回的数据异常，可能会导致App闪退。而如果这些异常数据被App本地缓存下来，那么即使杀掉进程重新进入还是会发生闪退。唯一的解决方法就是清除App数据，但是用户可能没有这个意识或者嫌麻烦就直接不再使用了，这是我们无法接受的。在使用淘宝、追书神器等App时我发现有时候它们也会连续闪退，但是往往闪退三次后就恢复正常了，所以一般成熟的App都会做连续闪退三次后清除缓存数据的工作。而目前笔者搜不到有哪篇blog来讲这方面的事情，所以就姑且由我来讲讲此事，为希望提高App用户体验的朋友提供些许参考。&lt;/p&gt;
 
 &lt;h1 id=&quot;acra&quot;&gt;ACRA&lt;/h1&gt;
-&lt;p&gt;为了能够在闪退的时候做一些事情，我们可以使用ACRA，这是Github上的一个开源项目，允许使用者设置一些Sender在App闪退的时候做一些事情。具体使用可以直接参考&lt;a href=&quot;https://github.com/ACRA/acra&quot;&gt;Github&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;为了能够在闪退的时候做一些事情，我们可以使用ACRA，这是Github上的一个开源项目，允许使用者设置一些Sender在App闪退的时候做一些事情。具体使用可以直接参考&lt;a href=&quot;https://github.com/ACRA/acra&quot;&gt;Github&lt;/a&gt;。如果不希望使用ACRA，那么也可以自己实现一个UncachedExceptionHandler并替换系统默认的Handler，并在这个Handler里面对数据进行处理。&lt;/p&gt;
 
 &lt;h1 id=&quot;section-1&quot;&gt;实现清除数据&lt;/h1&gt;
 &lt;p&gt;ACRA提供了自己的一些Sender，如使用系统邮件客户端向指定邮箱发送邮件的EmailIntentSender。而我们希望记录闪退次数和清除数据则需要implements ReportSender接口。&lt;/p&gt;
@@ -1039,354 +1139,6 @@ private void initVideo(String path){
         <category>hls</category>
         
         <category>player</category>
-        
-        
-        <category>blog</category>
-        
-      </item>
-    
-      <item>
-        <title>Android使用FFMpeg实现推送视频直播流到服务器</title>
-        <description>&lt;p&gt;&lt;br /&gt;
-&lt;br /&gt;&lt;/p&gt;
-
-&lt;h1 id=&quot;section&quot;&gt;背景&lt;/h1&gt;
-&lt;p&gt;在过去的2015年中，视频直播页的新宠无疑是户外直播。随着4G网络的普及和覆盖率的提升，主播可以在户外通过手机进行直播。而观众也愿意为这种可以足不出户而观天下事的服务买单。基于这样的背景，本文主要实现在Android设备上采集视频并推流到服务器。&lt;/p&gt;
-
-&lt;h1 id=&quot;section-1&quot;&gt;概览&lt;/h1&gt;
-&lt;p&gt;如下图所示，在安卓上采集并推流主要应用到两个类。首先是安卓Api自带的Camera，实现从摄像头采集图像。然后是Javacv
-中的FFMpegFrameRecorder类实现对Camera采集到的帧编码并推流。
-&lt;img src=&quot;https://img.alicdn.com/imgextra/i2/754328530/TB2zdpskXXXXXbTXXXXXXXXXXXX_!!754328530.jpg&quot; alt=&quot;安卓视频采集图&quot; /&gt;&lt;/p&gt;
-
-&lt;h1 id=&quot;section-2&quot;&gt;关键步骤与代码&lt;/h1&gt;
-&lt;p&gt;下面结合上面的流程图给出视频采集的关键步骤。
-首先是Camera类的初始化。&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;// 初始化Camera设备
-cameraDevice = Camera.open();
-     Log.i(LOG_TAG, &quot;cameara open&quot;);
-     cameraView = new CameraView(this, cameraDevice);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;p&gt;上面的CameraView类是我们实现的负责预览视频采集和将采集到的帧写入FFMpegFrameRecorder的类。具体代码如下：&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;class CameraView extends SurfaceView implements SurfaceHolder.Callback, PreviewCallback {
-
-    private SurfaceHolder mHolder;
-    private Camera mCamera;
-
-    public CameraView(Context context, Camera camera) {
-        super(context);
-        Log.w(&quot;camera&quot;, &quot;camera view&quot;);
-        mCamera = camera;
-        mHolder = getHolder();
-        //设置SurfaceView 的SurfaceHolder的回调函数
-        mHolder.addCallback(CameraView.this);
-        mHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
-        //设置Camera预览的回调函数
-        mCamera.setPreviewCallback(CameraView.this);
-    }
-
-    @Override
-    public void surfaceCreated(SurfaceHolder holder) {
-        try {
-            stopPreview();
-            mCamera.setPreviewDisplay(holder);
-        } catch (IOException exception) {
-            mCamera.release();
-            mCamera = null;
-        }
-    }
-
-    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-        stopPreview();
-
-        Camera.Parameters camParams = mCamera.getParameters();
-        List&amp;lt;Camera.Size&amp;gt; sizes = camParams.getSupportedPreviewSizes();
-        // Sort the list in ascending order
-        Collections.sort(sizes, new Comparator&amp;lt;Camera.Size&amp;gt;() {
-
-            public int compare(final Camera.Size a, final Camera.Size b) {
-                return a.width * a.height - b.width * b.height;
-            }
-        });
-
-        // Pick the first preview size that is equal or bigger, or pick the last (biggest) option if we cannot
-        // reach the initial settings of imageWidth/imageHeight.
-        for (int i = 0; i &amp;lt; sizes.size(); i++) {
-            if ((sizes.get(i).width &amp;gt;= imageWidth &amp;amp;&amp;amp; sizes.get(i).height &amp;gt;= imageHeight) || i == sizes.size() - 1) {
-                imageWidth = sizes.get(i).width;
-                imageHeight = sizes.get(i).height;
-                Log.v(LOG_TAG, &quot;Changed to supported resolution: &quot; + imageWidth + &quot;x&quot; + imageHeight);
-                break;
-            }
-        }
-        camParams.setPreviewSize(imageWidth, imageHeight);
-
-        Log.v(LOG_TAG, &quot;Setting imageWidth: &quot; + imageWidth + &quot; imageHeight: &quot; + imageHeight + &quot; frameRate: &quot; + frameRate);
-
-        camParams.setPreviewFrameRate(frameRate);
-        Log.v(LOG_TAG, &quot;Preview Framerate: &quot; + camParams.getPreviewFrameRate());
-
-        mCamera.setParameters(camParams);
-
-        // Set the holder (which might have changed) again
-        try {
-            mCamera.setPreviewDisplay(holder);
-            mCamera.setPreviewCallback(CameraView.this);
-            startPreview();
-        } catch (Exception e) {
-            Log.e(LOG_TAG, &quot;Could not set preview display in surfaceChanged&quot;);
-        }
-    }
-
-    @Override
-    public void surfaceDestroyed(SurfaceHolder holder) {
-        try {
-            mHolder.addCallback(null);
-            mCamera.setPreviewCallback(null);
-        } catch (RuntimeException e) {
-            // The camera has probably just been released, ignore.
-        }
-    }
-
-    public void startPreview() {
-        if (!isPreviewOn &amp;amp;&amp;amp; mCamera != null) {
-            isPreviewOn = true;
-            mCamera.startPreview();
-        }
-    }
-
-    public void stopPreview() {
-        if (isPreviewOn &amp;amp;&amp;amp; mCamera != null) {
-            isPreviewOn = false;
-            mCamera.stopPreview();
-        }
-    }
-
-    @Override
-    public void onPreviewFrame(byte[] data, Camera camera) {
-        if (audioRecord == null || audioRecord.getRecordingState() != AudioRecord.RECORDSTATE_RECORDING) {
-            startTime = System.currentTimeMillis();
-            return;
-        }
-        //如果是录播，则把该帧先存在内存中
-        if (RECORD_LENGTH &amp;gt; 0) {
-            int i = imagesIndex++ % images.length;
-            yuvImage = images[i];
-            timestamps[i] = 1000 * (System.currentTimeMillis() - startTime);
-        }
-        if (yuvImage != null &amp;amp;&amp;amp; recording) {
-            ((ByteBuffer) yuvImage.image[0].position(0)).put(data);
-			//如果是直播则直接写入到FFmpegFrameRecorder中
-            if (RECORD_LENGTH &amp;lt;= 0) try {
-                Log.v(LOG_TAG, &quot;Writing Frame&quot;);
-                long t = 1000 * (System.currentTimeMillis() - startTime);
-                if (t &amp;gt; recorder.getTimestamp()) {
-                    recorder.setTimestamp(t);
-                }
-                recorder.record(yuvImage);
-            } catch (FFmpegFrameRecorder.Exception e) {
-                Log.v(LOG_TAG, e.getMessage());
-                e.printStackTrace();
-            }
-        }
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;p&gt;初始化FFmpegFrameRecorder类&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;    recorder = new FFmpegFrameRecorder(ffmpeg_link, imageWidth, imageHeight, 1);
-    //设置视频编码  28 指代h.264
-    recorder.setVideoCodec(28);
-    recorder.setFormat(&quot;flv&quot;);
-    //设置采样频率
-    recorder.setSampleRate(sampleAudioRateInHz);
-    // 设置帧率，即每秒的图像数
-    recorder.setFrameRate(frameRate);
-    //音频采集线程
-	audioRecordRunnable = new AudioRecordRunnable();
-    audioThread = new Thread(audioRecordRunnable);
-    runAudioThread = true;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;p&gt;其中的AudioRecordRunnable是我们自己实现的音频采集线程，代码如下&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; class AudioRecordRunnable implements Runnable {
-
-    @Override
-    public void run() {
-        android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_URGENT_AUDIO);
-
-        // Audio
-        int bufferSize;
-        ShortBuffer audioData;
-        int bufferReadResult;
-
-        bufferSize = AudioRecord.getMinBufferSize(sampleAudioRateInHz,
-                AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT);
-        audioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC, sampleAudioRateInHz,
-                AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, bufferSize);
-		//如果是录播，则需要录播长度的缓存
-        if (RECORD_LENGTH &amp;gt; 0) {
-            samplesIndex = 0;
-            samples = new ShortBuffer[RECORD_LENGTH * sampleAudioRateInHz * 2 / bufferSize + 1];
-            for (int i = 0; i &amp;lt; samples.length; i++) {
-                samples[i] = ShortBuffer.allocate(bufferSize);
-            }
-        } else {
-        //直播只需要相当于一帧的音频的数据缓存
-            audioData = ShortBuffer.allocate(bufferSize);
-        }
-
-        Log.d(LOG_TAG, &quot;audioRecord.startRecording()&quot;);
-        audioRecord.startRecording();
-
-        /* ffmpeg_audio encoding loop */
-        while (runAudioThread) {
-            if (RECORD_LENGTH &amp;gt; 0) {
-                audioData = samples[samplesIndex++ % samples.length];
-                audioData.position(0).limit(0);
-            }
-            //Log.v(LOG_TAG,&quot;recording? &quot; + recording);
-            bufferReadResult = audioRecord.read(audioData.array(), 0, audioData.capacity());
-            audioData.limit(bufferReadResult);
-            if (bufferReadResult &amp;gt; 0) {
-                Log.v(LOG_TAG, &quot;bufferReadResult: &quot; + bufferReadResult);
-                // If &quot;recording&quot; isn&#39;t true when start this thread, it never get&#39;s set according to this if statement...!!!
-                // Why?  Good question...
-                if (recording) {
-               		//如果是直播，则直接调用recordSamples 将音频写入Recorder
-                    if (RECORD_LENGTH &amp;lt;= 0) try {
-                        recorder.recordSamples(audioData);
-                        //Log.v(LOG_TAG,&quot;recording &quot; + 1024*i + &quot; to &quot; + 1024*i+1024);
-                    } catch (FFmpegFrameRecorder.Exception e) {
-                        Log.v(LOG_TAG, e.getMessage());
-                        e.printStackTrace();
-                    }
-                }
-            }
-        }
-        Log.v(LOG_TAG, &quot;AudioThread Finished, release audioRecord&quot;);
-
-        /* encoding finish, release recorder */
-        if (audioRecord != null) {
-            audioRecord.stop();
-            audioRecord.release();
-            audioRecord = null;
-            Log.v(LOG_TAG, &quot;audioRecord released&quot;);
-        }
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;p&gt;接下来是开始直播和停止直播的方法&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;//开始直播
-public void startRecording() {
-
-    initRecorder();
-
-    try {
-        recorder.start();
-        startTime = System.currentTimeMillis();
-        recording = true;
-        audioThread.start();
-
-    } catch (FFmpegFrameRecorder.Exception e) {
-        e.printStackTrace();
-    }
-}
-
-public void stopRecording() {
-	//停止音频线程
-    runAudioThread = false;
-    try {
-        audioThread.join();
-    } catch (InterruptedException e) {
-        e.printStackTrace();
-    }
-    audioRecordRunnable = null;
-    audioThread = null;
-
-    if (recorder != null &amp;amp;&amp;amp; recording) {
-    //如果是录播，则将缓存中的帧加上时间戳后写入
-        if (RECORD_LENGTH &amp;gt; 0) {
-            Log.v(LOG_TAG, &quot;Writing frames&quot;);
-            try {
-                int firstIndex = imagesIndex % samples.length;
-                int lastIndex = (imagesIndex - 1) % images.length;
-                if (imagesIndex &amp;lt;= images.length) {
-                    firstIndex = 0;
-                    lastIndex = imagesIndex - 1;
-                }
-                if ((startTime = timestamps[lastIndex] - RECORD_LENGTH * 1000000L) &amp;lt; 0) {
-                    startTime = 0;
-                }
-                if (lastIndex &amp;lt; firstIndex) {
-                    lastIndex += images.length;
-                }
-                for (int i = firstIndex; i &amp;lt;= lastIndex; i++) {
-                    long t = timestamps[i % timestamps.length] - startTime;
-                    if (t &amp;gt;= 0) {
-                        if (t &amp;gt; recorder.getTimestamp()) {
-                            recorder.setTimestamp(t);
-                        }
-                        recorder.record(images[i % images.length]);
-                    }
-                }
-
-                firstIndex = samplesIndex % samples.length;
-                lastIndex = (samplesIndex - 1) % samples.length;
-                if (samplesIndex &amp;lt;= samples.length) {
-                    firstIndex = 0;
-                    lastIndex = samplesIndex - 1;
-                }
-                if (lastIndex &amp;lt; firstIndex) {
-                    lastIndex += samples.length;
-                }
-                for (int i = firstIndex; i &amp;lt;= lastIndex; i++) {
-                    recorder.recordSamples(samples[i % samples.length]);
-                }
-            } catch (FFmpegFrameRecorder.Exception e) {
-                Log.v(LOG_TAG, e.getMessage());
-                e.printStackTrace();
-            }
-        }
-
-        recording = false;
-        Log.v(LOG_TAG, &quot;Finishing recording, calling stop and release on recorder&quot;);
-        try {
-            recorder.stop();
-            recorder.release();
-        } catch (FFmpegFrameRecorder.Exception e) {
-            e.printStackTrace();
-        }
-        recorder = null;
-
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;p&gt;以上即为关键的步骤和代码，下面给出完整项目地址 &lt;a href=&quot;https://github.com/beautifulSoup/RtmpRecoder/tree/master&quot;&gt;RtmpRecorder&lt;/a&gt;&lt;/p&gt;
-</description>
-        <pubDate>Sat, 30 Jan 2016 00:00:00 +0800</pubDate>
-        <link>http://sixwolf.net/blog/2016/01/30/Android%E4%BD%BF%E7%94%A8FFMpeg%E5%AE%9E%E7%8E%B0%E6%8E%A8%E9%80%81%E8%A7%86%E9%A2%91%E7%9B%B4%E6%92%AD%E6%B5%81%E5%88%B0%E6%9C%8D%E5%8A%A1%E5%99%A8/</link>
-        <guid isPermaLink="true">http://sixwolf.net/blog/2016/01/30/Android%E4%BD%BF%E7%94%A8FFMpeg%E5%AE%9E%E7%8E%B0%E6%8E%A8%E9%80%81%E8%A7%86%E9%A2%91%E7%9B%B4%E6%92%AD%E6%B5%81%E5%88%B0%E6%9C%8D%E5%8A%A1%E5%99%A8/</guid>
-        
-        <category>Development</category>
-        
-        <category>rtmp</category>
-        
-        <category>hls</category>
-        
-        <category>live-stream</category>
         
         
         <category>blog</category>

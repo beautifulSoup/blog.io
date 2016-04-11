@@ -8,9 +8,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="A chinese man, detemined in Android and Python">
     <meta name="baidu-site-verification" content="KonQRkt3nq" />
-    <title>Android随机对象生成器的设计与实现 - In Coding</title>
+    <title>Android去除默认闪退Dialog - In Coding</title>
 
-    <link rel="canonical" href="http://sixwolf.net/blog/2016/04/08/Android%E9%9A%8F%E6%9C%BA%E5%AF%B9%E8%B1%A1%E7%94%9F%E6%88%90%E5%99%A8%E7%9A%84%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0/">
+    <link rel="canonical" href="http://sixwolf.net/blog/2016/04/11/Android%E5%8E%BB%E9%99%A4%E7%83%A6%E4%BA%BA%E7%9A%84%E9%97%AA%E9%80%80%E5%BC%B9%E7%AA%97/">
 
     <!-- Icons -->
   <link rel="shortcut icon" href="img/logo.ico">
@@ -118,9 +118,9 @@
                         <a class="tag" href="/Tags/#Android" title="Android">Android</a>
                         
                     </div> -->
-                    <h1>Android随机对象生成器的设计与实现</h1>
+                    <h1>Android去除默认闪退Dialog</h1>
                     
-                    <span class="meta">Posted by beautifulSoup on April 8, 2016</span>
+                    <span class="meta">Posted by beautifulSoup on April 11, 2016</span>
                 </div>
             </div>
         </div>
@@ -136,53 +136,89 @@
         <div class="row">
             <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1 post-container">
 
-                <h2 id="section">目标</h2>
-<p>当完成一个新的Feature的时候，需要对其进行测试。但是由于服务器还没有部署该功能，或者单元测试的限制，往往需要程序员自己去伪造一些数据。但是手工伪造数据往往效率不高并且没有代表性。因此希望能够实现一个对象生成器，生成对象并往里面填充随机值。</p>
+                <h2 id="section">背景</h2>
 
-<h2 id="section-1">项目地址</h2>
-<p><a href="https://github.com/campusappcn/rog">rog</a></p>
+<p>安卓应用闪退后总会出现一个“抱歉，App已经停止运行”的弹窗，这样的用户体验并不好。很多大厂的App都去除了这个弹窗，因此本文主要介绍如何去除默认闪退弹窗，以及在闪退时做一些必要的善后工作。</p>
 
-<h2 id="section-2">设计要点</h2>
-<p>对象生成器的总体思路是清晰的，获取到类，使用反射获取到其所有的域，采用dfs(深度优先搜索)遍历类的域树，在遍历过程中设置随机值。</p>
+<h2 id="uncaughtexceptionhandler">UnCaughtExceptionHandler</h2>
+<p>UnCaughtExceptionHandler能够在Thread遇到未catch住的Exception而终止前做一些善后工作。但是它无法阻止线程停止运行，线程最后还是要退出。</p>
 
-<h3 id="section-3">类型分类</h3>
-<p>针对Java类的特点，可以将其简单分为几种类型。</p>
+<div class="highlighter-rouge"><pre class="highlight"><code>	<span class="n">Thread</span><span class="o">.</span><span class="na">setDefaultUncaughtExceptionHandler</span><span class="o">(</span><span class="k">new</span> <span class="n">Thread</span><span class="o">.</span><span class="na">UncaughtExceptionHandler</span><span class="o">()</span> <span class="o">{</span>
+            <span class="nd">@Override</span>
+            <span class="kd">public</span> <span class="kt">void</span> <span class="n">uncaughtException</span><span class="o">(</span><span class="n">Thread</span> <span class="n">thread</span><span class="o">,</span> <span class="n">Throwable</span> <span class="n">ex</span><span class="o">)</span> <span class="o">{</span>
+                <span class="n">System</span><span class="o">.</span><span class="na">exit</span><span class="o">(</span><span class="mi">1</span><span class="o">);</span>
+            <span class="o">}</span>
+        <span class="o">});</span>
+</code></pre>
+</div>
 
-<h4 id="section-4">基础类型</h4>
-<p>基础类型包括int、float、double、short、long、byte、char、boolean、String，需要针对这些基础类型提供默认的随机产生器。</p>
+<h2 id="dialog">去除Dialog</h2>
+<p>Android系统默认设置了一个UnCaughtExceptionHandler，而弹出闪退弹窗的工作就是在这个handler做的。所以如果要去除弹窗，只要实现一个UnCaughtExceptionHandler并替换掉系统默认的就可以了，代码如下。</p>
 
-<h4 id="array">Array</h4>
-<p>数组类型，默认随机产生器能够产生一个指定类的对象数组，并能够对数组成员赋随机对象。</p>
+<div class="highlighter-rouge"><pre class="highlight"><code>	<span class="kd">public</span> <span class="kd">class</span> <span class="nc">App</span> <span class="kd">extends</span> <span class="n">Application</span> <span class="o">{</span>
 
-<h4 id="enum">Enum</h4>
-<p>枚举类型。默认构造器能够随机产生一个枚举值。</p>
 
-<h3 id="interface-or-abstract">Interface Or Abstract</h3>
-<p>对于接口和抽象类，我们需要首先知道它们的子类，否则无法产生其实例。在这里，有两种方案，方案一是扫描类路径下的所有类，找到该接口或抽象类的所有非抽象的子类，或者在编译期就生成继承树并记录下来。但是考虑到这样实现会比较复杂，所以在第一个版本，并没有按照这样的方案实现。如果读者对该方案有兴趣的，可以参考<a href="https://github.com/ronmamo/reflections">reflections</a>。它是一个Java的开源项目，但是由于使用了Java7的一些特性，所以无法直接使用到Android项目中。接下来，我们说方案二，其实很简单，就是由使用者通过接口告诉rog某接口或者抽象类的非抽象子类有哪些，Rog会从中随机选择一个并产生它的实例返回。</p>
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="n">onCreate</span><span class="o">()</span> <span class="o">{</span>
+        <span class="kd">super</span><span class="o">.</span><span class="na">onCreate</span><span class="o">();</span>
+        <span class="n">Thread</span><span class="o">.</span><span class="na">setDefaultUncaughtExceptionHandler</span><span class="o">(</span><span class="k">new</span> <span class="n">MyUnCaughtExceptionHandler</span><span class="o">());</span>
+    <span class="o">}</span>
 
-<h3 id="section-5">其它类</h3>
-<p>除开上面提到的一些特殊的类，剩下的就是普通的一些类了，其它类的构造器ClassGenerator需要依赖于以上提到的构造器，将对应的一些的类对象的产生作业代理给以上产生器。</p>
 
-<h3 id="uml">UML图</h3>
-<p><img src="https://img.alicdn.com/imgextra/i1/754328530/TB2113WmFXXXXb7XXXXXXXXXXXX_!!754328530.png" alt="" />
-上图是rog的整体UML图，从图中我们可以看到所有的Generator都继承自IGenerator接口，接口包含两个方法，generate()方法用来产生随机对象，getClassToGenerate()获取该Genreator所产生的对象类型。</p>
 
-<p>针对所有基本类型都实现了相对应的Generator，并提供了一些方法用于限制随机值的产生，比如设置最大值，设置不产生负数等。这些基本类型对象产生器通过BasicTypeGeneratorFactory进行管理。这是一个全局的单例。</p>
+    <span class="kd">class</span> <span class="nc">MyUnCaughtExceptionHandler</span> <span class="kd">implements</span> <span class="n">Thread</span><span class="o">.</span><span class="na">UncaughtExceptionHandler</span><span class="o">{</span>
 
-<p>上面的BasicTypeGeneratorFactory实现了ITypeGeneratorFactory接口。同样实现了该接口的还有TypeGeneratorFactory，该类用来缓存对象生成器，之前的Generator都会缓存到该Factory中，提升性能。该类依赖了BasicTypeGeneratorFactory，对于基本类型的产生器的获取会代理给BasicTypeGeneratorFactory。</p>
+        <span class="nd">@Override</span>
+        <span class="kd">public</span> <span class="kt">void</span> <span class="n">uncaughtException</span><span class="o">(</span><span class="n">Thread</span> <span class="n">thread</span><span class="o">,</span> <span class="n">Throwable</span> <span class="n">ex</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">ex</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
+            <span class="c1">// do some work here</span>
 
-<p>在整个rog中，最重要的类就是ClassGenerator，该类可以产生所有类型的对象，不管是基本类型，还是抽象类。它依赖了以上提到的所有默认提供的Generator，将对应的一些的类对象的产生作业代理给以上产生器。</p>
+  			<span class="n">android</span><span class="o">.</span><span class="na">os</span><span class="o">.</span><span class="na">Process</span><span class="o">.</span><span class="na">killProcess</span><span class="o">(</span><span class="n">android</span><span class="o">.</span><span class="na">os</span><span class="o">.</span><span class="na">Process</span><span class="o">.</span><span class="na">myPid</span><span class="o">());</span>
+            <span class="n">System</span><span class="o">.</span><span class="na">exit</span><span class="o">(</span><span class="mi">1</span><span class="o">);</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre>
+</div>
 
-<h2 id="section-6">注意事项</h2>
+<p>以上的替换UnCaughtExceptionHandler的工作是在Application中统一做的，当然你也可以在每一个Activity中做。对于单个Activity还好，当Activity很多的时候就必需实现一个BaseActivity，在BaseActivity中替换，其它Activity要集成BaseActivity。</p>
 
-<h3 id="final">final的处理</h3>
-<p>对于有final修饰的域不再进行赋值。</p>
+<h2 id="section-1">必要的善后工作</h2>
+<p>为了处理闪退，提升用户体验，有必要做一些善后工作，主要有几条罗列如下：</p>
 
-<h3 id="section-7">产生层级限制</h3>
-<p>层级定义类引用的层数，比如Class1 为0层，且它有一个Class2的域，则该域的值对象的层级为1。如果不进行限制，则可能因为递归次数太多，而导致StackOverFlow或者无限循环无法结束程序。比如Class1有一个Class1类型的域。默认的最大层级为5，我们建议最大层级不要超过10。</p>
+<h3 id="section-2">异常上报</h3>
+<p>可以采用邮件或者通过服务器接口上传的方式。两者各有优缺点，邮件方式开发简单，但需要用户额外操作，用户体验较差。如果用上传服务器方式，因为在UnCaughtExceptionHandler中不能打开一个新的线程，所以只能同步请求，在网络情况不好的时候花费时间会较长而阻塞运行。也可能因为网络原因而上报失败。当然总体下来还是上传服务器好一点。具体实现留给读者。</p>
 
-<h3 id="section-8">域的缓存</h3>
-<p>由于反射效率低下，所以通过反射获取到某个类的域列表时，应该将其缓存起来。</p>
+<h3 id="section-3">记录日志</h3>
+<p>将闪退信息存储到文件系统中。不能存到SharedPreferences中，因为打开SP需要使用一个新的线程（Android内部实现），而这在UnCaughtExceptionHandler中，这是不被允许的。</p>
+
+<h3 id="section-4">闪退三次清除数据</h3>
+<p>很多时候是由于后台返回数据错误导致的闪退。如果这些数据被缓存下来，那么用户即使再次打开还是会发生闪退，这时候就只能通过重装或者清除数据的方式才能解决闪退问题，用户体验十分不好。所以在多次闪退后自动清除缓存数据十分必要。具体实现可以参考我的另一篇博客<a href="http://sixwolf.net/blog/2016/03/22/Android%E5%AE%9E%E7%8E%B0%E5%A4%9A%E6%AC%A1%E9%97%AA%E9%80%80%E6%B8%85%E9%99%A4%E6%95%B0%E6%8D%AE/">Android实现多次闪退清除数据</a>。不过该博客中使用的是ACRA，一个对UnCaughtExceptionHandler再次封装的开源项目，读者可以将ACRA替换为UnCaughtExceptionHandler来实现。</p>
+
+<h3 id="app">重新打开App</h3>
+<p>可以在UnCaughtExceptionHandler中重新打开App或者弹出自定义弹窗。</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code> <span class="kd">class</span> <span class="nc">MyUnCaughtExceptionHandler</span> <span class="kd">implements</span> <span class="n">Thread</span><span class="o">.</span><span class="na">UncaughtExceptionHandler</span><span class="o">{</span>
+
+        <span class="nd">@Override</span>
+        <span class="kd">public</span> <span class="kt">void</span> <span class="n">uncaughtException</span><span class="o">(</span><span class="n">Thread</span> <span class="n">thread</span><span class="o">,</span> <span class="n">Throwable</span> <span class="n">ex</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">ex</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
+            
+            <span class="n">Intent</span> <span class="n">intent</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Intent</span><span class="o">(</span><span class="n">App</span><span class="o">.</span><span class="na">this</span><span class="o">,</span> <span class="n">MainActivity</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+            <span class="n">intent</span><span class="o">.</span><span class="na">setFlags</span><span class="o">(</span><span class="n">Intent</span><span class="o">.</span><span class="na">FLAG_ACTIVITY_NEW_TASK</span><span class="o">);</span>
+            <span class="n">App</span><span class="o">.</span><span class="na">this</span><span class="o">.</span><span class="na">startActivity</span><span class="o">(</span><span class="n">intent</span><span class="o">);</span>
+
+            <span class="n">android</span><span class="o">.</span><span class="na">os</span><span class="o">.</span><span class="na">Process</span><span class="o">.</span><span class="na">killProcess</span><span class="o">(</span><span class="n">android</span><span class="o">.</span><span class="na">os</span><span class="o">.</span><span class="na">Process</span><span class="o">.</span><span class="na">myPid</span><span class="o">());</span>
+            <span class="n">System</span><span class="o">.</span><span class="na">exit</span><span class="o">(</span><span class="mi">1</span><span class="o">);</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+</code></pre>
+</div>
+<p>注意setFlags这一步是必需的，因为使用的Context是App的Context，所以必需打开一个新的任务队列，否则打开Activity无法生效，如果你替换Handler是在Activity做的，拿到的Context是Activity的Context，则无需这一步。</p>
+
+<h2 id="section-5">注意事项</h2>
+
+<p>最主要的注意点我之前已经提到，不要在UnCaughtExceptionHandler中新开一个线程，会抛出异常。</p>
 
 
                 <hr>
@@ -190,13 +226,9 @@
                 <ul class="pager">
                     
                     <li class="previous">
-                        <a href="/blog/2016/04/01/%E5%A6%82%E4%BD%95%E4%BA%A7%E7%94%9F%E4%B8%80%E4%B8%AA%E9%9A%8F%E6%9C%BA%E7%9A%84-0,-n)%E7%9A%84short%E5%80%BC/" data-toggle="tooltip" data-placement="top" title="如何产生一个随机的[0, n)范围内的Short值">&larr; Previous Post</a>
+                        <a href="/blog/2016/04/08/Android%E9%9A%8F%E6%9C%BA%E5%AF%B9%E8%B1%A1%E7%94%9F%E6%88%90%E5%99%A8%E7%9A%84%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0/" data-toggle="tooltip" data-placement="top" title="Android随机对象生成器的设计与实现">&larr; Previous Post</a>
                     </li>
                     
-                    
-                    <li class="next">
-                        <a href="/blog/2016/04/11/Android%E5%8E%BB%E9%99%A4%E7%83%A6%E4%BA%BA%E7%9A%84%E9%97%AA%E9%80%80%E5%BC%B9%E7%AA%97/" data-toggle="tooltip" data-placement="top" title="Android去除默认闪退Dialog">Next Post &rarr;</a>
-                    </li>
                     
                 </ul>
 
@@ -214,11 +246,12 @@
                 </style>
 
                 <div class="ds-share"
-                    data-thread-key="/blog/2016/04/08/Android随机对象生成器的设计与实现" data-title="Android随机对象生成器的设计与实现"
+                    data-thread-key="/blog/2016/04/11/Android去除烦人的闪退弹窗" data-title="Android去除默认闪退Dialog"
                     data-images="http://sixwolf.net/https://img.alicdn.com/imgextra/i4/754328530/TB2GEa3cVXXXXbUXpXXXXXXXXXX-754328530.jpg"
-                    data-content="目标
-当完成一个新的Feature的时候，需要对其进行测试。但是由于服务器还没有部署该功能，或者单元测试的限制，往往需要程序员自己去伪造一些数据。但是手工... | Microdust:Azeril's blog"
-                    data-url="http://sixwolf.net/blog/2016/04/08/Android%E9%9A%8F%E6%9C%BA%E5%AF%B9%E8%B1%A1%E7%94%9F%E6%88%90%E5%99%A8%E7%9A%84%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0/">
+                    data-content="背景
+
+安卓应用闪退后总会出现一个“抱歉，App已经停止运行”的弹窗，这样的用户体验并不好。很多大厂的App都去除了这个弹窗，因此本文主要介绍如何去除默认... | Microdust:Azeril's blog"
+                    data-url="http://sixwolf.net/blog/2016/04/11/Android%E5%8E%BB%E9%99%A4%E7%83%A6%E4%BA%BA%E7%9A%84%E9%97%AA%E9%80%80%E5%BC%B9%E7%AA%97/">
                     <div class="ds-share-inline">
                       <ul  class="ds-share-icons-16">
 
@@ -237,7 +270,7 @@
 
                 <!-- 多说评论框 start -->
                 <div class="comment">
-                    <div class="ds-thread" data-thread-key="/blog/2016/04/08/Android随机对象生成器的设计与实现" data-title="Android随机对象生成器的设计与实现" data-url="http://sixwolf.net/blog/2016/04/08/Android%E9%9A%8F%E6%9C%BA%E5%AF%B9%E8%B1%A1%E7%94%9F%E6%88%90%E5%99%A8%E7%9A%84%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0/"></div>
+                    <div class="ds-thread" data-thread-key="/blog/2016/04/11/Android去除烦人的闪退弹窗" data-title="Android去除默认闪退Dialog" data-url="http://sixwolf.net/blog/2016/04/11/Android%E5%8E%BB%E9%99%A4%E7%83%A6%E4%BA%BA%E7%9A%84%E9%97%AA%E9%80%80%E5%BC%B9%E7%AA%97/"></div>
                 </div>
                 <!-- 多说评论框 end -->
 
