@@ -12,9 +12,7 @@ description: 本篇博客主要介绍如何使用Travis CI进行持续集成。�
 ## 背景
 
 很多开源项目在README中会有几个小图标来表示build情况，测试覆盖率等。如
-[![](https://jitpack.io/v/campusappcn/rog.svg)](https://jitpack.io/#campusappcn/rog)
-[![Build Status](https://travis-ci.org/campusappcn/rog.svg?branch=master)](https://travis-ci.org/campusappcn/rog)
-[![codecov.io](https://codecov.io/github/campusappcn/rog/coverage.svg?branch=master)](https://codecov.io/github/campusappcn/rog?branch=master)
+![](https://img.alicdn.com/imgextra/i3/754328530/TB2sF_JmVXXXXbQXpXXXXXXXXXX_!!754328530.png)
 
 看起来感觉很牛逼的样子，其实实现起来很简单，只需几步，就能让你的开源项目也变得牛逼起来。
 
@@ -152,7 +150,7 @@ debug{
 
 ## Codecov
 
-Codecov不支持自己生成Android的测试覆盖率报告，它能做的是接收Jacoco生成的报告并进行可视化。
+Codecov不支持自己生成Android的测试覆盖率报告，它能做的是接收Jacoco生成的报告并进行可视化，也就是上面那个表示测试覆盖率的小图标。
 
 集成Codecov只需要以下几个步骤。
 
