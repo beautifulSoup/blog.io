@@ -111,11 +111,11 @@ notification.contentView = remoteViews;
 
 也就是设置一个固定的背景色，文字和icon颜色都可以固定。如下图。
 ![](https://img.alicdn.com/imgextra/i2/754328530/TB2XoYanpXXXXXvXXXXXXXXXXXX_!!754328530.png)
-这有一个缺点，我们在图中也看到了，那就是某些Rom的Notification会有一个左右的padding，如果固定背景色就会很难看。所以这种方法虽然简答，但是不建议使用。
+这有一个缺点，我们在图中也看到了，那就是某些Rom的Notification会有一个左右的padding，如MIUI的就特别明显，如果固定背景色就会很难看。所以这种方法虽然简答，但是不建议使用。
 
 ### 透明背景色
 
-另一种方法就是让北京透明。那么文字和icon的颜色怎么办呢？很简单，跟随系统的Notification中文字的颜色。如下设置了TextView的style为默认通知中info的样式。其它相关Style包括TextAppearance.StatusBar.EventContent.Line2、TextAppearance.StatusBar.EventContent.Info等。
+另一种方法就是让背景透明。那么文字和icon的颜色怎么办呢？很简单，跟随系统的Notification中文字的样式。如下设置了TextView的style为默认通知中info的样式。其它相关Style包括TextAppearance.StatusBar.EventContent.Line2、TextAppearance.StatusBar.EventContent.Info等。
 
 ```
         <TextView
@@ -129,7 +129,7 @@ notification.contentView = remoteViews;
 ```
 
 需要注意的一点是Android5.0之后使用了不同的Style名表示通知样式。
-我们需要创建一个layout-v21文件夹，并新建一个在5.0之后使用的自定义通知样式。如下同样是设置TextView的style为Info的样式，但我们使用的是@android:style/TextAppearance.Material.Notification.Info。
+我们需要创建一个layout-v21文件夹，并新建一个在5.0之后使用的自定义通知样式。如下同样是设置TextView的style为Info的样式，但我们使用的是style是@android:style/TextAppearance.Material.Notification.Info。
 
 ```xml
 <TextView
@@ -143,7 +143,7 @@ notification.contentView = remoteViews;
             android:singleLine="true"/>
 ```
 
-另外如果自定义view中有Icon，那么Icon的颜色也需要适应背景，因为主要的背景颜色为透明黑色和白色，所以取灰色，如#999999，两种不同情况下的文字内容颜色都为该值，因此在两种背景上都能很好地显示。
+另外如果自定义view中有Icon，那么Icon的颜色也需要适应背景，可以选择一个灰色，如#999999，原生安卓黑色和白色的文字内容颜色都为该值。
 
 或者根据不同的背景色设置不同的颜色，通过上面提到的setInt方法。ImageView的setColorFilter方法可以设置图案颜色为某种纯色。但是目前我还没有找到很好的方法获取默认通知的背景色，如果读者找到了望告知。
 
@@ -158,7 +158,7 @@ remoteViews.setInt(R.id.close_iv, "setColorFilter", getIconColor());
 
 # 总结
 
-以上即为我在自定义Notification中遇到的一些问题以及解决方案。目前还有两点有待进一步完善。
+以上即为我在自定义Notification中遇到的一些问题以及解决方案。目前还有两点有待进一步补充和完善。
 
 - 获取默认通知背景色，或者使图标颜色与背景色适配的方案。
 - 不支持Notification展开收起的Rom，目前知道的仅有FlyMe。
