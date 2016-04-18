@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Android自定义Notification没你想得那么简单
+title: Android自定义Notification并没有那么简单
 date: 2016-4-8
 categories: blog
 author: beautifulSoup
