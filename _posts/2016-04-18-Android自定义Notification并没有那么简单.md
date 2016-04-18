@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Android自定义Notification并没有那么简单
-date: 2016-4-8
+date: 2016-4-18
 categories: blog
 author: beautifulSoup
 tags: [Development,Android]
