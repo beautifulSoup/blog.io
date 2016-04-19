@@ -91,7 +91,7 @@ notification.contentView = remoteViews;
 
 注意bigContentView是在sdk16时引入的，所以需要判断一下。如果小于sdk16则只能定高了。
 
-注意bigContentView 的最大高度是100dp
+注意bigContentView 的最大高度是256dp
 
 注意bigContentView和contentView的设置不能调转顺序，亲测这样会让contentView不显示。
 
