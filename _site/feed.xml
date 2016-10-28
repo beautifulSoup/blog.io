@@ -5,12 +5,927 @@
     <description>A chinese man, detemined in Android and Python</description>
     <link>http://sixwolf.net/</link>
     <atom:link href="http://sixwolf.net/feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Mon, 11 Apr 2016 11:02:49 +0800</pubDate>
-    <lastBuildDate>Mon, 11 Apr 2016 11:02:49 +0800</lastBuildDate>
+    <pubDate>Tue, 25 Oct 2016 19:18:49 +0800</pubDate>
+    <lastBuildDate>Tue, 25 Oct 2016 19:18:49 +0800</lastBuildDate>
     <generator>Jekyll v3.1.2</generator>
     
       <item>
-        <title>Android去除默认闪退Dialog</title>
+        <title>每天学点ShellScript——16进制颜色值转换器</title>
+        <description>&lt;h1 id=&quot;shellscript16&quot;&gt;每天学点ShellScript——16进制颜色值转换器&lt;/h1&gt;
+
+&lt;h2 id=&quot;section&quot;&gt;源码&lt;/h2&gt;
+
+&lt;p&gt;写了个shell小脚本用来把%为单位的alpha值和RGB值转换为16进制数。&lt;/p&gt;
+
+&lt;p&gt;输入有三种情况：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;一个参数： 认为是alpha值，转换为16进制的alpha值。&lt;/li&gt;
+  &lt;li&gt;三个参数：认为是RGB 值，转换为6个字符表示16进制的颜色值。&lt;/li&gt;
+  &lt;li&gt;四个参数：认为是alpha跟上RGB值，转换为8个字符表示alpha和颜色值的16进制数。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c&quot;&gt;#! /bin/bash&lt;/span&gt;
+
+toHex&lt;span class=&quot;o&quot;&gt;(){&lt;/span&gt;
+    &lt;span class=&quot;nv&quot;&gt;v&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;sb&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;obase=16;&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt; | bc&lt;span class=&quot;sb&quot;&gt;`&lt;/span&gt;
+    &lt;span class=&quot;nv&quot;&gt;l&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;sb&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;${#&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;v&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;sb&quot;&gt;`&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$l&lt;/span&gt; -lt 2 &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;then
+        &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;v&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;0&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;v&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;fi
+    &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$v&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+toAlpha&lt;span class=&quot;o&quot;&gt;(){&lt;/span&gt;
+    &lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;obase=16;&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;$((&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;256&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;/&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;100&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;))&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt; | bc
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+toColorHex&lt;span class=&quot;o&quot;&gt;(){&lt;/span&gt;
+    &lt;span class=&quot;nv&quot;&gt;v1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;sb&quot;&gt;`&lt;/span&gt;toHex &lt;span class=&quot;nv&quot;&gt;$1&lt;/span&gt;&lt;span class=&quot;sb&quot;&gt;`&lt;/span&gt;
+    &lt;span class=&quot;nv&quot;&gt;v2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;sb&quot;&gt;`&lt;/span&gt;toHex &lt;span class=&quot;nv&quot;&gt;$2&lt;/span&gt;&lt;span class=&quot;sb&quot;&gt;`&lt;/span&gt;
+    &lt;span class=&quot;nv&quot;&gt;v3&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;sb&quot;&gt;`&lt;/span&gt;toHex &lt;span class=&quot;nv&quot;&gt;$3&lt;/span&gt;&lt;span class=&quot;sb&quot;&gt;`&lt;/span&gt;
+    &lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;v1&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;}${&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;v2&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;}${&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;v3&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+
+&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$# &lt;/span&gt;-eq 3 &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;then
+    &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;color&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;sb&quot;&gt;`&lt;/span&gt;toColorHex &lt;span class=&quot;nv&quot;&gt;$1&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$2&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$3&lt;/span&gt;&lt;span class=&quot;sb&quot;&gt;`&lt;/span&gt;
+    &lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;#&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$color&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;elif&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$# &lt;/span&gt;-eq 4 &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;then
+    &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;alpha&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;sb&quot;&gt;`&lt;/span&gt;toAlpha &lt;span class=&quot;nv&quot;&gt;$1&lt;/span&gt;&lt;span class=&quot;sb&quot;&gt;`&lt;/span&gt;
+    &lt;span class=&quot;nv&quot;&gt;color&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;sb&quot;&gt;`&lt;/span&gt;toColorHex &lt;span class=&quot;nv&quot;&gt;$2&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$3&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$4&lt;/span&gt;&lt;span class=&quot;sb&quot;&gt;`&lt;/span&gt;
+    &lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;#&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;alpha&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;}${&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;color&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;elif&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$# &lt;/span&gt;-eq 1 &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;then
+    &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;sb&quot;&gt;`&lt;/span&gt;toAlpha &lt;span class=&quot;nv&quot;&gt;$1&lt;/span&gt;&lt;span class=&quot;sb&quot;&gt;`&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;else
+    &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;You should input four or three numbers&quot;&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;fi&lt;/span&gt;
+
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h2 id=&quot;section-1&quot;&gt;主要知识点&lt;/h2&gt;
+&lt;p&gt;### 参数获取
+从脚本或者函数内部都可以通过 1、2、3… 变量名获取传入的参数。${1}即为传入的第一个参数。而${#}获取参数个数。&lt;/p&gt;
+
+&lt;h3 id=&quot;section-2&quot;&gt;关系运算符&lt;/h3&gt;
+&lt;p&gt;| 符号 | 含义      |
+|—–|—–      |
+| -eq | equal     |
+| -ne | not equal |
+| -lt | less than |
+| -gt | great than|
+| -ge | great than or equal |
+| -le | less than or equal |&lt;/p&gt;
+
+&lt;h3 id=&quot;section-3&quot;&gt;命令执行&lt;/h3&gt;
+&lt;p&gt;如果需要将命令执行的结果赋值给变量，则需要将这条命令语句用``扩起，或者使用$(),不过$()在某些系统环境下可能无法使用。&lt;/p&gt;
+
+&lt;h3 id=&quot;section-4&quot;&gt;数学计算&lt;/h3&gt;
+&lt;p&gt;数学计算语句需要用$(())括起。&lt;/p&gt;
+
+&lt;h3 id=&quot;bc&quot;&gt;bc&lt;/h3&gt;
+&lt;p&gt;bc是一种科学语句，也是shell种一个命令，不过大多数的使用场景是用来做数值转换。这里就是转为16进制。&lt;/p&gt;
+
+&lt;h3 id=&quot;section-5&quot;&gt;[&lt;/h3&gt;
+&lt;p&gt;shell 中的if 后面的[ 是一个可执行程序，所以需要在其后加空格，] 同理。&lt;/p&gt;
+
+&lt;h3 id=&quot;section-6&quot;&gt;变量和等号之间不能有空格&lt;/h3&gt;
+
+&lt;h3 id=&quot;section-7&quot;&gt;获取字符串长度&lt;/h3&gt;
+&lt;p&gt;使用${#string}&lt;/p&gt;
+</description>
+        <pubDate>Wed, 17 Aug 2016 00:00:00 +0800</pubDate>
+        <link>http://sixwolf.net/blog/2016/08/17/%E6%AF%8F%E5%A4%A9%E5%AD%A6%E7%82%B9ShellScript-%E9%A2%9C%E8%89%B2%E5%80%BC%E8%BD%AC%E6%8D%A2%E5%99%A8/</link>
+        <guid isPermaLink="true">http://sixwolf.net/blog/2016/08/17/%E6%AF%8F%E5%A4%A9%E5%AD%A6%E7%82%B9ShellScript-%E9%A2%9C%E8%89%B2%E5%80%BC%E8%BD%AC%E6%8D%A2%E5%99%A8/</guid>
+        
+        <category>Development</category>
+        
+        <category>Android</category>
+        
+        
+        <category>blog</category>
+        
+      </item>
+    
+      <item>
+        <title>Android SharedPreferences 源码分析</title>
+        <description>&lt;h2 id=&quot;section&quot;&gt;概览&lt;/h2&gt;
+&lt;p&gt;SharedPreferences（以下使用SP简称）在Android中作为一种使用简单的数据存储形式被广泛用来存储一些不需要做数据库操作的数据，比如用户配置项等。本文将从源码入手分析其实现，并据此提出一些使用中需要注意的事项。&lt;/p&gt;
+
+&lt;h2 id=&quot;section-1&quot;&gt;分析&lt;/h2&gt;
+
+&lt;h3 id=&quot;section-2&quot;&gt;源码入口&lt;/h3&gt;
+
+&lt;p&gt;SP是一个interface，首先我们得找到它的具体实现。在SP的使用中，我们通过getSharedPreferences()获取SP实例如下：&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;SharedPreferences sp =getSharedPreferences(TAG, MODE);    
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;而getSharedPreferences 是Context接口中的方法。稍微对Android SDK源码有所了解的朋友都知道，Context的主要实现类——ContextImpl。在该类中，我们可以找到getSharedPreferences方法的具体实现&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;    @Override
+    public SharedPreferences getSharedPreferences(String name, int mode) {
+        SharedPreferencesImpl sp;
+        synchronized (ContextImpl.class) {
+            if (sSharedPrefs == null) {
+                sSharedPrefs = new ArrayMap&amp;lt;String, ArrayMap&amp;lt;String, SharedPreferencesImpl&amp;gt;&amp;gt;();
+            }
+
+            final String packageName = getPackageName();
+            ArrayMap&amp;lt;String, SharedPreferencesImpl&amp;gt; packagePrefs = sSharedPrefs.get(packageName);
+            if (packagePrefs == null) {
+                packagePrefs = new ArrayMap&amp;lt;String, SharedPreferencesImpl&amp;gt;();
+                sSharedPrefs.put(packageName, packagePrefs);
+            }
+
+            // At least one application in the world actually passes in a null
+            // name.  This happened to work because when we generated the file name
+            // we would stringify it to &quot;null.xml&quot;.  Nice.
+            if (mPackageInfo.getApplicationInfo().targetSdkVersion &amp;lt;
+                    Build.VERSION_CODES.KITKAT) {
+                if (name == null) {
+                    name = &quot;null&quot;;
+                }
+            }
+
+            sp = packagePrefs.get(name);
+            if (sp == null) {
+                File prefsFile = getSharedPrefsFile(name);
+                sp = new SharedPreferencesImpl(prefsFile, mode);
+                packagePrefs.put(name, sp);
+                return sp;
+            }
+        }
+        if ((mode &amp;amp; Context.MODE_MULTI_PROCESS) != 0 ||
+            getApplicationInfo().targetSdkVersion &amp;lt; android.os.Build.VERSION_CODES.HONEYCOMB) {
+            // If somebody else (some other process) changed the prefs
+            // file behind our back, we reload it.  This has been the
+            // historical (if undocumented) behavior.
+            sp.startReloadIfChangedUnexpectedly();
+        }
+        return sp;
+    }
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;从以上代码我们可以获取到以下几点信息：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;SP的实现类为SharedPreferencesImpl。&lt;/li&gt;
+  &lt;li&gt;在ContextImpl中维护了一个从包名到SP字典的字典。&lt;/li&gt;
+  &lt;li&gt;传null作为SP的name是被允许的，它会生成一个以null.xml为名的文件。&lt;/li&gt;
+  &lt;li&gt;当sdk version 在3.0以下时支持“MODE_MULTI_PROCESS”模式，在该模式下，每次获取SP实例时，判断文件是否被改动，在被改动的情况下重新从文件加载数据，以实现多进程数据同步。但是后来发现即使如此在某些情况下还是不能保证多进程数据一致性，因此就被deprecated了，在3.0以上即使设置了MODE_MULTI_PROCESS也没有任何作用。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h3 id=&quot;sharedpreferencesimpl&quot;&gt;SharedPreferencesImpl&lt;/h3&gt;
+
+&lt;p&gt;接下来是让我们移步SharedPreferencesImple，看一下SP的具体实现。&lt;/p&gt;
+
+&lt;h4 id=&quot;section-3&quot;&gt;成员变量&lt;/h4&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;//对应的数据文件
+private final File mFile;
+//在写操作时备份的文件，如果写操作失败，会从备份文件中恢复数据
+private final File mBackupFile;
+//用户设置的SP模式
+private final int mMode;
+//内存中缓存的SP数据
+private Map&amp;lt;String, Object&amp;gt; mMap;     // guarded by &#39;this&#39;
+//正在做些磁盘操作的进程数
+private int mDiskWritesInFlight = 0;  // guarded by &#39;this&#39;
+//是否已经加载完成
+private boolean mLoaded = false;      // guarded by &#39;this&#39;
+文件上一次修改的时间戳和mStatSize 一起被用来判断文件是否被修改
+private long mStatTimestamp;          // guarded by &#39;this&#39;
+private long mStatSize;               // guarded by &#39;this&#39;
+
+//写磁盘锁
+private final Object mWritingToDiskLock = new Object();
+//被用来作为mListeners字典中所有键的值，意义不明
+private static final Object mContent = new Object();
+//通过registerOnSharedPreferenceChangeListener注册进来的listeners，所有的listeners作为键缓存在mListeners这个map中，然而所有值都是mContent.
+private final WeakHashMap&amp;lt;OnSharedPreferenceChangeListener, Object&amp;gt; mListeners =
+        new WeakHashMap&amp;lt;OnSharedPreferenceChangeListener, Object&amp;gt;();
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h4 id=&quot;section-4&quot;&gt;初始化过程&lt;/h4&gt;
+
+&lt;p&gt;以下是SPImpl的构造方法。它初始化了成员变量，并调用startLoadFromDisk()用来初始化数据。&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;SharedPreferencesImpl(File file, int mode) {
+        mFile = file;
+        mBackupFile = makeBackupFile(file);
+        mMode = mode;
+        mLoaded = false;
+        mMap = null;
+        startLoadFromDisk();
+    }
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;在startLoadFromDisk中启用了一个线程调用了真正的读文件加载数据方法 —— loadFromDiskLocked。该方法读取文件并使用XmlUtils类对读取的数据进行解析。&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;private void startLoadFromDisk() {
+        synchronized (this) {
+            mLoaded = false;
+        }
+        new Thread(&quot;SharedPreferencesImpl-load&quot;) {
+            public void run() {
+                synchronized (SharedPreferencesImpl.this) {
+                    loadFromDiskLocked();
+                }
+            }
+        }.start();
+    }
+    
+private void loadFromDiskLocked() {
+        if (mLoaded) {
+            return;
+        }
+        //在写文件出错情况下，mFile 文件会被直接delete，这时候就需要从备份文件中恢复数据。
+        if (mBackupFile.exists()) {
+            mFile.delete();
+            mBackupFile.renameTo(mFile);
+        }
+
+        // Debugging
+        if (mFile.exists() &amp;amp;&amp;amp; !mFile.canRead()) {
+            Log.w(TAG, &quot;Attempt to read preferences file &quot; + mFile + &quot; without permission&quot;);
+        }
+
+        Map map = null;
+        StructStat stat = null;
+        try {
+            stat = Os.stat(mFile.getPath());
+            if (mFile.canRead()) {
+                BufferedInputStream str = null;
+                try {
+                    str = new BufferedInputStream(
+                            new FileInputStream(mFile), 16*1024);
+                    map = XmlUtils.readMapXml(str);
+                } catch (XmlPullParserException e) {
+                    Log.w(TAG, &quot;getSharedPreferences&quot;, e);
+                } catch (FileNotFoundException e) {
+                    Log.w(TAG, &quot;getSharedPreferences&quot;, e);
+                } catch (IOException e) {
+                    Log.w(TAG, &quot;getSharedPreferences&quot;, e);
+                } finally {
+                    IoUtils.closeQuietly(str);
+                }
+            }
+        } catch (ErrnoException e) {
+        }
+        mLoaded = true;
+        //修改成员变量
+        if (map != null) {
+            mMap = map;
+            mStatTimestamp = stat.st_mtime;
+            mStatSize = stat.st_size;
+        } else {
+            mMap = new HashMap&amp;lt;String, Object&amp;gt;();
+        }
+        notifyAll();
+    }
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h4 id=&quot;section-5&quot;&gt;读取数据&lt;/h4&gt;
+
+&lt;p&gt;对于SP的使用，我们用的最多的可能就是取数据，以取String类型数据为例，getString方法首先取得SharedPreferencesImpl.this对象锁，然后同步等待从文件加载数据完成，最后再返回数据。因此这里会有一定的延迟。如果是在UI线程执行SP的取数据操作，可能会对UI流畅度方面造成一定的影响，不过在实践中我们认为这可以忽略不计。&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;public String getString(String key, @Nullable String defValue) {
+        synchronized (this) {
+            awaitLoadedLocked();
+            String v = (String)mMap.get(key);
+            return v != null ? v : defValue;
+        }
+    }
+
+private void awaitLoadedLocked() {
+        if (!mLoaded) {
+            // Raise an explicit StrictMode onReadFromDisk for this
+            // thread, since the real read will be in a different
+            // thread and otherwise ignored by StrictMode.
+            BlockGuard.getThreadPolicy().onReadFromDisk();
+        }
+        while (!mLoaded) {
+            try {
+                wait();
+            } catch (InterruptedException unused) {
+            }
+        }
+    }
+    
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h4 id=&quot;section-6&quot;&gt;存数据&lt;/h4&gt;
+
+&lt;p&gt;看完读取数据，接下来再介绍下写数据。对于SP的写操作主要是通过Editor接口来完成的，SPImpl中的内部类EditorImpl是Editor的具体实现。&lt;/p&gt;
+
+&lt;p&gt;所有的put打头的方法只是将需要修改的键值保存到mModified这个字典中。&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;public Editor putString(String key, @Nullable String value) {
+            synchronized (this) {
+                mModified.put(key, value);
+                return this;
+            }
+        }
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;所以重头戏是我们经常使用的commit和apply方法。这两个方法都是首先修改内存中缓存的mMap的值，然后将数据写到磁盘中。它们的主要区别是commit会等待写入磁盘后再返回，而apply则在调用写磁盘操作后就直接返回了，但是这时候可能磁盘中数据还没有被修改。&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;        public void apply() {
+            final MemoryCommitResult mcr = commitToMemory();
+            final Runnable awaitCommit = new Runnable() {
+                    public void run() {
+                        try {
+                            mcr.writtenToDiskLatch.await();
+                        } catch (InterruptedException ignored) {
+                        }
+                    }
+                };
+
+            QueuedWork.add(awaitCommit);
+
+            Runnable postWriteRunnable = new Runnable() {
+                    public void run() {
+                        awaitCommit.run();
+                        QueuedWork.remove(awaitCommit);
+                    }
+                };
+
+            SharedPreferencesImpl.this.enqueueDiskWrite(mcr, postWriteRunnable);
+
+            // Okay to notify the listeners before it&#39;s hit disk
+            // because the listeners should always get the same
+            // SharedPreferences instance back, which has the
+            // changes reflected in memory.
+            notifyListeners(mcr);
+        }
+
+        
+        public boolean commit() {
+            MemoryCommitResult mcr = commitToMemory();
+            SharedPreferencesImpl.this.enqueueDiskWrite(
+                mcr, null /* sync write on this thread okay */);
+            try {
+                mcr.writtenToDiskLatch.await();
+            } catch (InterruptedException e) {
+                return false;
+            }
+            notifyListeners(mcr);
+            return mcr.writeToDiskResult;
+        }
+
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;以上两个方法都调用了commitToMemory。该方法主要根据mModified和是否被clear修改mMap的值，然后返回写磁盘需要的一些相关值。&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;
+ private MemoryCommitResult commitToMemory() {
+            MemoryCommitResult mcr = new MemoryCommitResult();
+            synchronized (SharedPreferencesImpl.this) {
+                // We optimistically don&#39;t make a deep copy until
+                // a memory commit comes in when we&#39;re already
+                // writing to disk.
+                if (mDiskWritesInFlight &amp;gt; 0) {
+                    // We can&#39;t modify our mMap as a currently
+                    // in-flight write owns it.  Clone it before
+                    // modifying it.
+                    // noinspection unchecked
+                    mMap = new HashMap&amp;lt;String, Object&amp;gt;(mMap);
+                }
+                mcr.mapToWriteToDisk = mMap;
+                mDiskWritesInFlight++;
+
+                boolean hasListeners = mListeners.size() &amp;gt; 0;
+                if (hasListeners) {
+                    mcr.keysModified = new ArrayList&amp;lt;String&amp;gt;();
+                    mcr.listeners =
+                            new HashSet&amp;lt;OnSharedPreferenceChangeListener&amp;gt;(mListeners.keySet());
+                }
+
+                synchronized (this) {
+                    if (mClear) {
+                        if (!mMap.isEmpty()) {
+                            mcr.changesMade = true;
+                            mMap.clear();
+                        }
+                        mClear = false;
+                    }
+
+                    for (Map.Entry&amp;lt;String, Object&amp;gt; e : mModified.entrySet()) {
+                        String k = e.getKey();
+                        Object v = e.getValue();
+                        // &quot;this&quot; is the magic value for a removal mutation. In addition,
+                        // setting a value to &quot;null&quot; for a given key is specified to be
+                        // equivalent to calling remove on that key.
+                        if (v == this || v == null) {
+                            if (!mMap.containsKey(k)) {
+                                continue;
+                            }
+                            mMap.remove(k);
+                        } else {
+                            if (mMap.containsKey(k)) {
+                                Object existingValue = mMap.get(k);
+                                if (existingValue != null &amp;amp;&amp;amp; existingValue.equals(v)) {
+                                    continue;
+                                }
+                            }
+                            mMap.put(k, v);
+                        }
+
+                        mcr.changesMade = true;
+                        if (hasListeners) {
+                            mcr.keysModified.add(k);
+                        }
+                    }
+
+                    mModified.clear();
+                }
+            }
+            return mcr;
+        }	
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h4 id=&quot;section-7&quot;&gt;写磁盘&lt;/h4&gt;
+
+&lt;p&gt;最后一块比较重要的就是SP的写磁盘操作。之前介绍的apply和commit都调用了enqueueDiskWrite(）方法。&lt;/p&gt;
+
+&lt;p&gt;以下为其具体实现。writeToDiskRunnable中调用writeToFile写文件。如果参数中的postWriteRunable为null，则该Runnable会被同步执行，而如果不为null，则会将该Runnable放入线程池中异步执行。在这里也验证了之前提到的commit和apply的区别。&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;private void enqueueDiskWrite(final MemoryCommitResult mcr,
+                                  final Runnable postWriteRunnable) {
+        final Runnable writeToDiskRunnable = new Runnable() {
+                public void run() {
+                    synchronized (mWritingToDiskLock) {
+                        writeToFile(mcr);
+                    }
+                    synchronized (SharedPreferencesImpl.this) {
+                        mDiskWritesInFlight--;
+                    }
+                    if (postWriteRunnable != null) {
+                        postWriteRunnable.run();
+                    }
+                }
+            };
+
+        final boolean isFromSyncCommit = (postWriteRunnable == null);
+
+        // Typical #commit() path with fewer allocations, doing a write on
+        // the current thread.
+        if (isFromSyncCommit) {
+            boolean wasEmpty = false;
+            synchronized (SharedPreferencesImpl.this) {
+                wasEmpty = mDiskWritesInFlight == 1;
+            }
+            if (wasEmpty) {
+                writeToDiskRunnable.run();
+                return;
+            }
+        }
+
+        QueuedWork.singleThreadExecutor().execute(writeToDiskRunnable);
+    }
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h4 id=&quot;mode&quot;&gt;Mode相关&lt;/h4&gt;
+
+&lt;p&gt;下面我们分析一下获取SP实例时的第二个参数 mode，上文我们已经提到了一个被废弃的mode——MODE_MULTI_PROCESS。在SPImpl中在writeToFile方法中用到了该参数。&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;ContextImpl.setFilePermissionsFromMode(mFile.getPath(), mMode, 0);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;再看setFilePermissionsFromMode方法，根据MODE参数设置文件的读写权限，而从中我们可以看出能够造成影响的两个MODE分别为MODE_WORLD_READABLE和MODE_WORLD_WRITEABLE。而这两个值在API17之后被Deprecated，所以不建议使用，如果需要多App共享数据，建议使用ContentProvider。&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;    @SuppressWarnings(&quot;deprecation&quot;)
+    static void setFilePermissionsFromMode(String name, int mode,
+            int extraPermissions) {
+        int perms = FileUtils.S_IRUSR|FileUtils.S_IWUSR
+            |FileUtils.S_IRGRP|FileUtils.S_IWGRP
+            |extraPermissions;
+        if ((mode&amp;amp;MODE_WORLD_READABLE) != 0) {
+            perms |= FileUtils.S_IROTH;
+        }
+        if ((mode&amp;amp;MODE_WORLD_WRITEABLE) != 0) {
+            perms |= FileUtils.S_IWOTH;
+        }
+        if (DEBUG) {
+            Log.i(TAG, &quot;File &quot; + name + &quot;: mode=0x&quot; + Integer.toHexString(mode)
+                  + &quot;, perms=0x&quot; + Integer.toHexString(perms));
+        }
+        FileUtils.setPermissions(name, perms, -1, -1);
+    }
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h2 id=&quot;section-8&quot;&gt;总结&lt;/h2&gt;
+
+&lt;p&gt;以上为对SP代码的分析，根据以上分析，提出以下几个在使用SP中需要注意的点。&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;MODE_MULTI_PROCESS 无法保证多进程数据一致性，在3.0以上已经没有任何作用。&lt;/li&gt;
+  &lt;li&gt;SP从初始化到读取到数据存在一定延迟，因为需要到文件中读取数据，因此可能会对UI线程流畅度造成一定影响。&lt;/li&gt;
+  &lt;li&gt;commit在将数据写入磁盘后才会返回，而apply则直接返回但无法保证写磁盘已经完成，只能保证内存中数据的正确性。&lt;/li&gt;
+  &lt;li&gt;MODE_WORLD_READABLE和MODE_WORLD_WRITEABLE已经被废弃，不建议使用，如果需要多App共享数据，建议使用ContentProvider，Github上有一个对ContentProvider的封装Tray，用起来和SP差不多还是蛮不错的。&lt;/li&gt;
+&lt;/ol&gt;
+</description>
+        <pubDate>Tue, 03 May 2016 00:00:00 +0800</pubDate>
+        <link>http://sixwolf.net/blog/2016/05/03/Android_SharedPreferences%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/</link>
+        <guid isPermaLink="true">http://sixwolf.net/blog/2016/05/03/Android_SharedPreferences%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/</guid>
+        
+        <category>Development</category>
+        
+        <category>Android</category>
+        
+        
+        <category>blog</category>
+        
+      </item>
+    
+      <item>
+        <title>Android自定义Notification并没有那么简单</title>
+        <description>&lt;h1 id=&quot;section&quot;&gt;背景&lt;/h1&gt;
+
+&lt;p&gt;最近需要实现一个自定义Notification的功能。网上找了找代码，解决方案就是通过RemoteViews来实现。但是在实现过程中遇到不少问题，网上也没有很好的文章描述这些问题，所以在这里做个总结，希望大家能少走点弯路。&lt;/p&gt;
+
+&lt;h1 id=&quot;section-1&quot;&gt;实现&lt;/h1&gt;
+
+&lt;h2 id=&quot;remoteviews-view&quot;&gt;RemoteViews 自定义View&lt;/h2&gt;
+&lt;p&gt;这是最基础的知识点，虽然做过自定义通知的应该都清楚，但我觉得还是有必要带一下。它主要被用于AppWidget和Notification，它描述一个在其它进程中显示的View。以下是例子代码。从中我们可以看到RemoteViews提供了一些方法来改变它的子View的值，如设置TextView的文字等。&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;RemoteViews&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;remoteViews&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;RemoteViews&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;context&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;getPackageName&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;R&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;layout&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;view_notification_type_0&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;remoteViews&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;setTextViewText&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;R&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;id&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;title_tv&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;title&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;remoteViews&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;setTextViewText&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;R&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;id&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;content_tv&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;content&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;remoteViews&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;setTextViewText&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;R&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;id&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;time_tv&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;getTime&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;());&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;remoteViews&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;setImageViewResource&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;R&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;id&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;icon_iv&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;R&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;drawable&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;logo&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;remoteViews&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;setInt&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;R&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;id&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;close_iv&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;setColorFilter&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;getIconColor&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;());&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;Intent&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;intent&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Intent&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;context&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;MainActivity&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;class&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;intent&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;putExtra&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;NOTICE_ID_KEY&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;NOTICE_ID_TYPE_0&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;intent&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;setFlags&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Intent&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;FLAG_ACTIVITY_NEW_TASK&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;|&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Intent&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;FLAG_ACTIVITY_CLEAR_TASK&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+        &lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;requestCode&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;SystemClock&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;uptimeMillis&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;PendingIntent&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;pendingIntent&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;PendingIntent&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;getActivity&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;context&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;requestCode&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;intent&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;PendingIntent&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;FLAG_UPDATE_CURRENT&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;remoteViews&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;setOnClickPendingIntent&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;R&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;id&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;notice_view_type_0&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;pendingIntent&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+        &lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;requestCode1&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;SystemClock&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;uptimeMillis&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;Intent&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;intent1&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Intent&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ACTION_CLOSE_NOTICE&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;intent1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;putExtra&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;NOTICE_ID_KEY&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;NOTICE_ID_TYPE_0&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;PendingIntent&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;pendingIntent1&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;PendingIntent&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;getBroadcast&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;context&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;requestCode1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;intent1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;PendingIntent&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;FLAG_UPDATE_CURRENT&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;remoteViews&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;setOnClickPendingIntent&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;R&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;id&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;close_iv&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;pendingIntent1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;p&gt;这里有几点需要注意的。&lt;/p&gt;
+
+&lt;h3 id=&quot;setint&quot;&gt;setInt&lt;/h3&gt;
+
+&lt;p&gt;这个方法被用来调用子View中需要一个Int型参数的方法。如下面这句代码，调用了id为close_iv的setColorFilter方法，参数为getIconColor()的返回值。&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;remoteViews&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;setInt&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;R&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;id&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;close_iv&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;setColorFilter&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;getIconColor&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;());&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h3 id=&quot;pendingintent&quot;&gt;设置不同区域的点击PendingIntent&lt;/h3&gt;
+
+&lt;p&gt;默认的Notification只能通过setContentIntent设置整体的点击事件。不过通过RemoteViews我们可以设置不同地方不同的点击事件，当然这里的事件指的是PendingIntent。如下，设置了点击R.id.notice_view_type_0打开一个Activity，而点击R.id.close_iv会发出一个广播，可以通过这个广播的广播接收器来做一些事情，如这里是关闭当前的Notification。另外还可以打开一个Service。&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;PendingIntent&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;getActivity&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;context&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;requestCode&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;intent&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;PendingIntent&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;FLAG_UPDATE_CURRENT&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;remoteViews&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;setOnClickPendingIntent&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;R&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;id&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;notice_view_type_0&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;pendingIntent&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+        &lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;requestCode1&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;SystemClock&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;uptimeMillis&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;Intent&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;intent1&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Intent&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ACTION_CLOSE_NOTICE&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;intent1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;putExtra&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;NOTICE_ID_KEY&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;NOTICE_ID_TYPE_0&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;PendingIntent&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;pendingIntent1&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;PendingIntent&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;getBroadcast&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;context&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;requestCode1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;intent1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;PendingIntent&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;FLAG_UPDATE_CURRENT&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;remoteViews&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;setOnClickPendingIntent&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;R&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;id&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;close_iv&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;pendingIntent1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h1 id=&quot;view&quot;&gt;设置通知的自定义View&lt;/h1&gt;
+&lt;p&gt;以上我们得到了自定义的RemoteViews。通过下面这段代码就能生成自定义View的Notification，注意这里使用了setContent()方法。这是网上自定义Notification都会使用的方法。&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;Notification&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;notification&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;NotificationCompat&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;Builder&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;context&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;setContent&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;remoteViews&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;build&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;p&gt;但是它会有一个问题。&lt;/p&gt;
+
+&lt;p&gt;通过setContent()方法获得的Notification是定高的。如果View的高度比默认高度要大的话，就有一部分显示不出来。如下图
+&lt;img src=&quot;https://img.alicdn.com/imgextra/i4/754328530/TB2Wiq.npXXXXXDXXXXXXXXXXXX_!!754328530.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;默认情况下通知高度为64dp，当然Rom不同可能会有些区别。一般文字在小于两行的情况下都是可以显示。&lt;/p&gt;
+
+&lt;p&gt;那么如何做到wrap_content。需要使用一些黑科技。如下：&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;NotificationCompat&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;Builder&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;NotificationCompat&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;Builder&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;context&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;android&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;os&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;Build&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;VERSION&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;SDK_INT&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;16&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;notification&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;build&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;notification&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;bigContentView&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;remoteViews&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;notification&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;contentView&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;remoteViews&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;p&gt;为了理解以上代码，我们需要明确一个我们很容易忽略的问题，那就是通知是可以展开和收起的。请看以下两张图片。同样是网易云音乐的通知，图一比图二要大一些。其实图一展示的是网易云音乐通知的展开状态，使用两个手指上滑就可以缩起，也就是图二。
+&lt;img src=&quot;https://img.alicdn.com/imgextra/i2/754328530/TB2NY19npXXXXX_XXXXXXXXXXXX_!!754328530.png&quot; alt=&quot;&quot; /&gt;
+&lt;img src=&quot;https://img.alicdn.com/imgextra/i1/754328530/TB2afuqnpXXXXXdXFXXXXXXXXXX_!!754328530.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;在上面的代码中我们分别设置了bigContentView 这是展开的自定义视图，而contentView则是收起时的视图。&lt;/p&gt;
+
+&lt;p&gt;注意bigContentView是在sdk16时引入的，所以需要判断一下。如果小于sdk16则只能定高了。&lt;/p&gt;
+
+&lt;p&gt;注意bigContentView 的最大高度是256dp&lt;/p&gt;
+
+&lt;p&gt;注意bigContentView和contentView的设置不能调转顺序，亲测这样会让contentView不显示。&lt;/p&gt;
+
+&lt;p&gt;另外需要注意某些Rom可能不支持展开收起通知，在设置了BigContentView之后就只显示展开的视图，而默认情况下只展示收起视图。如魅族的FlyMe，其它Rom并没有测试，如果读者知道可以分享一下。&lt;/p&gt;
+
+&lt;h2 id=&quot;section-2&quot;&gt;背景色适配&lt;/h2&gt;
+
+&lt;p&gt;不同Rom的通知背景色是不同的，所以在UI上需要注意。
+主要分为两种情况。&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;背景色为有透明度的黑色，如MiUi、FlyMe。&lt;/li&gt;
+  &lt;li&gt;背景色为白色，如原生的5.0之后的Rom、华为部分Rom。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;主要有两种方案。&lt;/p&gt;
+
+&lt;h3 id=&quot;section-3&quot;&gt;固定背景色&lt;/h3&gt;
+
+&lt;p&gt;也就是设置一个固定的背景色，文字和icon颜色都可以固定。如下图。
+&lt;img src=&quot;https://img.alicdn.com/imgextra/i2/754328530/TB2XoYanpXXXXXvXXXXXXXXXXXX_!!754328530.png&quot; alt=&quot;&quot; /&gt;
+这有一个缺点，我们在图中也看到了，那就是某些Rom的Notification会有一个左右的padding，如MIUI的就特别明显，如果固定背景色就会很难看。所以这种方法虽然简答，但是不建议使用。&lt;/p&gt;
+
+&lt;h3 id=&quot;section-4&quot;&gt;透明背景色&lt;/h3&gt;
+
+&lt;p&gt;另一种方法就是让背景透明。那么文字和icon的颜色怎么办呢？很简单，跟随系统的Notification中文字的样式。如下设置了TextView的style为默认通知中info的样式。其它相关Style包括TextAppearance.StatusBar.EventContent.Line2、TextAppearance.StatusBar.EventContent.Info等。&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;        &amp;lt;TextView
+            android:id=&quot;@+id/content_tv&quot;
+            android:layout_width=&quot;wrap_content&quot;
+            android:layout_height=&quot;wrap_content&quot;
+            android:textAppearance=&quot;@style/TextAppearance.StatusBar.EventContent.Info&quot;
+            tools:text=&quot;41个同校小伙伴参与讨论&quot;
+            android:layout_marginTop=&quot;4dp&quot;
+            android:singleLine=&quot;true&quot;/&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;需要注意的一点是Android5.0之后使用了不同的Style名表示通知样式。
+我们需要创建一个layout-v21文件夹，并新建一个在5.0之后使用的自定义通知样式。如下同样是设置TextView的style为Info的样式，但我们使用的是style是@android:style/TextAppearance.Material.Notification.Info。&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nt&quot;&gt;&amp;lt;TextView&lt;/span&gt;
+            &lt;span class=&quot;na&quot;&gt;android:id=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;@+id/content_tv&quot;&lt;/span&gt;
+            &lt;span class=&quot;na&quot;&gt;android:layout_width=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;wrap_content&quot;&lt;/span&gt;
+            &lt;span class=&quot;na&quot;&gt;android:layout_height=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;wrap_content&quot;&lt;/span&gt;
+            &lt;span class=&quot;na&quot;&gt;android:textSize=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;9sp&quot;&lt;/span&gt;
+            &lt;span class=&quot;na&quot;&gt;android:textAppearance=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;@android:style/TextAppearance.Material.Notification.Info&quot;&lt;/span&gt;
+            &lt;span class=&quot;na&quot;&gt;tools:text=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;41个同校小伙伴参与讨论&quot;&lt;/span&gt;
+            &lt;span class=&quot;na&quot;&gt;android:layout_marginTop=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;4dp&quot;&lt;/span&gt;
+            &lt;span class=&quot;na&quot;&gt;android:singleLine=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;true&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;/&amp;gt;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;另外如果自定义view中有Icon，那么Icon的颜色也需要适应背景，可以选择一个灰色，如#999999，原生安卓黑色和白色的文字内容颜色都为该值。&lt;/p&gt;
+
+&lt;p&gt;或者根据不同的背景色设置不同的颜色，通过上面提到的setInt方法。ImageView的setColorFilter方法可以设置图案颜色为某种纯色。但是目前我还没有找到很好的方法获取默认通知的背景色，如果读者找到了望告知。&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;remoteViews&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;setInt&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;R&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;id&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;close_iv&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;setColorFilter&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;getIconColor&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;());&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;p&gt;另外需要注意的是很多手机的Rom可能不会对以上的style做修改，而是采用自己的样式，这样就比较蛋疼。借鉴网易云音乐的方法，在api 21以下，因为大部分手机都使用黑色背景，所以采用透明背景，文字颜色跟随系统。而在api大于等于21时，因为原生Android采用了白色的通知背景，而很多手机厂商的Rom的通知仍然为黑色背景，因此为了通用，采用一个固定的黑色背景，文字颜色同样跟随系统。在这基础上，对某部分特定手机Rom做适配，如华为等在api 21以下通知背景也为白色。这应该是比较完美的做法，但是需要花费较多的时间，所以如果为了简单起见，还是采用方案一吧。&lt;/p&gt;
+
+&lt;h1 id=&quot;section-5&quot;&gt;最终效果&lt;/h1&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://img.alicdn.com/imgextra/i4/754328530/TB2uf1pnpXXXXX6XFXXXXXXXXXX_!!754328530.png&quot; alt=&quot;&quot; /&gt;
+&lt;img src=&quot;https://img.alicdn.com/imgextra/i3/754328530/TB2rdvanpXXXXXQXXXXXXXXXXXX_!!754328530.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;section-6&quot;&gt;总结&lt;/h1&gt;
+
+&lt;p&gt;以上即为我在自定义Notification中遇到的一些问题以及解决方案。目前还有两点有待进一步补充和完善。&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;获取默认通知背景色，或者使图标颜色与背景色适配的方案。&lt;/li&gt;
+  &lt;li&gt;不支持Notification展开收起的Rom，目前知道的仅有FlyMe。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h1 id=&quot;section-7&quot;&gt;示例代码地址&lt;/h1&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://github.com/beautifulSoup/CNotification&quot;&gt;https://github.com/beautifulSoup/CNotification&lt;/a&gt;&lt;/p&gt;
+</description>
+        <pubDate>Mon, 18 Apr 2016 00:00:00 +0800</pubDate>
+        <link>http://sixwolf.net/blog/2016/04/18/Android%E8%87%AA%E5%AE%9A%E4%B9%89Notification%E5%B9%B6%E6%B2%A1%E6%9C%89%E9%82%A3%E4%B9%88%E7%AE%80%E5%8D%95/</link>
+        <guid isPermaLink="true">http://sixwolf.net/blog/2016/04/18/Android%E8%87%AA%E5%AE%9A%E4%B9%89Notification%E5%B9%B6%E6%B2%A1%E6%9C%89%E9%82%A3%E4%B9%88%E7%AE%80%E5%8D%95/</guid>
+        
+        <category>Development</category>
+        
+        <category>Android</category>
+        
+        
+        <category>blog</category>
+        
+      </item>
+    
+      <item>
+        <title>Android持续集成以及测试覆盖率可视化</title>
+        <description>&lt;h2 id=&quot;section&quot;&gt;背景&lt;/h2&gt;
+
+&lt;p&gt;很多开源项目在README中会有几个小图标来表示build情况，测试覆盖率等。如
+&lt;img src=&quot;https://img.alicdn.com/imgextra/i3/754328530/TB2sF_JmVXXXXbQXpXXXXXXXXXX_!!754328530.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;看起来感觉很牛逼的样子，其实实现起来很简单，只需几步，就能让你的开源项目也变得牛逼起来。&lt;/p&gt;
+
+&lt;h2 id=&quot;travis-ci&quot;&gt;Travis-CI&lt;/h2&gt;
+
+&lt;p&gt;Travis-CI是一款持续集成工具，对开源项目免费。免除了Jenkins搭建服务器的工作。用户只要完成以下简单的几步就能接入Travis。&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;通过Github账号登录https://travis-ci.org/。&lt;/li&gt;
+  &lt;li&gt;在项目根目录添加.travis.yml 文件。&lt;/li&gt;
+  &lt;li&gt;git add -&amp;gt; commit -&amp;gt; push.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;之后再每次push之后Travis-CI就会根据.travis.yml对项目进行build。然后就可以在Travis网站控制台上查看build的情况。在build完成之后Travis也会通过邮件的方式通知你。&lt;/p&gt;
+
+&lt;p&gt;在这三步中，最麻烦的一步就是.travis.yml的创建。具体文档可以参考官网。以下给出我的项目的yml文件作为例子分步分析。
+完整文档：&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;language: android
+jdk:
+    - oraclejdk8
+env:
+  matrix:
+    - ANDROID_TARGET=android-21 ANDROID_ABI=armeabi-v7a
+  global:
+    - ADB_INSTALL_TIMEOUT=8
+android:
+  components:
+    - tools
+    - platform-tools
+    - build-tools-23.0.2
+    - android-23
+    - extra-android-m2repository
+    - extra-android-support
+    - sys-img-armeabi-v7a-android-21
+before_script:
+    - echo no | android create avd --force -n test -t $ANDROID_TARGET --abi $ANDROID_ABI
+    - emulator -avd test -no-skin -no-audio -no-window &amp;amp;
+    - android-wait-for-emulator
+    - adb shell input keyevent 82 &amp;amp;
+script:
+    - ./gradlew :lib:createDebugAndroidTestCoverageReport --info --stacktrace
+after_success:
+    - bash &amp;lt;(curl -s https://codecov.io/bash)
+
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;告诉Travis-CI项目语言。这是必要的一步。&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;language: android
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;设置JDK版本。非必要，但建议写上。&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;jdk:
+    - oraclejdk8
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;设置环境变量&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;env:
+  matrix:
+    - ANDROID_TARGET=android-21 ANDROID_ABI=armeabi-v7a
+  global:
+    - ADB_INSTALL_TIMEOUT=8
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;p&gt;matrix下面的配置会应用到当前build，而global应用到所有builds。matrix 下两项设置了TARGET api以及ABI，注意需要与Gradle中配置一致。global下这项设置了虚拟机安装apk的超时时间，如果你的项目不需要Instrument Test，可以不用加，但是如果有，且在持续集成中需要测试则需要加上，因为默认情况下安装超时时间为2分钟，某些情况下可能因为没有在2分钟内安装成功而导致集成失败。&lt;/p&gt;
+
+&lt;p&gt;设置项目构建依赖&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;android:
+  components:
+    - tools
+    - platform-tools
+    - build-tools-23.0.2
+    - android-23
+    - extra-android-m2repository
+    - extra-android-support
+    - sys-img-armeabi-v7a-android-21
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;tools platform-tools 这两项表示该次build会使用最新的SDK tools, 这两项最好加上，因为如果没有，可能会报错说找不到指定版本的sdk tools。后面是对build-tools和compile sdk version的设置，注意与gradle中一致。如果你的项目中依赖了AppCompat和design support则需要加上extra-android-m2repository，extra-android-support这两项。最后一项是设置虚拟机版本，如果本次构建不需要用到虚拟机则不需要加。&lt;/p&gt;
+
+&lt;p&gt;因为我们本次构建需要用到虚拟机来做Instrucment Test，所以需要打开虚拟机，可以在before_script中做这项工作&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;before_script:
+    - echo no | android create avd --force -n test -t $ANDROID_TARGET --abi $ANDROID_ABI
+    - emulator -avd test -no-skin -no-audio -no-window &amp;amp;
+    - android-wait-for-emulator   # 该项会等待虚拟机启动成功在执行后面的命令
+    - adb shell input keyevent 82 &amp;amp;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;在script中用一些命令行指令来完成build工作。因为，我所用的项目只需要运行所有的Instrument单元测试用例并生成测试覆盖率报告，所以只需要加以下这句，这个Gradle任务是由Jacoco创建的，后面会详细介绍。注意–info最好加上，因为如果10分钟内没有输出，Travis—CI会认为build失败而结束build，–info让每完成一个测试方法都输出结果，因此能够防止这点。当然有可能单个测试方法运行时间超过10分钟的情况（Google Android 模拟器的蛋疼性能），所以单个测试方法应该竟可能小。&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;script:
+    - ./gradlew :lib:createDebugAndroidTestCoverageReport --info --stacktrace
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;after_success，顾名思义，在成功完成构建后会执行。这里的任务是将测试覆盖率报告发送给Codecov，后面会详细介绍。&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;after_success:
+    - bash &amp;lt;(curl -s https://codecov.io/bash)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h2 id=&quot;jacoco&quot;&gt;Jacoco&lt;/h2&gt;
+
+&lt;p&gt;使用Jacoco生成测试覆盖率报告。只需要以下步骤：&lt;/p&gt;
+
+&lt;p&gt;1) 添加依赖&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;    androidTestCompile &#39;com.android.support.test:runner:0.4.1&#39;
+    // Set this dependency to use JUnit 4 rules
+    androidTestCompile &#39;com.android.support.test:rules:0.4.1&#39;
+    // Set this dependency to build and run Espresso tests
+    androidTestCompile &#39;com.android.support.test.espresso:espresso-core:2.2.1&#39;
+    // Espresso-contrib for DatePicker, RecyclerView, Drawer actions, Accessibility checks, CountingIdlingResource
+    androidTestCompile &#39;com.android.support.test.espresso:espresso-contrib:2.2.1&#39;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;p&gt;2) 在需要构建测试覆盖率报告的Module的gradle文件中设置。&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;debug{
+        testCoverageEnabled true
+    }
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;3) 运行 ./gradlew :module_name:createDebugAndroidTestCoverageReport 生成测试报告。测试报告地址：moudle_name/build/reports/coverage/debug/index.html。module_name为生成测试覆盖率的Moudle的名字。&lt;/p&gt;
+
+&lt;h2 id=&quot;codecov&quot;&gt;Codecov&lt;/h2&gt;
+
+&lt;p&gt;Codecov不支持自己生成Android的测试覆盖率报告，它能做的是接收Jacoco生成的报告并进行可视化，也就是上面那个表示测试覆盖率的小图标。&lt;/p&gt;
+
+&lt;p&gt;集成Codecov只需要以下几个步骤。&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;使用Github账号登录 https://codecov.io/， 并提供授权给该应用。&lt;/li&gt;
+  &lt;li&gt;在.travis.yml文件中添加命令将测试覆盖率报告上传给Codecov。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;上面提到的&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;after_success:
+    - bash &amp;lt;(curl -s https://codecov.io/bash)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;就是将报告上传给Codecov。&lt;/p&gt;
+
+&lt;h2 id=&quot;section-1&quot;&gt;总结&lt;/h2&gt;
+
+&lt;p&gt;除了上面提到的，Travis还能做很多事情，比如自动打包发布等，留待读者自己探索。&lt;/p&gt;
+
+&lt;h2 id=&quot;section-2&quot;&gt;参考&lt;/h2&gt;
+
+&lt;p&gt;&lt;a href=&quot;http://jeroenmols.com/blog/2015/11/13/traviscoveralls/&quot;&gt;http://jeroenmols.com/blog/2015/11/13/traviscoveralls/&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://docs.travis-ci.com&quot;&gt;https://docs.travis-ci.com&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://segmentfault.com/a/1190000004415437&quot;&gt;https://segmentfault.com/a/1190000004415437&lt;/a&gt;&lt;/p&gt;
+
+</description>
+        <pubDate>Tue, 12 Apr 2016 00:00:00 +0800</pubDate>
+        <link>http://sixwolf.net/blog/2016/04/12/Android%E4%BD%BF%E7%94%A8Travis-CI%E6%8C%81%E7%BB%AD%E9%9B%86%E6%88%90%E4%BB%A5%E5%8F%8A%E6%B5%8B%E8%AF%95%E8%A6%86%E7%9B%96%E7%8E%87%E5%8F%AF%E8%A7%86%E5%8C%96/</link>
+        <guid isPermaLink="true">http://sixwolf.net/blog/2016/04/12/Android%E4%BD%BF%E7%94%A8Travis-CI%E6%8C%81%E7%BB%AD%E9%9B%86%E6%88%90%E4%BB%A5%E5%8F%8A%E6%B5%8B%E8%AF%95%E8%A6%86%E7%9B%96%E7%8E%87%E5%8F%AF%E8%A7%86%E5%8C%96/</guid>
+        
+        <category>Development</category>
+        
+        <category>Android</category>
+        
+        
+        <category>blog</category>
+        
+      </item>
+    
+      <item>
+        <title>Android去除烦人的默认闪退Dialog</title>
         <description>&lt;h2 id=&quot;section&quot;&gt;背景&lt;/h2&gt;
 
 &lt;p&gt;安卓应用闪退后总会出现一个“抱歉，App已经停止运行”的弹窗，这样的用户体验并不好。很多大厂的App都去除了这个弹窗，因此本文主要介绍如何去除默认闪退弹窗，以及在闪退时做一些必要的善后工作。&lt;/p&gt;
@@ -30,7 +945,7 @@
 &lt;h2 id=&quot;dialog&quot;&gt;去除Dialog&lt;/h2&gt;
 &lt;p&gt;Android系统默认设置了一个UnCaughtExceptionHandler，而弹出闪退弹窗的工作就是在这个handler做的。所以如果要去除弹窗，只要实现一个UnCaughtExceptionHandler并替换掉系统默认的就可以了，代码如下。&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;	&lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;App&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;extends&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Application&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;App&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;extends&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Application&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
 
 
     &lt;span class=&quot;nd&quot;&gt;@Override&lt;/span&gt;
@@ -569,576 +1484,6 @@ activity:main/123/path1/12.4。则会调用intent的putExtra()方法将key1=123,
         <category>Android</category>
         
         <category>Development</category>
-        
-        
-        <category>blog</category>
-        
-      </item>
-    
-      <item>
-        <title>Android单元测试详解（1）——— AndroidJunitTest</title>
-        <description>&lt;h1 id=&quot;section&quot;&gt;背景&lt;/h1&gt;
-&lt;p&gt;最近稍等空闲，考虑到我们项目测试覆盖率几乎等于0，因此痛下决心决定研究下Android单元测试。&lt;/p&gt;
-
-&lt;h1 id=&quot;section-1&quot;&gt;单元测试的类型&lt;/h1&gt;
-&lt;p&gt;首先我们需要明确安卓的单元测试主要分为两种类型：&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;在开发主机Java虚拟机上运行的Junit Test&lt;/li&gt;
-  &lt;li&gt;在Android真机或者虚拟机上运行的Instrumented unit tests&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;因为Junit Test免去了将apk包安装到android设备上的步骤，因此速度上会比Instrumented unit tests快很多。但是跟android相关的一些库只能运行在android设备上，而无法再本机Java虚拟机上运行，比如很多包名中带android的库。因此我们这里需要做一个选择，如果某些类没有用到android相关的库，则完全可以使用Junit Test，加快测试速率。&lt;/p&gt;
-
-&lt;p&gt;如果是在Android Studio上开发，则文件结构应该是这样的，
-&lt;img src=&quot;https://img.alicdn.com/imgextra/i1/754328530/TB2VoYRlXXXXXc7XXXXXXXXXXXX-754328530.png&quot; alt=&quot;单元测试文件结构&quot; /&gt;
-其中androidTest包中存放的是Instrumented unit tests的文件，而test中则是Junit Test，这两个文件夹在项目创建的时候AS都会帮我们创建好。可能细心的同学已经发现了，test文件夹中的文件都不能运行。
-如图，我们需要将Test Artiface改为Unit Test
-&lt;img src=&quot;https://img.alicdn.com/imgextra/i1/754328530/TB2JdHIlXXXXXarXpXXXXXXXXXX-754328530.png&quot; alt=&quot;选择测试类型&quot; /&gt;
-另外这两种测试都只有在debugable = true的编译类型的时候才能运行。
-了解了单元测试的两个基本类型，接下来让我们来了解下目前主流的单元测试框架或者说工具。&lt;/p&gt;
-
-&lt;h1 id=&quot;androidjunit&quot;&gt;AndroidJunit&lt;/h1&gt;
-&lt;p&gt;Junit是Java开发中应用最多的单元测试框架，目前已经到Junit4。在Android的单元测试中我们同样可以使用它，如果是Junit Test，可以直接使用Java的Junit4。而如果测试的类必须使用Instrument Test，则我们需要使用AndroidJunitTest
-首先在build.gradle文件中的defaultConfig中加入如下设置，设置使用的Instrument test的runner 为AndroidJunitRunner。&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;testInstrumentationRunner &quot;android.support.test.runner.AndroidJUnitRunner&quot;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-&lt;p&gt;然后在androidTest的java文件夹中创建测试文件&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nd&quot;&gt;@RunWith&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AndroidJUnit4&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;class&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;nd&quot;&gt;@LargeTest&lt;/span&gt;
-&lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;MainActivityExprssoTest&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-
-
-    &lt;span class=&quot;nd&quot;&gt;@Rule&lt;/span&gt;
-    &lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ActivityTestRule&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;MainActivity&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;mActivityRule&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ActivityTestRule&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;MainActivity&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;MainActivity&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;class&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
-
-
-    &lt;span class=&quot;nd&quot;&gt;@Before&lt;/span&gt;
-    &lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;init&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(){&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;Log&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;d&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;MainActivity test&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;init test MainActivity&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
-    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-    &lt;span class=&quot;nd&quot;&gt;@Test&lt;/span&gt;
-    &lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;testOnBtnClick&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(){&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;onView&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;withId&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;R&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;id&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;text_btn1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;))&lt;/span&gt;
-                &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;perform&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;click&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;())&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;Assert&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;assertTrue&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;mActivityRule&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;getActivity&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;getKey&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;());&lt;/span&gt;
-    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-    
-    &lt;span class=&quot;nd&quot;&gt;@After&lt;/span&gt;
-    &lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;destroy&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(){&lt;/span&gt;
-    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-
-
-&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-&lt;p&gt;我们可以在@Before 中做一些初始化操作，在@After中做一些单元测试结束前需要做的一些工作。而带@Test的方法则是具体的测试方法。AndroidJunitRunner会逐个运行这些方法。关于其他的一些anntotation其实跟Junit中是一样的，具体可以参考&lt;a href=&quot;http://developer.android.com/intl/zh-cn/tools/testing-support-library/index.html#AndroidJUnitRunner&quot;&gt;Android官方文档&lt;/a&gt;。&lt;/p&gt;
-
-&lt;p&gt;另外以前做过Android Activity单元测试的同学可能会发现上面的代码跟你写的有些不一样。Corrcet，之前的单元测试类如果是对某个Activity做测试需要继承自ActivityInstrumentationTestCase2&lt;calculatoractivity&gt;，传入需要测试的Activity类型作为模板测试。目前该类型已被deprectd，而使用一个ActivityTestRule，作为模板参数的Activity会在@Before方法之前被launch，在@After之后被停止运行，在这之间我们可以去调用它的一些方法。&lt;/calculatoractivity&gt;&lt;/p&gt;
-
-&lt;p&gt;如果你不需要对Activity做测试，但是需要访问一些图片等resource资源，则需要让你的测试类继承自AndroidTestCase，这样你就可以通过getContext()获取应用的上下文了。&lt;/p&gt;
-
-&lt;p&gt;ok，本期对AndroidJunitTest的介绍就到这里。下一期我们将会介绍界面测试框架Expresso，敬请期待。&lt;/p&gt;
-</description>
-        <pubDate>Sun, 06 Mar 2016 00:00:00 +0800</pubDate>
-        <link>http://sixwolf.net/blog/2016/03/06/Android%E5%8D%95%E5%85%83%E6%B5%8B%E8%AF%95%E8%AF%A6%E8%A7%A31(AndroidJunitTest)/</link>
-        <guid isPermaLink="true">http://sixwolf.net/blog/2016/03/06/Android%E5%8D%95%E5%85%83%E6%B5%8B%E8%AF%95%E8%AF%A6%E8%A7%A31(AndroidJunitTest)/</guid>
-        
-        <category>Development</category>
-        
-        <category>Android</category>
-        
-        
-        <category>blog</category>
-        
-      </item>
-    
-      <item>
-        <title>Fulid Browser测评，Mac上的一心二用神器</title>
-        <description>&lt;h1 id=&quot;section&quot;&gt;背景&lt;/h1&gt;
-&lt;p&gt;今天闲来无事，逛逛Mac的app store，发现首页有款应用名叫Fulid Browser感觉很不错，单价18RMB，感觉还行，于是就果断购买。&lt;/p&gt;
-
-&lt;h1 id=&quot;section-1&quot;&gt;功能&lt;/h1&gt;
-
-&lt;h2 id=&quot;section-2&quot;&gt;浏览器功能&lt;/h2&gt;
-&lt;p&gt;Fulid Browser其实就是一款浏览器，你可以像普通的浏览器一样使用它。而它不同于其它浏览器的是它永远悬浮于界面最上层，并且不影响你对它下面层次的应用的操作。比如，你可以在Fulid Browser中打开一个视频，设置网页播放器为网页全屏，然后安静地码字或者p图。另外，你还可以设置窗口的透明度，然后你的老板就发现不了了哈哈。= =&lt;/p&gt;
-
-&lt;h2 id=&quot;section-3&quot;&gt;其它功能&lt;/h2&gt;
-&lt;p&gt;除了作为一款浏览器，你还可以用Fulid Browser打开pdf文档，各种图片，甚至视频哦。不过它现在只支持Mp4的视频，让我想起了小时候psp看视频都要用格式工厂转换格式的日子。&lt;/p&gt;
-
-&lt;h1 id=&quot;section-4&quot;&gt;结语&lt;/h1&gt;
-&lt;p&gt;好了，今天的测评就到这里，以后会发现更多更好玩更有效率的应用带给大家。&lt;/p&gt;
-
-</description>
-        <pubDate>Tue, 01 Mar 2016 00:00:00 +0800</pubDate>
-        <link>http://sixwolf.net/blog/2016/03/01/Fuild-Browser%E6%B5%8B%E8%AF%84-Mac%E4%B8%8A%E7%9A%84%E4%B8%80%E5%BF%83%E4%BA%8C%E7%94%A8%E7%A5%9E%E5%99%A8/</link>
-        <guid isPermaLink="true">http://sixwolf.net/blog/2016/03/01/Fuild-Browser%E6%B5%8B%E8%AF%84-Mac%E4%B8%8A%E7%9A%84%E4%B8%80%E5%BF%83%E4%BA%8C%E7%94%A8%E7%A5%9E%E5%99%A8/</guid>
-        
-        <category>应用测评</category>
-        
-        
-        <category>blog</category>
-        
-      </item>
-    
-      <item>
-        <title>浅谈Android开发中多进程共享数据</title>
-        <description>&lt;p&gt;&lt;br /&gt;
-&lt;br /&gt;
-# 背景
-最近在工作中遇到一个需求，需要在接收到推送的时候将推送获得的数据存起来，以供app启动时使用。我们会认为这不是So easy吗？只要把数据存到SharedPreferences中，然后让app打开同一个SharedPreferences读取数据就可以了。但是在实际的测试中，我们发现推送进程存入的数据，并不能在app进程中获得。所以这是为什么呢，也许聪明的读者从我们上面的陈述中已经发现了原因，因为我们有两个进程，推送进程负责将推送数据存入，而app进程负责读取，但是正是由于是两个进程，如果它们同时存在，它们各自在内存中保持了自己的SP对象和数据，在推送进程中的存入并不能在app进程体现出来，并且可能会被app进程刷掉更改的数据。那么我们怎么做才能让这两边共享数据呢？请看下面陈述。&lt;/p&gt;
-
-&lt;h1 id=&quot;sharedpreferences&quot;&gt;多进程支持的SharedPreferences（不推荐）&lt;/h1&gt;
-&lt;p&gt;我们原来的做法是使用SharedPreferences, 自然而然想到，SharedPreferences 在MODE_PRIVATE MODE_PUBLIC 之外其实还可以设置多进程的Flag ———— MODE_MULTI_PROCESS&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;SharedPreferences myPrefs = context.getSharedPreferences(MY_FILE_NAME, Context.MODE_MULTI_PROCESS | Context.MODE_PRIVATE);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;p&gt;一旦我们设置了这个Flag，每次调用Context.getSharedPreferences 的时候系统会重新从SP文件中读入数据，因此我们在使用的时候每次读取和存入都要使用Context.getSharedPreferences 重新获取SP实例。即使是这样，由于SP本质上并不是多进程安全的，所以还是无法保证数据的同步，因此该方法我们并没有使用，我们也不推荐使用。&lt;/p&gt;
-
-&lt;h1 id=&quot;tray&quot;&gt;Tray&lt;/h1&gt;
-&lt;p&gt;如果SP不是多进程安全的，那么是否有多进程安全的，又有SP功能的第三方项目呢。答案是有的，Tray——一个多进程安全的SharedPreferences，我们可以在Github上找到它，如果是AndroidStudio,可以直接使用Gradle引入，可谓是十分方便，如下是使用的代码，十分简单，没有apply commit，看起来比SP还要简单。&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; // create a preference accessor. This is for global app preferences.
-final AppPreferences appPreferences = new AppPreferences(getContext()); // this Preference comes for free from the library
-// save a key value pair
-appPreferences.put(&quot;key&quot;, &quot;lorem ipsum&quot;);
-
-// read the value for your key. the second parameter is a fallback (optional otherwise throws)
-final String value = appPreferences.getString(&quot;key&quot;, &quot;default&quot;);
-Log.v(TAG, &quot;value: &quot; + value); // value: lorem ipsum
-
-// read a key that isn&#39;t saved. returns the default (or throws without default)
-final String defaultValue = appPreferences.getString(&quot;key2&quot;, &quot;default&quot;);
-Log.v(TAG, &quot;value: &quot; + defaultValue); // value: default
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;p&gt;但是最终我们并没有选择使用它，主要的原因是它需要minSdk 为15，而我们是支持sdk14的，所以只能果断放弃了。&lt;/p&gt;
-
-&lt;h1 id=&quot;contentprovider&quot;&gt;ContentProvider&lt;/h1&gt;
-&lt;p&gt;既然Tray不支持sdk15以下的，那么我们是否可以使用Tray的原理自己实现一个呢？在阅读Tray的源码时我们发现其实它是在ContentProvider的基础上做的，而ContentProvider是Android官方支持的多进程安全的。以下是使用ContentProvider的一个例子。&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;public class ArticlesProvider extends ContentProvider {  
-    private static final String LOG_TAG = &quot;shy.luo.providers.articles.ArticlesProvider&quot;;  
-  
-    private static final String DB_NAME = &quot;Articles.db&quot;;  
-    private static final String DB_TABLE = &quot;ArticlesTable&quot;;  
-    private static final int DB_VERSION = 1;  
-  
-    private static final String DB_CREATE = &quot;create table &quot; + DB_TABLE +  
-                            &quot; (&quot; + Articles.ID + &quot; integer primary key autoincrement, &quot; +  
-                            Articles.TITLE + &quot; text not null, &quot; +  
-                            Articles.ABSTRACT + &quot; text not null, &quot; +  
-                            Articles.URL + &quot; text not null);&quot;;  
-  
-    private static final UriMatcher uriMatcher;  
-    static {  
-            uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);  
-            uriMatcher.addURI(Articles.AUTHORITY, &quot;item&quot;, Articles.ITEM);  
-            uriMatcher.addURI(Articles.AUTHORITY, &quot;item/#&quot;, Articles.ITEM_ID);  
-            uriMatcher.addURI(Articles.AUTHORITY, &quot;pos/#&quot;, Articles.ITEM_POS);  
-    }  
-  
-    private static final HashMap&amp;lt;String, String&amp;gt; articleProjectionMap;  
-    static {  
-            articleProjectionMap = new HashMap&amp;lt;String, String&amp;gt;();  
-            articleProjectionMap.put(Articles.ID, Articles.ID);  
-            articleProjectionMap.put(Articles.TITLE, Articles.TITLE);  
-            articleProjectionMap.put(Articles.ABSTRACT, Articles.ABSTRACT);  
-            articleProjectionMap.put(Articles.URL, Articles.URL);  
-    }  
-  
-    private DBHelper dbHelper = null;  
-    private ContentResolver resolver = null;  
-  
-    @Override  
-    public boolean onCreate() {  
-            Context context = getContext();  
-            resolver = context.getContentResolver();  
-            dbHelper = new DBHelper(context, DB_NAME, null, DB_VERSION);  
-  
-            Log.i(LOG_TAG, &quot;Articles Provider Create&quot;);  
-  
-            return true;  
-    }  
-  
-    @Override  
-    public String getType(Uri uri) {  
-            switch (uriMatcher.match(uri)) {  
-            case Articles.ITEM:  
-                    return Articles.CONTENT_TYPE;  
-            case Articles.ITEM_ID:  
-            case Articles.ITEM_POS:  
-                    return Articles.CONTENT_ITEM_TYPE;  
-            default:  
-                    throw new IllegalArgumentException(&quot;Error Uri: &quot; + uri);  
-            }  
-    }  
-  
-    @Override  
-    public Uri insert(Uri uri, ContentValues values) {  
-            if(uriMatcher.match(uri) != Articles.ITEM) {  
-                    throw new IllegalArgumentException(&quot;Error Uri: &quot; + uri);  
-            }  
-  
-            SQLiteDatabase db = dbHelper.getWritableDatabase();  
-  
-            long id = db.insert(DB_TABLE, Articles.ID, values);  
-            if(id &amp;lt; 0) {  
-                    throw new SQLiteException(&quot;Unable to insert &quot; + values + &quot; for &quot; + uri);  
-            }  
-  
-            Uri newUri = ContentUris.withAppendedId(uri, id);  
-            resolver.notifyChange(newUri, null);  
-  
-            return newUri;  
-    }  
-  
-    @Override  
-    public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {  
-            SQLiteDatabase db = dbHelper.getWritableDatabase();  
-            int count = 0;  
-  
-            switch(uriMatcher.match(uri)) {  
-            case Articles.ITEM: {  
-                    count = db.update(DB_TABLE, values, selection, selectionArgs);  
-                    break;  
-            }  
-            case Articles.ITEM_ID: {  
-                    String id = uri.getPathSegments().get(1);  
-                    count = db.update(DB_TABLE, values, Articles.ID + &quot;=&quot; + id  
-                                    + (!TextUtils.isEmpty(selection) ? &quot; and (&quot; + selection + &#39;)&#39; : &quot;&quot;), selectionArgs);  
-                    break;  
-            }  
-            default:  
-                    throw new IllegalArgumentException(&quot;Error Uri: &quot; + uri);  
-            }  
-  
-            resolver.notifyChange(uri, null);  
-  
-            return count;  
-    }  
-  
-    @Override  
-    public int delete(Uri uri, String selection, String[] selectionArgs) {  
-            SQLiteDatabase db = dbHelper.getWritableDatabase();  
-            int count = 0;  
-  
-            switch(uriMatcher.match(uri)) {  
-            case Articles.ITEM: {  
-                    count = db.delete(DB_TABLE, selection, selectionArgs);  
-                    break;  
-            }  
-            case Articles.ITEM_ID: {  
-                    String id = uri.getPathSegments().get(1);  
-                    count = db.delete(DB_TABLE, Articles.ID + &quot;=&quot; + id  
-                                    + (!TextUtils.isEmpty(selection) ? &quot; and (&quot; + selection + &#39;)&#39; : &quot;&quot;), selectionArgs);  
-                    break;  
-            }  
-            default:  
-                    throw new IllegalArgumentException(&quot;Error Uri: &quot; + uri);  
-            }  
-  
-            resolver.notifyChange(uri, null);  
-  
-            return count;  
-    }  
-  
-    @Override  
-    public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {  
-            Log.i(LOG_TAG, &quot;ArticlesProvider.query: &quot; + uri);  
-  
-            SQLiteDatabase db = dbHelper.getReadableDatabase();  
-  
-            SQLiteQueryBuilder sqlBuilder = new SQLiteQueryBuilder();  
-            String limit = null;  
-  
-            switch (uriMatcher.match(uri)) {  
-            case Articles.ITEM: {  
-                    sqlBuilder.setTables(DB_TABLE);  
-                    sqlBuilder.setProjectionMap(articleProjectionMap);  
-                    break;  
-            }  
-            case Articles.ITEM_ID: {  
-                    String id = uri.getPathSegments().get(1);  
-                    sqlBuilder.setTables(DB_TABLE);  
-                    sqlBuilder.setProjectionMap(articleProjectionMap);  
-                    sqlBuilder.appendWhere(Articles.ID + &quot;=&quot; + id);  
-                    break;  
-            }  
-            case Articles.ITEM_POS: {  
-                    String pos = uri.getPathSegments().get(1);  
-                    sqlBuilder.setTables(DB_TABLE);  
-                    sqlBuilder.setProjectionMap(articleProjectionMap);  
-                    limit = pos + &quot;, 1&quot;;  
-                    break;  
-            }  
-            default:  
-                    throw new IllegalArgumentException(&quot;Error Uri: &quot; + uri);  
-            }  
-  
-            Cursor cursor = sqlBuilder.query(db, projection, selection, selectionArgs, null, null, TextUtils.isEmpty(sortOrder) ? Articles.DEFAULT_SORT_ORDER : sortOrder, limit);  
-            cursor.setNotificationUri(resolver, uri);  
-  
-            return cursor;  
-    }  
-
-    @Override  
-    public Bundle call(String method, String request, Bundle args) {  
-            Log.i(LOG_TAG, &quot;ArticlesProvider.call: &quot; + method);  
-  
-            if(method.equals(Articles.METHOD_GET_ITEM_COUNT)) {  
-                    return getItemCount();  
-            }  
-  
-            throw new IllegalArgumentException(&quot;Error method call: &quot; + method);  
-    }  
-  
-    private Bundle getItemCount() {  
-            Log.i(LOG_TAG, &quot;ArticlesProvider.getItemCount&quot;);  
-  
-            SQLiteDatabase db = dbHelper.getReadableDatabase();  
-            Cursor cursor = db.rawQuery(&quot;select count(*) from &quot; + DB_TABLE, null);  
-  
-            int count = 0;  
-            if (cursor.moveToFirst()) {  
-                    count = cursor.getInt(0);  
-            }  
-  
-            Bundle bundle = new Bundle();  
-            bundle.putInt(Articles.KEY_ITEM_COUNT, count);  
-  
-            cursor.close();  
-            db.close();  
-  
-            return bundle;  
-    }  
-  
-    private static class DBHelper extends SQLiteOpenHelper {  
-            public DBHelper(Context context, String name, CursorFactory factory, int version) {  
-                    super(context, name, factory, version);  
-            }  
-  
-            @Override  
-            public void onCreate(SQLiteDatabase db) {  
-                    db.execSQL(DB_CREATE);  
-            }  
-  
-            @Override  
-            public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {  
-                    db.execSQL(&quot;DROP TABLE IF EXISTS &quot; + DB_TABLE);  
-                    onCreate(db);  
-            }  
-    }  
-}   我们需要创建一个类继承自ContentProvider，并重载以下方法。 - onCreate()，用来执行一些初始化的工作。 - query(Uri, String[], String, String[], String)，用来返回数据给调用者。 - insert(Uri, ContentValues)，用来插入新的数据。 - update(Uri, ContentValues, String, String[])，用来更新已有的数据。 - delete(Uri, String, String[])，用来删除数据。 - getType(Uri)，用来返回数据的MIME类型。
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;p&gt;具体使用参考  &lt;a href=&quot;http://blog.csdn.net/luoshengyang/article/details/6950440&quot;&gt; Android应用程序组件Content Provider应用实例&lt;/a&gt;这篇博客，这里不再赘述。
-在以上对ContentProvider的使用过程中，我们发现过程比较繁琐，如果对于比较复杂的需求可能还比较使用，但是我们这里的需求其实很简单，完全不需要搞得那么复杂，所以最后我们也没有使用这个方法（你可以理解为本博主比较Lazy）。&lt;/p&gt;
-
-&lt;p&gt;#Broadcast
-那么是否有更简单的方法呢？由于想到了ContentProvider，我们不由地想到另一个android组件，BroadcastReceiver。那么我们是否可以使用Broadcast 将我们收到的推送数据发送给app进程呢。bingo，这似乎正是我们寻找的又简单又能解决问题的方法。我们来看下代码。&lt;/p&gt;
-
-&lt;p&gt;首先在推送进程收到推送消息时，我们将推送数据存入SP，如果这时候没有app进程，那么下次app进程启动的时候该存入的数据就会被app进程读取到。而如果这时候app进程存在，那么之后的代码就会生效，它使用LocalBroadcastManager 发送一个广播。LocalBroadcastManager发送的广播不会被app之外接收到，通过它注册的Receiver也不会接收到app之外的广播，因此拥有更高的效率。&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;pushPref.add(push);
-
-Intent intent = new Intent(PushHandler.KEY_GET_PUSH);
-intent.putExtra(PushHandler.KEY_PUSH_CONTENT, d);
-LocalBroadcastManager.getInstance(context).sendBroadcastSync(intent);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;p&gt;而我们在app进程则注册了一个BroadReceiver来接收上面发出的广播。在收到广播之后将推送数据存入SP。&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;public class PushHandler {
-
-public static String KEY_GET_PUSH = &quot;PUSH_RECEIVED&quot;;
-public static String KEY_PUSH_CONTENT = &quot;PUSH_CONTENT&quot;;
-
-// region 推送处理push
-/**
- * 当有推送时，发一次请求mPushReceiver
- */
-private static BroadcastReceiver mPushReceiver = new BroadcastReceiver() {
-    @Override
-    public void onReceive(Context context, Intent intent) {
-        Timber.i(&quot;在NoticeAction中收到广播&quot;);
-        PushPref pushPref = App.DI().pushPref();
-        try {
-            String pushContent = intent.getStringExtra(KEY_PUSH_CONTENT);
-            PushEntity pushEntity = App.DI().gson().fromJson(pushContent, PushEntity.class);
-            pushPref.add(pushEntity);
-        } catch (Exception e){
-            Timber.e(e, &quot;存储推送内容出错&quot;);
-        }
-    }
-};
-
-public static  void startListeningToPush(){
-    try {
-        LocalBroadcastManager.getInstance(App.getContext()).registerReceiver(mPushReceiver, new IntentFilter(KEY_GET_PUSH));
-    } catch (Exception e) {
-        Timber.e(e, &quot;wtf&quot;);
-    }
-}
-public static void stopListeningToPush(){
-    try {
-        LocalBroadcastManager.getInstance(App.getContext()).unregisterReceiver(mPushReceiver);
-    } catch (Exception e) {
-        Timber.e(e, &quot;wtf&quot;);
-    }
-}
-// endregion
-} 该方法相对于上面的方法使用简单，安全可靠，能够比较好的实现我们的需求。不过，在需求比较复杂的时候还是建议使用ContentProvider，因为毕竟这样的方法不是堂堂正道，有种剑走偏锋的感觉。
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;h1 id=&quot;section&quot;&gt;总结&lt;/h1&gt;
-&lt;p&gt;实现一个需求可以有很多方法，而我们需要寻找的是又简单有可靠的方法，在写代码之前不如多找找资料，多听听别人的意见。&lt;/p&gt;
-</description>
-        <pubDate>Sun, 28 Feb 2016 00:00:00 +0800</pubDate>
-        <link>http://sixwolf.net/blog/2016/02/28/%E6%B5%85%E8%B0%88Android%E5%BC%80%E5%8F%91%E4%B8%AD%E5%A4%9A%E8%BF%9B%E7%A8%8B%E5%85%B1%E4%BA%AB%E6%95%B0%E6%8D%AE/</link>
-        <guid isPermaLink="true">http://sixwolf.net/blog/2016/02/28/%E6%B5%85%E8%B0%88Android%E5%BC%80%E5%8F%91%E4%B8%AD%E5%A4%9A%E8%BF%9B%E7%A8%8B%E5%85%B1%E4%BA%AB%E6%95%B0%E6%8D%AE/</guid>
-        
-        <category>Development</category>
-        
-        <category>Android</category>
-        
-        
-        <category>blog</category>
-        
-      </item>
-    
-      <item>
-        <title>如何在网页端和移动端播放rtmp和hls视频流</title>
-        <description>&lt;p&gt;&lt;br /&gt;
-&lt;br /&gt;&lt;/p&gt;
-
-&lt;h1 id=&quot;section&quot;&gt;背景&lt;/h1&gt;
-&lt;p&gt;我们已经在&lt;a href=&quot;http://sixwolf.net/2016/01/29/%E7%9B%B4%E6%92%AD%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88-%E6%90%AD%E5%BB%BA%E4%BD%A0%E8%87%AA%E5%B7%B1%E7%9A%84%E7%9B%B4%E6%92%AD%E5%B9%B3%E5%8F%B0/&quot;&gt;视频直播解决方案&lt;/a&gt;讨论了如何实现自己的直播平台以及&lt;a href=&quot;http://sixwolf.net/2016/01/30/Android%E4%BD%BF%E7%94%A8FFMpeg%E5%AE%9E%E7%8E%B0%E6%8E%A8%E9%80%81%E8%A7%86%E9%A2%91%E7%9B%B4%E6%92%AD%E6%B5%81%E5%88%B0%E6%9C%8D%E5%8A%A1%E5%99%A8/&quot;&gt;如何实现从安卓设备上推流到服务器&lt;/a&gt;。那么我们还剩下最后一波，就是如何将精彩的视频内容展现出来，在本文中将会介绍如何在网页端和安卓设备上实现直播的播放。&lt;/p&gt;
-
-&lt;h1 id=&quot;vitamio&quot;&gt;安卓设备上的播放——Vitamio&lt;/h1&gt;
-&lt;p&gt;安卓设备3.0以上原生支持hls，但是不支持rtmp，为了统一以及低版本兼容，我们使用第三方的一个播放器库——&lt;a href=&quot;https://github.com/yixia/VitamioBundle&quot;&gt;vitamio&lt;/a&gt;。
-下面是实例代码&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;public class PlayerActivity extends AppCompatActivity {
-
-private static final String KEY_PATH = &quot;key_path&quot;;
-
-
-@Bind(R.id.vitamio_videoView)
-VideoView vVideoView;
-
-
-public static Intent makeIntent(String rtmpPath){
-    Intent intent = new Intent(App.getContext(), PlayerActivity.class);
-    intent.putExtra(KEY_PATH, rtmpPath);
-    return intent;
-}
-
-
-@Override
-protected void onCreate(Bundle savedInstanceState) {
-    super.onCreate(savedInstanceState);
-    if (!LibsChecker.checkVitamioLibs(this))
-        return;
-    setContentView(R.layout.activity_player);
-    ButterKnife.bind(this);
-    String path = getIntent().getStringExtra(KEY_PATH);
-    initVideo(path);
-}
-
-
-private void initVideo(String path){
-    HashMap&amp;lt;String, String&amp;gt; options = new HashMap&amp;lt;&amp;gt;();
-    options.put(&quot;rtmp_live&quot;, &quot;1&quot;);
-    vVideoView.setVideoURI(Uri.parse(path), options);
-    vVideoView.setMediaController(new MediaController(this));
-    vVideoView.requestFocus();
-
-    vVideoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-        @Override
-        public void onPrepared(MediaPlayer mediaPlayer) {
-            mediaPlayer.setPlaybackSpeed(1.0f);
-        }
-    });
-} }
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;p&gt;该Activity能够接收一个rtmp或者hls的流地址播放。完整项目地址 &lt;a href=&quot;https://github.com/beautifulSoup/RtmpHlsPlayer/tree/master&quot;&gt;RtmpHlsPlayer&lt;/a&gt;&lt;/p&gt;
-
-&lt;h1 id=&quot;hls&quot;&gt;hls播放&lt;/h1&gt;
-&lt;p&gt;如果仅需要在移动设备的WebView上播放，我们可以选择使用html中嵌入hls播放。如下html能够在所有Safari或者安卓3.0以上的WebView上播放。这样就不需要使用第三方的播放器。&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nt&quot;&gt;&amp;lt;html&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;lang=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;en&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
-    &lt;span class=&quot;nt&quot;&gt;&amp;lt;head&amp;gt;&lt;/span&gt;
-       &lt;span class=&quot;nt&quot;&gt;&amp;lt;meta&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;charset=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;utf-8/&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
-    &lt;span class=&quot;nt&quot;&gt;&amp;lt;/head&amp;gt;&lt;/span&gt;
-    &lt;span class=&quot;nt&quot;&gt;&amp;lt;body&amp;gt;&lt;/span&gt;
-        &lt;span class=&quot;nt&quot;&gt;&amp;lt;div&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;id=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&#39;player&#39;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
-           &lt;span class=&quot;nt&quot;&gt;&amp;lt;video&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;width=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;640&quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;height=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;320&quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;controls&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
-                &lt;span class=&quot;nt&quot;&gt;&amp;lt;source&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;src=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;http://10.10.5.119/live/livestream.m3u8&quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;type=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;application/x-mpegURL&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
-           &lt;span class=&quot;nt&quot;&gt;&amp;lt;/video&amp;gt;&lt;/span&gt;
-        &lt;span class=&quot;nt&quot;&gt;&amp;lt;/div&amp;gt;&lt;/span&gt;
-    &lt;span class=&quot;nt&quot;&gt;&amp;lt;/body&amp;gt;&lt;/span&gt;
-&lt;span class=&quot;nt&quot;&gt;&amp;lt;/html&amp;gt;&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;h1 id=&quot;videojs&quot;&gt;VideoJS&lt;/h1&gt;
-&lt;p&gt;如果我们要让我们的网页支持在所有浏览器上播放，我们就需要使用第三方的播放器。VideoJs是一个较好的播放器库，完全免费，不像JWPlayer一样需要付费才能使用一些高级功能。下面是一个播放的例子。你可以将source标签下的src换成你自己的直播流地址。需要注意的是rtmp流的type是rtmp/flv（flv 跟推流的时候FFmpegFrameRecorder设置的format有关）, hls 的type是application/x-mpegURL。&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nt&quot;&gt;&amp;lt;html&amp;gt;&lt;/span&gt;
-  &lt;span class=&quot;nt&quot;&gt;&amp;lt;head&amp;gt;&lt;/span&gt;
-  &lt;span class=&quot;nt&quot;&gt;&amp;lt;link&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;href=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;http://vjs.zencdn.net/5.5.3/video-js.css&quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;rel=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;stylesheet&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
-
-  &lt;span class=&quot;c&quot;&gt;&amp;lt;!-- If you&#39;d like to support IE8 --&amp;gt;&lt;/span&gt;
-  &lt;span class=&quot;nt&quot;&gt;&amp;lt;script &lt;/span&gt;&lt;span class=&quot;na&quot;&gt;src=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;http://vjs.zencdn.net/ie8/1.1.1/videojs-ie8.min.js&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&amp;lt;/script&amp;gt;&lt;/span&gt;
-
-
-&lt;span class=&quot;nt&quot;&gt;&amp;lt;/head&amp;gt;&lt;/span&gt;
-
-
-&lt;span class=&quot;nt&quot;&gt;&amp;lt;body&amp;gt;&lt;/span&gt;
-
-  &lt;span class=&quot;nt&quot;&gt;&amp;lt;h1&amp;gt;&lt;/span&gt;康康的直播间&lt;span class=&quot;nt&quot;&gt;&amp;lt;/h1&amp;gt;&lt;/span&gt;
- &lt;span class=&quot;nt&quot;&gt;&amp;lt;video&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;id=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;my-video&quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;class=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;video-js&quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;controls&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;preload=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;auto&quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;width=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;640&quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;height=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;264&quot;&lt;/span&gt;
- &lt;span class=&quot;na&quot;&gt;poster=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;https://img.alicdn.com/imgextra/i2/754328530/TB2FpxhkXXXXXa5XXXXXXXXXXXX_!!754328530.jpg&quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;data-setup=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;{}&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
-    &lt;span class=&quot;nt&quot;&gt;&amp;lt;source&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;src=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;rtmp://10.10.5.119/live/livestream&quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;type=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;rtmp/flv&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
-    &lt;span class=&quot;c&quot;&gt;&amp;lt;!-- 如果上面的rtmp流无法播放，就播放hls流 --&amp;gt;&lt;/span&gt;
-    &lt;span class=&quot;nt&quot;&gt;&amp;lt;source&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;src=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;http://10.10.5.119/live/livestream.m3u8&quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;type=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&#39;application/x-mpegURL&#39;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
-    &lt;span class=&quot;nt&quot;&gt;&amp;lt;p&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;class=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;vjs-no-js&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
-      To view this video please enable JavaScript, and consider upgrading to a web browser that
-      &lt;span class=&quot;nt&quot;&gt;&amp;lt;a&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;href=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;http://videojs.com/html5-video-support/&quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;target=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;_blank&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;supports HTML5 video&lt;span class=&quot;nt&quot;&gt;&amp;lt;/a&amp;gt;&lt;/span&gt;
-    &lt;span class=&quot;nt&quot;&gt;&amp;lt;/p&amp;gt;&lt;/span&gt;
- &lt;span class=&quot;nt&quot;&gt;&amp;lt;/video&amp;gt;&lt;/span&gt;
-
- &lt;span class=&quot;nt&quot;&gt;&amp;lt;script &lt;/span&gt;&lt;span class=&quot;na&quot;&gt;src=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;http://vjs.zencdn.net/5.5.3/video.js&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&amp;lt;/script&amp;gt;&lt;/span&gt;
-&lt;span class=&quot;nt&quot;&gt;&amp;lt;/body&amp;gt;&lt;/span&gt;
-&lt;span class=&quot;nt&quot;&gt;&amp;lt;/html&amp;gt;&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-
-</description>
-        <pubDate>Sat, 30 Jan 2016 00:00:00 +0800</pubDate>
-        <link>http://sixwolf.net/blog/2016/01/30/%E5%9C%A8%E5%90%84%E7%AB%AF%E5%AE%9E%E7%8E%B0Rtmp%E5%92%8Chls%E6%B5%81%E8%A7%86%E9%A2%91%E7%9A%84%E6%92%AD%E6%94%BE/</link>
-        <guid isPermaLink="true">http://sixwolf.net/blog/2016/01/30/%E5%9C%A8%E5%90%84%E7%AB%AF%E5%AE%9E%E7%8E%B0Rtmp%E5%92%8Chls%E6%B5%81%E8%A7%86%E9%A2%91%E7%9A%84%E6%92%AD%E6%94%BE/</guid>
-        
-        <category>Development</category>
-        
-        <category>rtmp</category>
-        
-        <category>hls</category>
-        
-        <category>player</category>
         
         
         <category>blog</category>

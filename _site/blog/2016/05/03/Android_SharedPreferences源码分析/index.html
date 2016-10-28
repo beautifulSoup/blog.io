@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A chinese man, detemined in Android and Python">
+    <meta name="baidu-site-verification" content="KonQRkt3nq" />
+    <title>Android SharedPreferences 源码分析 - In Coding</title>
+
+    <link rel="canonical" href="http://sixwolf.net/blog/2016/05/03/Android_SharedPreferences%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">
+
+    <!-- Icons -->
+  <link rel="shortcut icon" href="img/logo.ico">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/clean-blog.css">
+
+    <!-- Pygments Github CSS -->
+    <link rel="stylesheet" href="/css/syntax.css">
+
+    <!-- Custom Fonts -->
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href='//fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "//hm.baidu.com/hm.js?ad37e90f12e85cec39277b32f2653dfd";
+            var s = document.getElementsByTagName("script")[0];
+            s.parentNode.insertBefore(hm, s);
+        })();
+    </script>
+
+</head>
+
+
+
+
+
+
+<body ontouchstart="">
+
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">In Coding</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav navbar-right">
+                <li>
+                    <a href="/">Home</a>
+                </li>
+                
+                <li>
+                    <a href="/about/">About</a>
+                </li>
+                
+                <li>
+                    <a href="/archive/">Archive</a>
+                </li>
+                
+                <li>
+                    <a href="/milestone/">milestone</a>
+                </li>
+                
+                <li>
+                    <a href="/tags/">Tags</a>
+                </li>
+                
+            </ul>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+
+
+    <!-- Post Header -->
+<style type="text/css">
+    header.intro-header{
+        background-image: url('https://img.alicdn.com/imgextra/i4/754328530/TB2GEa3cVXXXXbUXpXXXXXXXXXX-754328530.jpg')
+    }
+</style>
+<header class="intro-header" >
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+	           <!-- <div class="Tags">
+                        
+                        <a class="tag" href="/Tags/#Development" title="Development">Development</a>
+                        
+                        <a class="tag" href="/Tags/#Android" title="Android">Android</a>
+                        
+                    </div> -->
+                    <h1>Android SharedPreferences 源码分析</h1>
+                    
+                    <span class="meta">Posted by Klojure on May 3, 2016</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+
+
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1 post-container">
+
+                <h2 id="section">概览</h2>
+<p>SharedPreferences（以下使用SP简称）在Android中作为一种使用简单的数据存储形式被广泛用来存储一些不需要做数据库操作的数据，比如用户配置项等。本文将从源码入手分析其实现，并据此提出一些使用中需要注意的事项。</p>
+
+<h2 id="section-1">分析</h2>
+
+<h3 id="section-2">源码入口</h3>
+
+<p>SP是一个interface，首先我们得找到它的具体实现。在SP的使用中，我们通过getSharedPreferences()获取SP实例如下：</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>SharedPreferences sp =getSharedPreferences(TAG, MODE);    
+</code></pre>
+</div>
+
+<p>而getSharedPreferences 是Context接口中的方法。稍微对Android SDK源码有所了解的朋友都知道，Context的主要实现类——ContextImpl。在该类中，我们可以找到getSharedPreferences方法的具体实现</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>    @Override
+    public SharedPreferences getSharedPreferences(String name, int mode) {
+        SharedPreferencesImpl sp;
+        synchronized (ContextImpl.class) {
+            if (sSharedPrefs == null) {
+                sSharedPrefs = new ArrayMap&lt;String, ArrayMap&lt;String, SharedPreferencesImpl&gt;&gt;();
+            }
+
+            final String packageName = getPackageName();
+            ArrayMap&lt;String, SharedPreferencesImpl&gt; packagePrefs = sSharedPrefs.get(packageName);
+            if (packagePrefs == null) {
+                packagePrefs = new ArrayMap&lt;String, SharedPreferencesImpl&gt;();
+                sSharedPrefs.put(packageName, packagePrefs);
+            }
+
+            // At least one application in the world actually passes in a null
+            // name.  This happened to work because when we generated the file name
+            // we would stringify it to "null.xml".  Nice.
+            if (mPackageInfo.getApplicationInfo().targetSdkVersion &lt;
+                    Build.VERSION_CODES.KITKAT) {
+                if (name == null) {
+                    name = "null";
+                }
+            }
+
+            sp = packagePrefs.get(name);
+            if (sp == null) {
+                File prefsFile = getSharedPrefsFile(name);
+                sp = new SharedPreferencesImpl(prefsFile, mode);
+                packagePrefs.put(name, sp);
+                return sp;
+            }
+        }
+        if ((mode &amp; Context.MODE_MULTI_PROCESS) != 0 ||
+            getApplicationInfo().targetSdkVersion &lt; android.os.Build.VERSION_CODES.HONEYCOMB) {
+            // If somebody else (some other process) changed the prefs
+            // file behind our back, we reload it.  This has been the
+            // historical (if undocumented) behavior.
+            sp.startReloadIfChangedUnexpectedly();
+        }
+        return sp;
+    }
+</code></pre>
+</div>
+
+<p>从以上代码我们可以获取到以下几点信息：</p>
+
+<ol>
+  <li>SP的实现类为SharedPreferencesImpl。</li>
+  <li>在ContextImpl中维护了一个从包名到SP字典的字典。</li>
+  <li>传null作为SP的name是被允许的，它会生成一个以null.xml为名的文件。</li>
+  <li>当sdk version 在3.0以下时支持“MODE_MULTI_PROCESS”模式，在该模式下，每次获取SP实例时，判断文件是否被改动，在被改动的情况下重新从文件加载数据，以实现多进程数据同步。但是后来发现即使如此在某些情况下还是不能保证多进程数据一致性，因此就被deprecated了，在3.0以上即使设置了MODE_MULTI_PROCESS也没有任何作用。</li>
+</ol>
+
+<h3 id="sharedpreferencesimpl">SharedPreferencesImpl</h3>
+
+<p>接下来是让我们移步SharedPreferencesImple，看一下SP的具体实现。</p>
+
+<h4 id="section-3">成员变量</h4>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>//对应的数据文件
+private final File mFile;
+//在写操作时备份的文件，如果写操作失败，会从备份文件中恢复数据
+private final File mBackupFile;
+//用户设置的SP模式
+private final int mMode;
+//内存中缓存的SP数据
+private Map&lt;String, Object&gt; mMap;     // guarded by 'this'
+//正在做些磁盘操作的进程数
+private int mDiskWritesInFlight = 0;  // guarded by 'this'
+//是否已经加载完成
+private boolean mLoaded = false;      // guarded by 'this'
+文件上一次修改的时间戳和mStatSize 一起被用来判断文件是否被修改
+private long mStatTimestamp;          // guarded by 'this'
+private long mStatSize;               // guarded by 'this'
+
+//写磁盘锁
+private final Object mWritingToDiskLock = new Object();
+//被用来作为mListeners字典中所有键的值，意义不明
+private static final Object mContent = new Object();
+//通过registerOnSharedPreferenceChangeListener注册进来的listeners，所有的listeners作为键缓存在mListeners这个map中，然而所有值都是mContent.
+private final WeakHashMap&lt;OnSharedPreferenceChangeListener, Object&gt; mListeners =
+        new WeakHashMap&lt;OnSharedPreferenceChangeListener, Object&gt;();
+</code></pre>
+</div>
+
+<h4 id="section-4">初始化过程</h4>
+
+<p>以下是SPImpl的构造方法。它初始化了成员变量，并调用startLoadFromDisk()用来初始化数据。</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>SharedPreferencesImpl(File file, int mode) {
+        mFile = file;
+        mBackupFile = makeBackupFile(file);
+        mMode = mode;
+        mLoaded = false;
+        mMap = null;
+        startLoadFromDisk();
+    }
+</code></pre>
+</div>
+
+<p>在startLoadFromDisk中启用了一个线程调用了真正的读文件加载数据方法 —— loadFromDiskLocked。该方法读取文件并使用XmlUtils类对读取的数据进行解析。</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>private void startLoadFromDisk() {
+        synchronized (this) {
+            mLoaded = false;
+        }
+        new Thread("SharedPreferencesImpl-load") {
+            public void run() {
+                synchronized (SharedPreferencesImpl.this) {
+                    loadFromDiskLocked();
+                }
+            }
+        }.start();
+    }
+    
+private void loadFromDiskLocked() {
+        if (mLoaded) {
+            return;
+        }
+        //在写文件出错情况下，mFile 文件会被直接delete，这时候就需要从备份文件中恢复数据。
+        if (mBackupFile.exists()) {
+            mFile.delete();
+            mBackupFile.renameTo(mFile);
+        }
+
+        // Debugging
+        if (mFile.exists() &amp;&amp; !mFile.canRead()) {
+            Log.w(TAG, "Attempt to read preferences file " + mFile + " without permission");
+        }
+
+        Map map = null;
+        StructStat stat = null;
+        try {
+            stat = Os.stat(mFile.getPath());
+            if (mFile.canRead()) {
+                BufferedInputStream str = null;
+                try {
+                    str = new BufferedInputStream(
+                            new FileInputStream(mFile), 16*1024);
+                    map = XmlUtils.readMapXml(str);
+                } catch (XmlPullParserException e) {
+                    Log.w(TAG, "getSharedPreferences", e);
+                } catch (FileNotFoundException e) {
+                    Log.w(TAG, "getSharedPreferences", e);
+                } catch (IOException e) {
+                    Log.w(TAG, "getSharedPreferences", e);
+                } finally {
+                    IoUtils.closeQuietly(str);
+                }
+            }
+        } catch (ErrnoException e) {
+        }
+        mLoaded = true;
+        //修改成员变量
+        if (map != null) {
+            mMap = map;
+            mStatTimestamp = stat.st_mtime;
+            mStatSize = stat.st_size;
+        } else {
+            mMap = new HashMap&lt;String, Object&gt;();
+        }
+        notifyAll();
+    }
+</code></pre>
+</div>
+
+<h4 id="section-5">读取数据</h4>
+
+<p>对于SP的使用，我们用的最多的可能就是取数据，以取String类型数据为例，getString方法首先取得SharedPreferencesImpl.this对象锁，然后同步等待从文件加载数据完成，最后再返回数据。因此这里会有一定的延迟。如果是在UI线程执行SP的取数据操作，可能会对UI流畅度方面造成一定的影响，不过在实践中我们认为这可以忽略不计。</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>public String getString(String key, @Nullable String defValue) {
+        synchronized (this) {
+            awaitLoadedLocked();
+            String v = (String)mMap.get(key);
+            return v != null ? v : defValue;
+        }
+    }
+
+private void awaitLoadedLocked() {
+        if (!mLoaded) {
+            // Raise an explicit StrictMode onReadFromDisk for this
+            // thread, since the real read will be in a different
+            // thread and otherwise ignored by StrictMode.
+            BlockGuard.getThreadPolicy().onReadFromDisk();
+        }
+        while (!mLoaded) {
+            try {
+                wait();
+            } catch (InterruptedException unused) {
+            }
+        }
+    }
+    
+</code></pre>
+</div>
+
+<h4 id="section-6">存数据</h4>
+
+<p>看完读取数据，接下来再介绍下写数据。对于SP的写操作主要是通过Editor接口来完成的，SPImpl中的内部类EditorImpl是Editor的具体实现。</p>
+
+<p>所有的put打头的方法只是将需要修改的键值保存到mModified这个字典中。</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>public Editor putString(String key, @Nullable String value) {
+            synchronized (this) {
+                mModified.put(key, value);
+                return this;
+            }
+        }
+</code></pre>
+</div>
+
+<p>所以重头戏是我们经常使用的commit和apply方法。这两个方法都是首先修改内存中缓存的mMap的值，然后将数据写到磁盘中。它们的主要区别是commit会等待写入磁盘后再返回，而apply则在调用写磁盘操作后就直接返回了，但是这时候可能磁盘中数据还没有被修改。</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>        public void apply() {
+            final MemoryCommitResult mcr = commitToMemory();
+            final Runnable awaitCommit = new Runnable() {
+                    public void run() {
+                        try {
+                            mcr.writtenToDiskLatch.await();
+                        } catch (InterruptedException ignored) {
+                        }
+                    }
+                };
+
+            QueuedWork.add(awaitCommit);
+
+            Runnable postWriteRunnable = new Runnable() {
+                    public void run() {
+                        awaitCommit.run();
+                        QueuedWork.remove(awaitCommit);
+                    }
+                };
+
+            SharedPreferencesImpl.this.enqueueDiskWrite(mcr, postWriteRunnable);
+
+            // Okay to notify the listeners before it's hit disk
+            // because the listeners should always get the same
+            // SharedPreferences instance back, which has the
+            // changes reflected in memory.
+            notifyListeners(mcr);
+        }
+
+        
+        public boolean commit() {
+            MemoryCommitResult mcr = commitToMemory();
+            SharedPreferencesImpl.this.enqueueDiskWrite(
+                mcr, null /* sync write on this thread okay */);
+            try {
+                mcr.writtenToDiskLatch.await();
+            } catch (InterruptedException e) {
+                return false;
+            }
+            notifyListeners(mcr);
+            return mcr.writeToDiskResult;
+        }
+
+</code></pre>
+</div>
+
+<p>以上两个方法都调用了commitToMemory。该方法主要根据mModified和是否被clear修改mMap的值，然后返回写磁盘需要的一些相关值。</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>
+ private MemoryCommitResult commitToMemory() {
+            MemoryCommitResult mcr = new MemoryCommitResult();
+            synchronized (SharedPreferencesImpl.this) {
+                // We optimistically don't make a deep copy until
+                // a memory commit comes in when we're already
+                // writing to disk.
+                if (mDiskWritesInFlight &gt; 0) {
+                    // We can't modify our mMap as a currently
+                    // in-flight write owns it.  Clone it before
+                    // modifying it.
+                    // noinspection unchecked
+                    mMap = new HashMap&lt;String, Object&gt;(mMap);
+                }
+                mcr.mapToWriteToDisk = mMap;
+                mDiskWritesInFlight++;
+
+                boolean hasListeners = mListeners.size() &gt; 0;
+                if (hasListeners) {
+                    mcr.keysModified = new ArrayList&lt;String&gt;();
+                    mcr.listeners =
+                            new HashSet&lt;OnSharedPreferenceChangeListener&gt;(mListeners.keySet());
+                }
+
+                synchronized (this) {
+                    if (mClear) {
+                        if (!mMap.isEmpty()) {
+                            mcr.changesMade = true;
+                            mMap.clear();
+                        }
+                        mClear = false;
+                    }
+
+                    for (Map.Entry&lt;String, Object&gt; e : mModified.entrySet()) {
+                        String k = e.getKey();
+                        Object v = e.getValue();
+                        // "this" is the magic value for a removal mutation. In addition,
+                        // setting a value to "null" for a given key is specified to be
+                        // equivalent to calling remove on that key.
+                        if (v == this || v == null) {
+                            if (!mMap.containsKey(k)) {
+                                continue;
+                            }
+                            mMap.remove(k);
+                        } else {
+                            if (mMap.containsKey(k)) {
+                                Object existingValue = mMap.get(k);
+                                if (existingValue != null &amp;&amp; existingValue.equals(v)) {
+                                    continue;
+                                }
+                            }
+                            mMap.put(k, v);
+                        }
+
+                        mcr.changesMade = true;
+                        if (hasListeners) {
+                            mcr.keysModified.add(k);
+                        }
+                    }
+
+                    mModified.clear();
+                }
+            }
+            return mcr;
+        }	
+</code></pre>
+</div>
+
+<h4 id="section-7">写磁盘</h4>
+
+<p>最后一块比较重要的就是SP的写磁盘操作。之前介绍的apply和commit都调用了enqueueDiskWrite(）方法。</p>
+
+<p>以下为其具体实现。writeToDiskRunnable中调用writeToFile写文件。如果参数中的postWriteRunable为null，则该Runnable会被同步执行，而如果不为null，则会将该Runnable放入线程池中异步执行。在这里也验证了之前提到的commit和apply的区别。</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>private void enqueueDiskWrite(final MemoryCommitResult mcr,
+                                  final Runnable postWriteRunnable) {
+        final Runnable writeToDiskRunnable = new Runnable() {
+                public void run() {
+                    synchronized (mWritingToDiskLock) {
+                        writeToFile(mcr);
+                    }
+                    synchronized (SharedPreferencesImpl.this) {
+                        mDiskWritesInFlight--;
+                    }
+                    if (postWriteRunnable != null) {
+                        postWriteRunnable.run();
+                    }
+                }
+            };
+
+        final boolean isFromSyncCommit = (postWriteRunnable == null);
+
+        // Typical #commit() path with fewer allocations, doing a write on
+        // the current thread.
+        if (isFromSyncCommit) {
+            boolean wasEmpty = false;
+            synchronized (SharedPreferencesImpl.this) {
+                wasEmpty = mDiskWritesInFlight == 1;
+            }
+            if (wasEmpty) {
+                writeToDiskRunnable.run();
+                return;
+            }
+        }
+
+        QueuedWork.singleThreadExecutor().execute(writeToDiskRunnable);
+    }
+</code></pre>
+</div>
+
+<h4 id="mode">Mode相关</h4>
+
+<p>下面我们分析一下获取SP实例时的第二个参数 mode，上文我们已经提到了一个被废弃的mode——MODE_MULTI_PROCESS。在SPImpl中在writeToFile方法中用到了该参数。</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>ContextImpl.setFilePermissionsFromMode(mFile.getPath(), mMode, 0);
+</code></pre>
+</div>
+
+<p>再看setFilePermissionsFromMode方法，根据MODE参数设置文件的读写权限，而从中我们可以看出能够造成影响的两个MODE分别为MODE_WORLD_READABLE和MODE_WORLD_WRITEABLE。而这两个值在API17之后被Deprecated，所以不建议使用，如果需要多App共享数据，建议使用ContentProvider。</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>    @SuppressWarnings("deprecation")
+    static void setFilePermissionsFromMode(String name, int mode,
+            int extraPermissions) {
+        int perms = FileUtils.S_IRUSR|FileUtils.S_IWUSR
+            |FileUtils.S_IRGRP|FileUtils.S_IWGRP
+            |extraPermissions;
+        if ((mode&amp;MODE_WORLD_READABLE) != 0) {
+            perms |= FileUtils.S_IROTH;
+        }
+        if ((mode&amp;MODE_WORLD_WRITEABLE) != 0) {
+            perms |= FileUtils.S_IWOTH;
+        }
+        if (DEBUG) {
+            Log.i(TAG, "File " + name + ": mode=0x" + Integer.toHexString(mode)
+                  + ", perms=0x" + Integer.toHexString(perms));
+        }
+        FileUtils.setPermissions(name, perms, -1, -1);
+    }
+</code></pre>
+</div>
+
+<h2 id="section-8">总结</h2>
+
+<p>以上为对SP代码的分析，根据以上分析，提出以下几个在使用SP中需要注意的点。</p>
+
+<ol>
+  <li>MODE_MULTI_PROCESS 无法保证多进程数据一致性，在3.0以上已经没有任何作用。</li>
+  <li>SP从初始化到读取到数据存在一定延迟，因为需要到文件中读取数据，因此可能会对UI线程流畅度造成一定影响。</li>
+  <li>commit在将数据写入磁盘后才会返回，而apply则直接返回但无法保证写磁盘已经完成，只能保证内存中数据的正确性。</li>
+  <li>MODE_WORLD_READABLE和MODE_WORLD_WRITEABLE已经被废弃，不建议使用，如果需要多App共享数据，建议使用ContentProvider，Github上有一个对ContentProvider的封装Tray，用起来和SP差不多还是蛮不错的。</li>
+</ol>
+
+
+                <hr>
+
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/blog/2016/04/18/Android%E8%87%AA%E5%AE%9A%E4%B9%89Notification%E5%B9%B6%E6%B2%A1%E6%9C%89%E9%82%A3%E4%B9%88%E7%AE%80%E5%8D%95/" data-toggle="tooltip" data-placement="top" title="Android自定义Notification并没有那么简单">&larr; Previous Post</a>
+                    </li>
+                    
+                    
+                    <li class="next">
+                        <a href="/blog/2016/08/17/%E6%AF%8F%E5%A4%A9%E5%AD%A6%E7%82%B9ShellScript-%E9%A2%9C%E8%89%B2%E5%80%BC%E8%BD%AC%E6%8D%A2%E5%99%A8/" data-toggle="tooltip" data-placement="top" title="每天学点ShellScript——16进制颜色值转换器">Next Post &rarr;</a>
+                    </li>
+                    
+                </ul>
+
+                <!-- Duoshuo Share start -->
+                <style>
+                    .ds-share{
+                        text-align: right;
+                    }
+
+                    @media only screen and (max-width: 700px) {
+                        .ds-share {
+
+                        }
+                    }
+                </style>
+
+                <div class="ds-share"
+                    data-thread-key="/blog/2016/05/03/Android_SharedPreferences源码分析" data-title="Android SharedPreferences 源码分析"
+                    data-images="http://sixwolf.net/https://img.alicdn.com/imgextra/i4/754328530/TB2GEa3cVXXXXbUXpXXXXXXXXXX-754328530.jpg"
+                    data-content="概览
+SharedPreferences（以下使用SP简称）在Android中作为一种使用简单的数据存储形式被广泛用来存储一些不需要做数据库操作的数据，比... | Microdust:Azeril's blog"
+                    data-url="http://sixwolf.net/blog/2016/05/03/Android_SharedPreferences%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">
+                    <div class="ds-share-inline">
+                      <ul  class="ds-share-icons-16">
+
+                        <li data-toggle="ds-share-icons-more"><a class="ds-more" href="#">分享到：</a></li>
+                        <li><a class="ds-wechat flat" href="javascript:void(0);" data-service="wechat">微信</a></li>
+                        <li><a class="ds-weibo flat" href="javascript:void(0);" data-service="weibo">微博</a></li>
+                        <li><a class="ds-douban flat" href="javascript:void(0);" data-service="douban">豆瓣</a></li>
+                      </ul>
+                      <div class="ds-share-icons-more">
+                      </div>
+                    </div>
+                <hr>
+                </div>
+                <!-- Duoshuo Share end-->
+
+
+                <!-- 多说评论框 start -->
+                <div class="comment">
+                    <div class="ds-thread" data-thread-key="/blog/2016/05/03/Android_SharedPreferences源码分析" data-title="Android SharedPreferences 源码分析" data-url="http://sixwolf.net/blog/2016/05/03/Android_SharedPreferences%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/"></div>
+                </div>
+                <!-- 多说评论框 end -->
+
+
+
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"sixwolf"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0]
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+<!-- 多说公共JS代码 end -->
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("http://cdn.bootcss.com/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'always',
+          placement: 'right',
+          icon: '#'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
+
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                    <!-- kill the Facebook and Weibo -->
+                    <li>
+                        <a href="/feed.xml">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-rss fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="https://twitter.com/SuperTwoDog">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+
+                    
+                    <li>
+                        <a href="https://github.com/beautifulSoup">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+
+                    <!--
+                    
+                    <li>
+                        <a href="http://www.douban.com/people/汤利康">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-douban fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                    -->
+
+                    <!--
+                    
+                    <li>
+                        <a href="https://www.facebook.com/汤利康">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-facebook fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                    -->
+
+                    
+                    <li>
+                        <a target="_blank" href="https://www.zhihu.com/people/汤利康">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa  fa-stack-1x fa-inverse">知</i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                  <!--
+                    
+                    <li>
+                        <a target="_blank" href="http://weibo.com/不知菌">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-weibo fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                     -->
+
+
+                </ul>
+                <p class="copyright text-muted">
+                &copy; 2016  Klojure ❖ Powered by Jekyll.
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/js/jquery.min.js "></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="/js/bootstrap.min.js "></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/js/clean-blog.min.js "></script>
+
+
+
+<!-- Highlight.js -->
+<script>
+    async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js",function(){
+        hljs.initHighlightingOnLoad();
+    })
+</script>
+<link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+
+
+</body>
+
+</html>

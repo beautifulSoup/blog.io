@@ -8,7 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="A chinese man, detemined in Android and Python">
     <meta name="baidu-site-verification" content="KonQRkt3nq" />
-    <title>Android去除默认闪退Dialog - In Coding</title>
+    <title>Android去除烦人的默认闪退Dialog - In Coding</title>
 
     <link rel="canonical" href="http://sixwolf.net/blog/2016/04/11/Android%E5%8E%BB%E9%99%A4%E7%83%A6%E4%BA%BA%E7%9A%84%E9%97%AA%E9%80%80%E5%BC%B9%E7%AA%97/">
 
@@ -118,7 +118,7 @@
                         <a class="tag" href="/Tags/#Android" title="Android">Android</a>
                         
                     </div> -->
-                    <h1>Android去除默认闪退Dialog</h1>
+                    <h1>Android去除烦人的默认闪退Dialog</h1>
                     
                     <span class="meta">Posted by beautifulSoup on April 11, 2016</span>
                 </div>
@@ -155,7 +155,7 @@
 <h2 id="dialog">去除Dialog</h2>
 <p>Android系统默认设置了一个UnCaughtExceptionHandler，而弹出闪退弹窗的工作就是在这个handler做的。所以如果要去除弹窗，只要实现一个UnCaughtExceptionHandler并替换掉系统默认的就可以了，代码如下。</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>	<span class="kd">public</span> <span class="kd">class</span> <span class="nc">App</span> <span class="kd">extends</span> <span class="n">Application</span> <span class="o">{</span>
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">class</span> <span class="nc">App</span> <span class="kd">extends</span> <span class="n">Application</span> <span class="o">{</span>
 
 
     <span class="nd">@Override</span>
@@ -230,6 +230,10 @@
                     </li>
                     
                     
+                    <li class="next">
+                        <a href="/blog/2016/04/12/Android%E4%BD%BF%E7%94%A8Travis-CI%E6%8C%81%E7%BB%AD%E9%9B%86%E6%88%90%E4%BB%A5%E5%8F%8A%E6%B5%8B%E8%AF%95%E8%A6%86%E7%9B%96%E7%8E%87%E5%8F%AF%E8%A7%86%E5%8C%96/" data-toggle="tooltip" data-placement="top" title="Android持续集成以及测试覆盖率可视化">Next Post &rarr;</a>
+                    </li>
+                    
                 </ul>
 
                 <!-- Duoshuo Share start -->
@@ -246,7 +250,7 @@
                 </style>
 
                 <div class="ds-share"
-                    data-thread-key="/blog/2016/04/11/Android去除烦人的闪退弹窗" data-title="Android去除默认闪退Dialog"
+                    data-thread-key="/blog/2016/04/11/Android去除烦人的闪退弹窗" data-title="Android去除烦人的默认闪退Dialog"
                     data-images="http://sixwolf.net/https://img.alicdn.com/imgextra/i4/754328530/TB2GEa3cVXXXXbUXpXXXXXXXXXX-754328530.jpg"
                     data-content="背景
 
@@ -270,7 +274,7 @@
 
                 <!-- 多说评论框 start -->
                 <div class="comment">
-                    <div class="ds-thread" data-thread-key="/blog/2016/04/11/Android去除烦人的闪退弹窗" data-title="Android去除默认闪退Dialog" data-url="http://sixwolf.net/blog/2016/04/11/Android%E5%8E%BB%E9%99%A4%E7%83%A6%E4%BA%BA%E7%9A%84%E9%97%AA%E9%80%80%E5%BC%B9%E7%AA%97/"></div>
+                    <div class="ds-thread" data-thread-key="/blog/2016/04/11/Android去除烦人的闪退弹窗" data-title="Android去除烦人的默认闪退Dialog" data-url="http://sixwolf.net/blog/2016/04/11/Android%E5%8E%BB%E9%99%A4%E7%83%A6%E4%BA%BA%E7%9A%84%E9%97%AA%E9%80%80%E5%BC%B9%E7%AA%97/"></div>
                 </div>
                 <!-- 多说评论框 end -->
 
@@ -369,7 +373,7 @@ var duoshuoQuery = {short_name:"sixwolf"};
                         </a>
                     </li>
                     
-                    
+
                     <!--
                     
                     <li>
@@ -406,7 +410,7 @@ var duoshuoQuery = {short_name:"sixwolf"};
                         </a>
                     </li>
                     
-                    <!--
+                  <!--
                     
                     <li>
                         <a target="_blank" href="http://weibo.com/不知菌">
@@ -416,8 +420,8 @@ var duoshuoQuery = {short_name:"sixwolf"};
                             </span>
                         </a>
                     </li>
-                    
-                    -->
+                     -->
+
 
                 </ul>
                 <p class="copyright text-muted">
