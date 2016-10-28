@@ -7,9 +7,6 @@ tags: [Development,Android]
 description: 本篇博客主要追查了在用Resources获取Drawable时获取到同一个对象问题的追查以及对Resources部分源码的分析。
 ---
 
-
-## Android Drawable缓存问题 以及Resources源码分析
-
 ### 起源
 今天开发过程中遇到一个问题，定位到问题代码如下：
 
