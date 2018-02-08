@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A chinese man, detemined in Android and Python">
+    <meta name="baidu-site-verification" content="KonQRkt3nq" />
+    <title>客户端路由动态配置——可能是最简单的热更新方案 - In Coding</title>
+
+    <link rel="canonical" href="http://localhost:4000/blog/2016/12/02/%E7%83%AD%E6%9B%B4%E6%96%B0%E6%96%B9%E6%A1%88%E4%B9%8B%E8%B7%AF%E7%94%B1%E5%8A%A8%E6%80%81%E9%85%8D%E7%BD%AE/">
+
+    <!-- Icons -->
+  <link rel="shortcut icon" href="img/logo.ico">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/clean-blog.css">
+
+    <!-- Pygments Github CSS -->
+    <link rel="stylesheet" href="/css/syntax.css">
+
+    <!-- Custom Fonts -->
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href='//fonts.cat.net/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.cat.net/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?3777c87f74662bbdb6d720064ecf851f";
+            var s = document.getElementsByTagName("script")[0];
+            s.parentNode.insertBefore(hm, s);
+        })();
+    </script>
+
+
+</head>
+
+
+
+
+
+
+<body ontouchstart="">
+
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">In Coding</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav navbar-right">
+                <li>
+                    <a href="/">Home</a>
+                </li>
+                
+                <li>
+                    <a href="/about/">About</a>
+                </li>
+                
+                <li>
+                    <a href="/archive/">Archive</a>
+                </li>
+                
+                <li>
+                    <a href="/milestone/">milestone</a>
+                </li>
+                
+                <li>
+                    <a href="/tags/">Tags</a>
+                </li>
+                
+            </ul>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+
+
+    <!-- Post Header -->
+<style type="text/css">
+    header.intro-header{
+        background-image: url('https://img.alicdn.com/imgextra/i4/754328530/TB2GEa3cVXXXXbUXpXXXXXXXXXX-754328530.jpg')
+    }
+</style>
+<header class="intro-header" >
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+	           <!-- <div class="Tags">
+                        
+                        <a class="tag" href="/Tags/#Development" title="Development">Development</a>
+                        
+                        <a class="tag" href="/Tags/#Android" title="Android">Android</a>
+                        
+                    </div> -->
+                    <h1>客户端路由动态配置——可能是最简单的热更新方案</h1>
+                    
+                    <span class="meta">Posted by beautifulSoup on December 2, 2016</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+
+
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1 post-container">
+
+                <h2 id="abstract">Abstract</h2>
+
+<p>说到热更新，大多数人的第一印象肯定是AndFix或者HotFix等热更新框架。但是一来这些框架学习成本较高，坑较多，二来对于大的模块更新支持不好。所以在实际开发功能中，对于一些紧急的功能上线或者bug修复，使用H5页面替换原生页面是一个较为简单和方便的方案。本文主要讲解如何使用路由动态配置思想实现App内任意页面的替换。同时会给出一个<a href="https://github.com/campusappcn/AndRouter/tree/master/dynamicrouter">Demo工程</a>，方便大家学习和实现。</p>
+
+<h2 id="url规范">Url规范</h2>
+<p>首先为了实现原生页面和H5页面之间的任意跳转，我们需要定义一套统一的Url规范。我们知道一个Url主要由Schema、Host、path以及QueryParameter等构成。以下分条给出定义。</p>
+
+<ul>
+  <li>Schema  <br />
+  为了实现从浏览器直接跳入App，我建议使用私有Schema。同时用不同的Schema来表示不同的动作。以下是我定义的两个Schema。
+    <ul>
+      <li>dynamic: 用此Schema的url表示如果能用原生页面打开，则用原生页面打开，如果没有，则经过一些转化变成http或者https协议连接使用WebView打开。主要用来上线一些原生没有的页面。比如老版本没有这个页面就用h5页面替换，新版本还是用原生的。</li>
+      <li>dynamicWeb: 用此Schema的url表示总是用WebView打开。主要用来替换原生的一些页面。比如某个运营活动明天就上线了，但是临时更版肯定来不及了，就临时把某一个页面都替换为H5页面。</li>
+    </ul>
+  </li>
+  <li>
+    <p>Path  <br />
+Path包括Host部分来区分某一个页面。某些同学可能会问，在H5那边Host是用来表示服务器域名的，这不就不兼容了吗，如果手机没有安装App，用我们这种规范定义的url肯定就无法打开了。这确实是一个问题，但是我想如果为了兼容H5在客户端页面的url中加上服务器的域名感觉也很奇怪。所以作为一个客户端程序员来说，这样比较方便，就暂且这么定。而为了解决没有安装客户端的情况，需要给H5页面的跳转链接加上备选链接。为了解决客户端原生页面跳转H5页面的情况，需要为我们定义的Url加上H5服务器的域名。这是本方案不太优雅的地方，各位有什么建议欢迎提出。</p>
+  </li>
+  <li>QueryParameter
+所有的参数都放在QueryParameter中。对于一些Object，就只能序列化一下也放在QueryParameter中了。</li>
+</ul>
+
+<h2 id="路由框架">路由框架</h2>
+<p>为了方便的通过Url打开Activity或者WebView，我们需要一个路由框架。这里我推荐我开源的一个路由框架 <a href="https://github.com/campusappcn/AndRouter">AndRouter</a>。AndRouter会根据Url的Schema选择不同的方式来打开这个url。同时它提供了ActivityRouter(将以activity为Schema的url转为Intent并打开对应Activity)的实现和BrowserRouter(用浏览器打开以http和https为Schema的url)的实现。为了让AndRouter支持我们自定义的dynamic和dynamicWeb为Schema的连接，我们需要自定义两个Router如下。</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">class</span> <span class="nc">DynamicRouter</span> <span class="kd">implements</span> <span class="n">IRouter</span> <span class="o">{</span>
+    <span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="n">String</span> <span class="n">DEFAULT_SCHEME</span> <span class="o">=</span> <span class="s">"dynamic"</span><span class="o">;</span>
+	
+	 <span class="o">...</span>
+
+    <span class="kd">protected</span> <span class="kt">boolean</span> <span class="nf">open</span><span class="o">(</span><span class="n">Context</span> <span class="n">context</span><span class="o">,</span> <span class="n">IRoute</span> <span class="n">route</span><span class="o">){</span>
+
+        <span class="n">String</span> <span class="n">routeUrl</span> <span class="o">=</span> <span class="n">route</span><span class="o">.</span><span class="na">getUrl</span><span class="o">();</span>
+        <span class="kt">boolean</span> <span class="n">isSuccess</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span>
+        <span class="k">if</span><span class="o">(</span><span class="n">canOpenTheRoute</span><span class="o">(</span><span class="n">route</span><span class="o">))</span> <span class="o">{</span>
+            <span class="c1">//首先尝试用原生的Activity打开，如果无法打开，则使用WebView打开</span>
+            <span class="k">try</span> <span class="o">{</span>
+                <span class="n">Uri</span> <span class="n">uri</span> <span class="o">=</span> <span class="n">Uri</span><span class="o">.</span><span class="na">parse</span><span class="o">(</span><span class="n">routeUrl</span><span class="o">)</span>
+                        <span class="o">.</span><span class="na">buildUpon</span><span class="o">()</span>
+                        <span class="o">.</span><span class="na">scheme</span><span class="o">(</span><span class="s">"activity"</span><span class="o">)</span>
+                        <span class="o">.</span><span class="na">build</span><span class="o">();</span>
+                <span class="c1">//尝试Activity打开</span>
+                <span class="k">if</span> <span class="o">(!</span><span class="n">Router</span><span class="o">.</span><span class="na">open</span><span class="o">(</span><span class="n">context</span><span class="o">,</span> <span class="n">uri</span><span class="o">.</span><span class="na">toString</span><span class="o">()))</span> <span class="o">{</span>
+                    <span class="c1">//失败，换用WebView打开，但是需要给Url加上H5域名</span>
+                    <span class="n">String</span> <span class="n">path</span> <span class="o">=</span> <span class="n">UrlConfig</span><span class="o">.</span><span class="na">BASE_URL</span> <span class="o">+</span> <span class="n">UrlUtils</span><span class="o">.</span><span class="na">getHost</span><span class="o">(</span><span class="n">routeUrl</span><span class="o">);</span>
+                    <span class="n">Timber</span><span class="o">.</span><span class="na">i</span><span class="o">(</span><span class="s">"path : %s"</span><span class="o">,</span> <span class="n">path</span><span class="o">);</span>
+                    <span class="n">String</span> <span class="n">url</span> <span class="o">=</span> <span class="n">UrlUtils</span><span class="o">.</span><span class="na">addQueryParameters</span><span class="o">(</span><span class="n">path</span><span class="o">,</span> <span class="n">UrlUtils</span><span class="o">.</span><span class="na">getParameters</span><span class="o">(</span><span class="n">routeUrl</span><span class="o">));</span>
+                    <span class="n">isSuccess</span> <span class="o">=</span> <span class="n">Router</span><span class="o">.</span><span class="na">open</span><span class="o">(</span><span class="n">context</span><span class="o">,</span> <span class="n">url</span><span class="o">);</span>
+                <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+                    <span class="n">isSuccess</span> <span class="o">=</span> <span class="kc">true</span><span class="o">;</span>
+                <span class="o">}</span>
+            <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">Exception</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+                <span class="n">Timber</span><span class="o">.</span><span class="na">e</span><span class="o">(</span><span class="n">e</span><span class="o">,</span> <span class="s">""</span><span class="o">);</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="n">isSuccess</span><span class="o">;</span>
+    <span class="o">}</span>
+    
+    <span class="o">...</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>DynamicWebRouter 同理，不过不会尝试用Activity打开。</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    <span class="kd">public</span> <span class="kd">class</span> <span class="nc">DynamicWebRouter</span> <span class="kd">extends</span> <span class="n">BaseRouter</span> <span class="o">{</span>
+    <span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="n">String</span> <span class="n">DEFAULT_SCHEMA</span> <span class="o">=</span> <span class="s">"dynamicWeb"</span><span class="o">;</span>
+
+    <span class="o">...</span>
+
+    <span class="kd">protected</span> <span class="kt">boolean</span> <span class="nf">open</span><span class="o">(</span><span class="n">Context</span> <span class="n">context</span><span class="o">,</span> <span class="n">IRoute</span> <span class="n">route</span><span class="o">){</span>
+        <span class="kt">boolean</span> <span class="n">isSuccess</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span>
+        <span class="k">if</span><span class="o">(</span><span class="n">canOpenTheRoute</span><span class="o">(</span><span class="n">route</span><span class="o">)){</span>
+            <span class="c1">//强制使用WebViewActivity打开</span>
+            <span class="n">String</span> <span class="n">routeUrl</span> <span class="o">=</span> <span class="n">route</span><span class="o">.</span><span class="na">getUrl</span><span class="o">();</span>
+            <span class="k">try</span> <span class="o">{</span>
+                <span class="n">String</span> <span class="n">host</span> <span class="o">=</span> <span class="n">UrlUtils</span><span class="o">.</span><span class="na">getHost</span><span class="o">(</span><span class="n">routeUrl</span><span class="o">);</span>
+                <span class="n">String</span> <span class="n">path</span> <span class="o">=</span> <span class="n">UrlConfig</span><span class="o">.</span><span class="na">BASE_URL</span> <span class="o">+</span> <span class="n">host</span><span class="o">;</span>
+                <span class="n">Timber</span><span class="o">.</span><span class="na">i</span><span class="o">(</span><span class="s">"path %s"</span><span class="o">,</span> <span class="n">path</span><span class="o">);</span>
+                <span class="n">String</span> <span class="n">url</span> <span class="o">=</span> <span class="n">UrlUtils</span><span class="o">.</span><span class="na">addQueryParameters</span><span class="o">(</span><span class="n">path</span><span class="o">,</span> <span class="n">UrlUtils</span><span class="o">.</span><span class="na">getParameters</span><span class="o">(</span><span class="n">routeUrl</span><span class="o">));</span>
+                <span class="n">isSuccess</span> <span class="o">=</span> <span class="n">Router</span><span class="o">.</span><span class="na">open</span><span class="o">(</span><span class="n">context</span><span class="o">,</span> <span class="n">url</span><span class="o">);</span>
+            <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">Exception</span> <span class="n">e</span><span class="o">){</span>
+                <span class="n">Timber</span><span class="o">.</span><span class="na">e</span><span class="o">(</span><span class="n">e</span><span class="o">,</span> <span class="s">""</span><span class="o">);</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="n">isSuccess</span><span class="o">;</span>
+    <span class="o">}</span>
+	<span class="o">...</span>
+
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>给路由框架加上以上两个Router的实现，然后AndRouter就支持打开我们自定义的Schema Url了。</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code> 		<span class="n">Router</span><span class="o">.</span><span class="na">initActivityRouter</span><span class="o">(</span><span class="n">getContext</span><span class="o">());</span>
+ 		<span class="n">Router</span><span class="o">.</span><span class="na">addRouter</span><span class="o">(</span><span class="k">new</span> <span class="n">WebRouter</span><span class="o">());</span>
+ 		<span class="n">Router</span><span class="o">.</span><span class="na">addRouter</span><span class="o">(</span><span class="k">new</span> <span class="n">DynamicRouter</span><span class="o">());</span>
+ 		<span class="n">Router</span><span class="o">.</span><span class="na">addRouter</span><span class="o">(</span><span class="k">new</span> <span class="n">DynamicWebRouter</span><span class="o">());</span>
+
+</code></pre></div></div>
+<h3 id="路由动态刷新">路由动态刷新</h3>
+<p>为了让后台控制客户端的页面跳转，App在初始化的时候需要同步一下动态路由表接口，并缓存下来，每次需要做页面跳转的时候去表里查一下有没有动态配置项，如果有，则需要使用动态路由来做页面跳转。为了方便大家测试，我写了一个Spring项目，用来提供该接口，该项目同时也在github上开源了 <a href="https://github.com/beautifulSoup/RouterSender">RouterSender</a>。</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code>	<span class="c1">//客户端更新路由表</span>
+    <span class="kt">void</span> <span class="nf">refreshRouter</span><span class="o">(){</span>
+        <span class="n">service</span><span class="o">.</span><span class="na">getRouters</span><span class="o">()</span>
+                <span class="o">.</span><span class="na">enqueue</span><span class="o">(</span><span class="k">new</span> <span class="n">Callback</span><span class="o">&lt;</span><span class="n">Map</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">String</span><span class="o">&gt;&gt;()</span> <span class="o">{</span>
+                    <span class="nd">@Override</span>
+                    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onResponse</span><span class="o">(</span><span class="n">Call</span><span class="o">&lt;</span><span class="n">Map</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">String</span><span class="o">&gt;&gt;</span> <span class="n">call</span><span class="o">,</span> <span class="n">Response</span><span class="o">&lt;</span><span class="n">Map</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">String</span><span class="o">&gt;&gt;</span> <span class="n">response</span><span class="o">)</span> <span class="o">{</span>
+                        <span class="k">if</span><span class="o">(</span><span class="n">response</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">&amp;&amp;</span> <span class="n">response</span><span class="o">.</span><span class="na">body</span><span class="o">()</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>									
+                        		<span class="c1">//RouterCache 用来缓存路由表</span>
+                            <span class="n">RouterCache</span><span class="o">.</span><span class="na">updateRouter</span><span class="o">(</span><span class="n">response</span><span class="o">.</span><span class="na">body</span><span class="o">());</span>
+                        <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+                            <span class="n">Timber</span><span class="o">.</span><span class="na">w</span><span class="o">(</span><span class="s">"路由更新失败"</span><span class="o">);</span>
+                        <span class="o">}</span>
+                    <span class="o">}</span>
+
+                    <span class="nd">@Override</span>
+                    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onFailure</span><span class="o">(</span><span class="n">Call</span><span class="o">&lt;</span><span class="n">Map</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">String</span><span class="o">&gt;&gt;</span> <span class="n">call</span><span class="o">,</span> <span class="n">Throwable</span> <span class="n">t</span><span class="o">)</span> <span class="o">{</span>
+                        <span class="n">Timber</span><span class="o">.</span><span class="na">e</span><span class="o">(</span><span class="n">t</span><span class="o">,</span> <span class="s">"路由更新失败"</span><span class="o">);</span>
+                    <span class="o">}</span>
+                <span class="o">});</span>
+    <span class="o">}</span>
+</code></pre></div></div>
+
+<h3 id="路由选择">路由选择</h3>
+<p>在每次跳转的时候进行的路由选择代码如下：</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code>	<span class="n">btn2</span><span class="o">.</span><span class="na">setOnClickListener</span><span class="o">(</span><span class="k">new</span> <span class="n">View</span><span class="o">.</span><span class="na">OnClickListener</span><span class="o">()</span> <span class="o">{</span>
+            <span class="nd">@Override</span>
+            <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onClick</span><span class="o">(</span><span class="n">View</span> <span class="n">v</span><span class="o">)</span> <span class="o">{</span>
+                <span class="n">Map</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">String</span><span class="o">&gt;</span> <span class="n">map</span> <span class="o">=</span> <span class="k">new</span> <span class="n">HashMap</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">String</span><span class="o">&gt;();</span>
+                <span class="n">map</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="n">TwoActivity</span><span class="o">.</span><span class="na">KEY_NAME</span><span class="o">,</span> <span class="s">"Tango"</span><span class="o">);</span>
+                <span class="c1">//如果有动态配置，则用动态url代开，某则用activity://three 对应的页面打开 并带上map中的参数</span>
+                <span class="n">RouterTry</span><span class="o">.</span><span class="na">tryOpenOr</span><span class="o">(</span><span class="n">MainActivity</span><span class="o">.</span><span class="na">this</span><span class="o">,</span> <span class="n">RouterCache</span><span class="o">.</span><span class="na">getRoute</span><span class="o">(</span><span class="n">KEY_ACTION_TWO</span><span class="o">),</span> <span class="s">"activity://three"</span><span class="o">,</span> <span class="n">map</span><span class="o">);</span>
+            <span class="o">}</span>
+        <span class="o">});</span>
+</code></pre></div></div>
+
+<h3 id="网页到app的统一入口">网页到App的统一入口</h3>
+<p>为了能够从网页跳入原生页面，我们设置了一个统一的Activity入口，不管是从浏览器跳入App还是从WebView跳到某一个原生页面，都从该Activity中转。这主要是为了方便做一些过滤，以及实施一些安全策略。</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code>	<span class="kd">public</span> <span class="kd">class</span> <span class="nc">RouterDispatchActivity</span> <span class="kd">extends</span> <span class="n">Activity</span> <span class="o">{</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">protected</span> <span class="kt">void</span> <span class="nf">onCreate</span><span class="o">(</span><span class="n">Bundle</span> <span class="n">savedInstanceState</span><span class="o">)</span> <span class="o">{</span>
+        <span class="kd">super</span><span class="o">.</span><span class="na">onCreate</span><span class="o">(</span><span class="n">savedInstanceState</span><span class="o">);</span>
+        <span class="n">Intent</span> <span class="n">intent</span>  <span class="o">=</span> <span class="n">getIntent</span><span class="o">();</span>
+        <span class="n">Uri</span> <span class="n">uri</span> <span class="o">=</span> <span class="n">intent</span><span class="o">.</span><span class="na">getData</span><span class="o">();</span>
+        <span class="n">Router</span><span class="o">.</span><span class="na">open</span><span class="o">(</span><span class="n">RouterDispatchActivity</span><span class="o">.</span><span class="na">this</span><span class="o">,</span> <span class="n">uri</span><span class="o">.</span><span class="na">toString</span><span class="o">());</span>
+        <span class="n">finish</span><span class="o">();</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>该Activity需要添加如下Intent-filter</p>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code>			<span class="nt">&lt;intent-filter&gt;</span>
+                <span class="nt">&lt;action</span> <span class="na">android:name=</span><span class="s">"android.intent.action.VIEW"</span><span class="nt">/&gt;</span>
+                <span class="nt">&lt;category</span> <span class="na">android:name=</span><span class="s">"android.intent.category.DEFAULT"</span><span class="nt">/&gt;</span>
+                <span class="nt">&lt;category</span> <span class="na">android:name=</span><span class="s">"android.intent.category.BROWSABLE"</span><span class="nt">/&gt;</span>
+                <span class="nt">&lt;data</span> <span class="na">android:scheme=</span><span class="s">"dynamic"</span><span class="nt">/&gt;</span>
+                <span class="nt">&lt;data</span> <span class="na">android:scheme=</span><span class="s">"dynamicWeb"</span><span class="nt">/&gt;</span>
+            <span class="nt">&lt;/intent-filter&gt;</span>
+
+</code></pre></div></div>
+
+<p>同时我们需要给WebView设置WebViewClient拦截网页内部的页面跳转，在发现是我们自定义协议链接，使用上面的RouterDispatchActivity来打开该Url。</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+    <span class="kd">private</span> <span class="kd">class</span> <span class="nc">CaptureWebViewClient</span> <span class="kd">extends</span> <span class="n">WebViewClient</span> <span class="o">{</span>
+		<span class="o">...</span>
+        
+        <span class="nd">@Override</span>
+        <span class="kd">public</span> <span class="kt">boolean</span> <span class="nf">shouldOverrideUrlLoading</span><span class="o">(</span><span class="n">WebView</span> <span class="n">view</span><span class="o">,</span> <span class="n">String</span> <span class="n">url</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">if</span><span class="o">(</span><span class="n">TextUtils</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">UrlUtils</span><span class="o">.</span><span class="na">getScheme</span><span class="o">(</span><span class="n">url</span><span class="o">),</span> <span class="s">"dynamic"</span><span class="o">)</span> <span class="o">||</span> <span class="n">TextUtils</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">UrlUtils</span><span class="o">.</span><span class="na">getScheme</span><span class="o">(</span><span class="n">url</span><span class="o">),</span> <span class="s">"dynamicWeb"</span><span class="o">))</span> <span class="o">{</span>
+                <span class="n">Intent</span> <span class="n">intent</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Intent</span><span class="o">();</span>
+                <span class="n">intent</span><span class="o">.</span><span class="na">setAction</span><span class="o">(</span><span class="n">Intent</span><span class="o">.</span><span class="na">ACTION_VIEW</span><span class="o">);</span>
+                <span class="n">intent</span><span class="o">.</span><span class="na">setData</span><span class="o">(</span><span class="n">Uri</span><span class="o">.</span><span class="na">parse</span><span class="o">(</span><span class="n">url</span><span class="o">));</span>
+                <span class="n">mContext</span><span class="o">.</span><span class="na">startActivity</span><span class="o">(</span><span class="n">intent</span><span class="o">);</span>
+                <span class="k">return</span> <span class="kc">true</span><span class="o">;</span>
+            <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+                <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+
+</code></pre></div></div>
+
+<h2 id="可能安全隐患">可能安全隐患</h2>
+<ul>
+  <li>外部网页通过自定义Schema的链接在App内部打开一些恶意网页，引导用户进行一些危险性操作（比如输入用户名和密码)</li>
+  <li>参数泄露以及跨站攻击</li>
+  <li>Intent Schema Url攻击</li>
+</ul>
+
+<h3 id="规避策略">规避策略</h3>
+<p>在UrlDispathActivity中对Url进行过滤和安全处理。不过我感觉问题不大，这里只是给大家提供个思路，大家可以想想会不会有问题。</p>
+
+<h2 id="总结">总结</h2>
+<p>以上即为我的路由动态配置思路和实现。如有问题和建议，欢迎提出。</p>
+
+<h2 id="demo项目地址">Demo项目地址</h2>
+<ul>
+  <li><a href="https://github.com/campusappcn/AndRouter">Android实现Demo工程</a></li>
+  <li>[服务器实现] (https://github.com/beautifulSoup/RouterSender)</li>
+</ul>
+
+<h2 id="广告">广告</h2>
+<p><a href="https://github.com/beautifulSoup">欢迎Follow我的GitHub账号</a></p>
+
+<p><a href="http://www.jianshu.com/users/657dc8bfbd65/latest_articles">欢迎关注我的简书账号</a></p>
+
+<p><a href="http://weibo.com/u/2615648365">欢迎关注我的微薄账号</a></p>
+
+
+
+                <hr>
+
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/blog/2016/10/28/Android-Drawable%E7%BC%93%E5%AD%98%E9%97%AE%E9%A2%98-%E4%BB%A5%E5%8F%8AResources%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" data-toggle="tooltip" data-placement="top" title="Android Drawable缓存问题 以及Resources源码分析">&larr; Previous Post</a>
+                    </li>
+                    
+                    
+                    <li class="next">
+                        <a href="/blog/2016/12/21/%E5%9C%A8Android%E9%A1%B9%E7%9B%AE%E4%B8%AD%E4%BD%BF%E7%94%A8Lombok/" data-toggle="tooltip" data-placement="top" title="在Android项目中使用Lombok">Next Post &rarr;</a>
+                    </li>
+                    
+                </ul>
+                <!--&lt;!&ndash; disqus &ndash;&gt;-->
+                <!--<div id="disqus_thread"></div>-->
+                <!--<script>-->
+
+                    <!--/**-->
+                     <!--*  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.-->
+                     <!--*  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables*/-->
+                    <!--/*-->
+                     <!--var disqus_config = function () {-->
+                     <!--this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable-->
+                     <!--this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable-->
+                     <!--};-->
+                     <!--*/-->
+                    <!--(function() { // DON'T EDIT BELOW THIS LINE-->
+                        <!--var d = document, s = d.createElement('script');-->
+                        <!--s.src = 'https://in-coding.disqus.com/embed.js';-->
+                        <!--s.setAttribute('data-timestamp', +new Date());-->
+                        <!--(d.head || d.body).appendChild(s);-->
+                    <!--})();-->
+                <!--</script>-->
+                <!--<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>-->
+                <!--&lt;!&ndash;end disqus &ndash;&gt;-->
+
+                <!-- changyan-->
+                <!--PC版-->
+                <!--PC版-->
+                <div id="SOHUCS" ></div>
+                <script charset="utf-8" type="text/javascript" src="https://changyan.sohu.com/upload/changyan.js" ></script>
+                <script type="text/javascript">
+                    window.changyan.api.config({
+                        appid: 'cyts5EMWL',
+                        conf: 'prod_8140523863d2c692b9712ff94e941682'
+                    });
+                </script>
+                <!-- end changyan-->
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("http://cdn.bootcss.com/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'always',
+          placement: 'right',
+          icon: '#'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
+
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                    <!-- kill the Facebook and Weibo -->
+                    <li>
+                        <a href="/feed.xml">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-rss fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="https://twitter.com/SuperTwoDog">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+
+                    
+                    <li>
+                        <a href="https://github.com/beautifulSoup">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+
+                    <!--
+                    
+                    <li>
+                        <a href="http://www.douban.com/people/汤利康">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-douban fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                    -->
+
+                    <!--
+                    
+                    <li>
+                        <a href="https://www.facebook.com/汤利康">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-facebook fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                    -->
+
+                    
+                    <li>
+                        <a target="_blank" href="https://www.zhihu.com/people/汤利康">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa  fa-stack-1x fa-inverse">知</i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                  <!--
+                    
+                    <li>
+                        <a target="_blank" href="http://weibo.com/不知菌">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-weibo fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                     -->
+
+
+                </ul>
+                <p class="copyright text-muted">
+                &copy; 2018  Klojure ❖ Powered by Jekyll.
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/js/jquery.min.js "></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="/js/bootstrap.min.js "></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/js/clean-blog.min.js "></script>
+
+
+
+<!-- Highlight.js -->
+<script>
+    async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js",function(){
+        hljs.initHighlightingOnLoad();
+    })
+</script>
+<link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+
+
+</body>
+
+</html>

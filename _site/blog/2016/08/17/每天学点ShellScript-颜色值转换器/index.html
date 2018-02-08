@@ -10,7 +10,7 @@
     <meta name="baidu-site-verification" content="KonQRkt3nq" />
     <title>每天学点ShellScript——16进制颜色值转换器 - In Coding</title>
 
-    <link rel="canonical" href="http://sixwolf.net/blog/2016/08/17/%E6%AF%8F%E5%A4%A9%E5%AD%A6%E7%82%B9ShellScript-%E9%A2%9C%E8%89%B2%E5%80%BC%E8%BD%AC%E6%8D%A2%E5%99%A8/">
+    <link rel="canonical" href="http://localhost:4000/blog/2016/08/17/%E6%AF%8F%E5%A4%A9%E5%AD%A6%E7%82%B9ShellScript-%E9%A2%9C%E8%89%B2%E5%80%BC%E8%BD%AC%E6%8D%A2%E5%99%A8/">
 
     <!-- Icons -->
   <link rel="shortcut icon" href="img/logo.ico">
@@ -26,8 +26,8 @@
 
     <!-- Custom Fonts -->
     <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
-    <link href='//fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
-    <link href='//fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+    <link href='//fonts.cat.net/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.cat.net/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
 
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -40,11 +40,12 @@
         var _hmt = _hmt || [];
         (function() {
             var hm = document.createElement("script");
-            hm.src = "//hm.baidu.com/hm.js?ad37e90f12e85cec39277b32f2653dfd";
+            hm.src = "https://hm.baidu.com/hm.js?3777c87f74662bbdb6d720064ecf851f";
             var s = document.getElementsByTagName("script")[0];
             s.parentNode.insertBefore(hm, s);
         })();
     </script>
+
 
 </head>
 
@@ -136,9 +137,9 @@
         <div class="row">
             <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1 post-container">
 
-                <h1 id="shellscript16">每天学点ShellScript——16进制颜色值转换器</h1>
+                <h1 id="每天学点shellscript16进制颜色值转换器">每天学点ShellScript——16进制颜色值转换器</h1>
 
-<h2 id="section">源码</h2>
+<h2 id="源码">源码</h2>
 
 <p>写了个shell小脚本用来把%为单位的alpha值和RGB值转换为16进制数。</p>
 
@@ -150,12 +151,12 @@
   <li>四个参数：认为是alpha跟上RGB值，转换为8个字符表示alpha和颜色值的16进制数。</li>
 </ul>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="c">#! /bin/bash</span>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">#! /bin/bash</span>
 
 toHex<span class="o">(){</span>
     <span class="nv">v</span><span class="o">=</span><span class="sb">`</span><span class="nb">echo</span> <span class="s2">"obase=16;</span><span class="k">${</span><span class="nv">1</span><span class="k">}</span><span class="s2">"</span> | bc<span class="sb">`</span>
     <span class="nv">l</span><span class="o">=</span><span class="sb">`</span><span class="nb">echo</span> <span class="k">${#</span><span class="nv">v</span><span class="k">}</span><span class="sb">`</span>
-    <span class="k">if</span> <span class="o">[</span> <span class="nv">$l</span> -lt 2 <span class="o">]</span>
+    <span class="k">if</span> <span class="o">[</span> <span class="nv">$l</span> <span class="nt">-lt</span> 2 <span class="o">]</span>
     <span class="k">then
         </span><span class="nv">v</span><span class="o">=</span><span class="s2">"0</span><span class="k">${</span><span class="nv">v</span><span class="k">}</span><span class="s2">"</span>
     <span class="k">fi
@@ -174,30 +175,29 @@ toColorHex<span class="o">(){</span>
 <span class="o">}</span>
 
 
-<span class="k">if</span> <span class="o">[</span> <span class="nv">$# </span>-eq 3 <span class="o">]</span>
+<span class="k">if</span> <span class="o">[</span> <span class="nv">$# </span><span class="nt">-eq</span> 3 <span class="o">]</span>
 <span class="k">then
     </span><span class="nv">color</span><span class="o">=</span><span class="sb">`</span>toColorHex <span class="nv">$1</span> <span class="nv">$2</span> <span class="nv">$3</span><span class="sb">`</span>
     <span class="nb">echo</span> <span class="s2">"#</span><span class="nv">$color</span><span class="s2">"</span>
-<span class="k">elif</span> <span class="o">[</span> <span class="nv">$# </span>-eq 4 <span class="o">]</span>
+<span class="k">elif</span> <span class="o">[</span> <span class="nv">$# </span><span class="nt">-eq</span> 4 <span class="o">]</span>
 <span class="k">then
     </span><span class="nv">alpha</span><span class="o">=</span><span class="sb">`</span>toAlpha <span class="nv">$1</span><span class="sb">`</span>
     <span class="nv">color</span><span class="o">=</span><span class="sb">`</span>toColorHex <span class="nv">$2</span> <span class="nv">$3</span> <span class="nv">$4</span><span class="sb">`</span>
     <span class="nb">echo</span> <span class="s2">"#</span><span class="k">${</span><span class="nv">alpha</span><span class="k">}${</span><span class="nv">color</span><span class="k">}</span><span class="s2">"</span>
-<span class="k">elif</span> <span class="o">[</span> <span class="nv">$# </span>-eq 1 <span class="o">]</span>
+<span class="k">elif</span> <span class="o">[</span> <span class="nv">$# </span><span class="nt">-eq</span> 1 <span class="o">]</span>
 <span class="k">then
     </span><span class="nb">echo</span> <span class="sb">`</span>toAlpha <span class="nv">$1</span><span class="sb">`</span>
 <span class="k">else
     </span><span class="nb">echo</span> <span class="s2">"You should input four or three numbers"</span>
 <span class="k">fi</span>
 
-</code></pre>
-</div>
+</code></pre></div></div>
 
-<h2 id="section-1">主要知识点</h2>
-<p>### 参数获取
-从脚本或者函数内部都可以通过 1、2、3… 变量名获取传入的参数。${1}即为传入的第一个参数。而${#}获取参数个数。</p>
+<h2 id="主要知识点">主要知识点</h2>
+<h3 id="参数获取">参数获取</h3>
+<p>从脚本或者函数内部都可以通过 1、2、3… 变量名获取传入的参数。${1}即为传入的第一个参数。而${#}获取参数个数。</p>
 
-<h3 id="section-2">关系运算符</h3>
+<h3 id="关系运算符">关系运算符</h3>
 <p>| 符号 | 含义      |
 |—–|—–      |
 | -eq | equal     |
@@ -207,21 +207,21 @@ toColorHex<span class="o">(){</span>
 | -ge | great than or equal |
 | -le | less than or equal |</p>
 
-<h3 id="section-3">命令执行</h3>
+<h3 id="命令执行">命令执行</h3>
 <p>如果需要将命令执行的结果赋值给变量，则需要将这条命令语句用``扩起，或者使用$(),不过$()在某些系统环境下可能无法使用。</p>
 
-<h3 id="section-4">数学计算</h3>
+<h3 id="数学计算">数学计算</h3>
 <p>数学计算语句需要用$(())括起。</p>
 
 <h3 id="bc">bc</h3>
 <p>bc是一种科学语句，也是shell种一个命令，不过大多数的使用场景是用来做数值转换。这里就是转为16进制。</p>
 
-<h3 id="section-5">[</h3>
+<h3>[</h3>
 <p>shell 中的if 后面的[ 是一个可执行程序，所以需要在其后加空格，] 同理。</p>
 
-<h3 id="section-6">变量和等号之间不能有空格</h3>
+<h3 id="变量和等号之间不能有空格">变量和等号之间不能有空格</h3>
 
-<h3 id="section-7">获取字符串长度</h3>
+<h3 id="获取字符串长度">获取字符串长度</h3>
 <p>使用${#string}</p>
 
 
@@ -234,56 +234,46 @@ toColorHex<span class="o">(){</span>
                     </li>
                     
                     
+                    <li class="next">
+                        <a href="/blog/2016/10/28/Android-Drawable%E7%BC%93%E5%AD%98%E9%97%AE%E9%A2%98-%E4%BB%A5%E5%8F%8AResources%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" data-toggle="tooltip" data-placement="top" title="Android Drawable缓存问题 以及Resources源码分析">Next Post &rarr;</a>
+                    </li>
+                    
                 </ul>
+                <!--&lt;!&ndash; disqus &ndash;&gt;-->
+                <!--<div id="disqus_thread"></div>-->
+                <!--<script>-->
 
-                <!-- Duoshuo Share start -->
-                <style>
-                    .ds-share{
-                        text-align: right;
-                    }
+                    <!--/**-->
+                     <!--*  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.-->
+                     <!--*  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables*/-->
+                    <!--/*-->
+                     <!--var disqus_config = function () {-->
+                     <!--this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable-->
+                     <!--this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable-->
+                     <!--};-->
+                     <!--*/-->
+                    <!--(function() { // DON'T EDIT BELOW THIS LINE-->
+                        <!--var d = document, s = d.createElement('script');-->
+                        <!--s.src = 'https://in-coding.disqus.com/embed.js';-->
+                        <!--s.setAttribute('data-timestamp', +new Date());-->
+                        <!--(d.head || d.body).appendChild(s);-->
+                    <!--})();-->
+                <!--</script>-->
+                <!--<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>-->
+                <!--&lt;!&ndash;end disqus &ndash;&gt;-->
 
-                    @media only screen and (max-width: 700px) {
-                        .ds-share {
-
-                        }
-                    }
-                </style>
-
-                <div class="ds-share"
-                    data-thread-key="/blog/2016/08/17/每天学点ShellScript——颜色值转换器" data-title="每天学点ShellScript——16进制颜色值转换器"
-                    data-images="http://sixwolf.net/https://img.alicdn.com/imgextra/i4/754328530/TB2GEa3cVXXXXbUXpXXXXXXXXXX-754328530.jpg"
-                    data-content="每天学点ShellScript——16进制颜色值转换器
-
-源码
-
-写了个shell小脚本用来把%为单位的alpha值和RGB值转换为16进制数。
-
-输入有... | Microdust:Azeril's blog"
-                    data-url="http://sixwolf.net/blog/2016/08/17/%E6%AF%8F%E5%A4%A9%E5%AD%A6%E7%82%B9ShellScript-%E9%A2%9C%E8%89%B2%E5%80%BC%E8%BD%AC%E6%8D%A2%E5%99%A8/">
-                    <div class="ds-share-inline">
-                      <ul  class="ds-share-icons-16">
-
-                        <li data-toggle="ds-share-icons-more"><a class="ds-more" href="#">分享到：</a></li>
-                        <li><a class="ds-wechat flat" href="javascript:void(0);" data-service="wechat">微信</a></li>
-                        <li><a class="ds-weibo flat" href="javascript:void(0);" data-service="weibo">微博</a></li>
-                        <li><a class="ds-douban flat" href="javascript:void(0);" data-service="douban">豆瓣</a></li>
-                      </ul>
-                      <div class="ds-share-icons-more">
-                      </div>
-                    </div>
-                <hr>
-                </div>
-                <!-- Duoshuo Share end-->
-
-
-                <!-- 多说评论框 start -->
-                <div class="comment">
-                    <div class="ds-thread" data-thread-key="/blog/2016/08/17/每天学点ShellScript——颜色值转换器" data-title="每天学点ShellScript——16进制颜色值转换器" data-url="http://sixwolf.net/blog/2016/08/17/%E6%AF%8F%E5%A4%A9%E5%AD%A6%E7%82%B9ShellScript-%E9%A2%9C%E8%89%B2%E5%80%BC%E8%BD%AC%E6%8D%A2%E5%99%A8/"></div>
-                </div>
-                <!-- 多说评论框 end -->
-
-
-
+                <!-- changyan-->
+                <!--PC版-->
+                <!--PC版-->
+                <div id="SOHUCS" ></div>
+                <script charset="utf-8" type="text/javascript" src="https://changyan.sohu.com/upload/changyan.js" ></script>
+                <script type="text/javascript">
+                    window.changyan.api.config({
+                        appid: 'cyts5EMWL',
+                        conf: 'prod_8140523863d2c692b9712ff94e941682'
+                    });
+                </script>
+                <!-- end changyan-->
             </div>
         </div>
     </div>
@@ -291,19 +281,6 @@ toColorHex<span class="o">(){</span>
 
 
 
-<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
-<script type="text/javascript">
-var duoshuoQuery = {short_name:"sixwolf"};
-	(function() {
-		var ds = document.createElement('script');
-		ds.type = 'text/javascript';ds.async = true;
-		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
-		ds.charset = 'UTF-8';
-		(document.getElementsByTagName('head')[0]
-		 || document.getElementsByTagName('body')[0]).appendChild(ds);
-	})();
-	</script>
-<!-- 多说公共JS代码 end -->
 
 <!-- async load function -->
 <script>
@@ -429,7 +406,7 @@ var duoshuoQuery = {short_name:"sixwolf"};
 
                 </ul>
                 <p class="copyright text-muted">
-                &copy; 2016  Klojure ❖ Powered by Jekyll.
+                &copy; 2018  Klojure ❖ Powered by Jekyll.
                 </p>
             </div>
         </div>

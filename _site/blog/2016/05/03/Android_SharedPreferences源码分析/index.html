@@ -10,7 +10,7 @@
     <meta name="baidu-site-verification" content="KonQRkt3nq" />
     <title>Android SharedPreferences 源码分析 - In Coding</title>
 
-    <link rel="canonical" href="http://sixwolf.net/blog/2016/05/03/Android_SharedPreferences%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">
+    <link rel="canonical" href="http://localhost:4000/blog/2016/05/03/Android_SharedPreferences%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">
 
     <!-- Icons -->
   <link rel="shortcut icon" href="img/logo.ico">
@@ -26,8 +26,8 @@
 
     <!-- Custom Fonts -->
     <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
-    <link href='//fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
-    <link href='//fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+    <link href='//fonts.cat.net/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.cat.net/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
 
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -40,11 +40,12 @@
         var _hmt = _hmt || [];
         (function() {
             var hm = document.createElement("script");
-            hm.src = "//hm.baidu.com/hm.js?ad37e90f12e85cec39277b32f2653dfd";
+            hm.src = "https://hm.baidu.com/hm.js?3777c87f74662bbdb6d720064ecf851f";
             var s = document.getElementsByTagName("script")[0];
             s.parentNode.insertBefore(hm, s);
         })();
     </script>
+
 
 </head>
 
@@ -136,22 +137,21 @@
         <div class="row">
             <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1 post-container">
 
-                <h2 id="section">概览</h2>
+                <h2 id="概览">概览</h2>
 <p>SharedPreferences（以下使用SP简称）在Android中作为一种使用简单的数据存储形式被广泛用来存储一些不需要做数据库操作的数据，比如用户配置项等。本文将从源码入手分析其实现，并据此提出一些使用中需要注意的事项。</p>
 
-<h2 id="section-1">分析</h2>
+<h2 id="分析">分析</h2>
 
-<h3 id="section-2">源码入口</h3>
+<h3 id="源码入口">源码入口</h3>
 
 <p>SP是一个interface，首先我们得找到它的具体实现。在SP的使用中，我们通过getSharedPreferences()获取SP实例如下：</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>SharedPreferences sp =getSharedPreferences(TAG, MODE);    
-</code></pre>
-</div>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>SharedPreferences sp =getSharedPreferences(TAG, MODE);    
+</code></pre></div></div>
 
 <p>而getSharedPreferences 是Context接口中的方法。稍微对Android SDK源码有所了解的朋友都知道，Context的主要实现类——ContextImpl。在该类中，我们可以找到getSharedPreferences方法的具体实现</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>    @Override
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    @Override
     public SharedPreferences getSharedPreferences(String name, int mode) {
         SharedPreferencesImpl sp;
         synchronized (ContextImpl.class) {
@@ -193,8 +193,7 @@
         }
         return sp;
     }
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>从以上代码我们可以获取到以下几点信息：</p>
 
@@ -209,9 +208,9 @@
 
 <p>接下来是让我们移步SharedPreferencesImple，看一下SP的具体实现。</p>
 
-<h4 id="section-3">成员变量</h4>
+<h4 id="成员变量">成员变量</h4>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>//对应的数据文件
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>//对应的数据文件
 private final File mFile;
 //在写操作时备份的文件，如果写操作失败，会从备份文件中恢复数据
 private final File mBackupFile;
@@ -234,14 +233,13 @@ private static final Object mContent = new Object();
 //通过registerOnSharedPreferenceChangeListener注册进来的listeners，所有的listeners作为键缓存在mListeners这个map中，然而所有值都是mContent.
 private final WeakHashMap&lt;OnSharedPreferenceChangeListener, Object&gt; mListeners =
         new WeakHashMap&lt;OnSharedPreferenceChangeListener, Object&gt;();
-</code></pre>
-</div>
+</code></pre></div></div>
 
-<h4 id="section-4">初始化过程</h4>
+<h4 id="初始化过程">初始化过程</h4>
 
 <p>以下是SPImpl的构造方法。它初始化了成员变量，并调用startLoadFromDisk()用来初始化数据。</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>SharedPreferencesImpl(File file, int mode) {
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>SharedPreferencesImpl(File file, int mode) {
         mFile = file;
         mBackupFile = makeBackupFile(file);
         mMode = mode;
@@ -249,12 +247,11 @@ private final WeakHashMap&lt;OnSharedPreferenceChangeListener, Object&gt; mListe
         mMap = null;
         startLoadFromDisk();
     }
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>在startLoadFromDisk中启用了一个线程调用了真正的读文件加载数据方法 —— loadFromDiskLocked。该方法读取文件并使用XmlUtils类对读取的数据进行解析。</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>private void startLoadFromDisk() {
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>private void startLoadFromDisk() {
         synchronized (this) {
             mLoaded = false;
         }
@@ -315,14 +312,13 @@ private void loadFromDiskLocked() {
         }
         notifyAll();
     }
-</code></pre>
-</div>
+</code></pre></div></div>
 
-<h4 id="section-5">读取数据</h4>
+<h4 id="读取数据">读取数据</h4>
 
 <p>对于SP的使用，我们用的最多的可能就是取数据，以取String类型数据为例，getString方法首先取得SharedPreferencesImpl.this对象锁，然后同步等待从文件加载数据完成，最后再返回数据。因此这里会有一定的延迟。如果是在UI线程执行SP的取数据操作，可能会对UI流畅度方面造成一定的影响，不过在实践中我们认为这可以忽略不计。</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>public String getString(String key, @Nullable String defValue) {
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>public String getString(String key, @Nullable String defValue) {
         synchronized (this) {
             awaitLoadedLocked();
             String v = (String)mMap.get(key);
@@ -345,27 +341,25 @@ private void awaitLoadedLocked() {
         }
     }
     
-</code></pre>
-</div>
+</code></pre></div></div>
 
-<h4 id="section-6">存数据</h4>
+<h4 id="存数据">存数据</h4>
 
 <p>看完读取数据，接下来再介绍下写数据。对于SP的写操作主要是通过Editor接口来完成的，SPImpl中的内部类EditorImpl是Editor的具体实现。</p>
 
 <p>所有的put打头的方法只是将需要修改的键值保存到mModified这个字典中。</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>public Editor putString(String key, @Nullable String value) {
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>public Editor putString(String key, @Nullable String value) {
             synchronized (this) {
                 mModified.put(key, value);
                 return this;
             }
         }
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>所以重头戏是我们经常使用的commit和apply方法。这两个方法都是首先修改内存中缓存的mMap的值，然后将数据写到磁盘中。它们的主要区别是commit会等待写入磁盘后再返回，而apply则在调用写磁盘操作后就直接返回了，但是这时候可能磁盘中数据还没有被修改。</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>        public void apply() {
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>        public void apply() {
             final MemoryCommitResult mcr = commitToMemory();
             final Runnable awaitCommit = new Runnable() {
                     public void run() {
@@ -408,12 +402,11 @@ private void awaitLoadedLocked() {
             return mcr.writeToDiskResult;
         }
 
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>以上两个方法都调用了commitToMemory。该方法主要根据mModified和是否被clear修改mMap的值，然后返回写磁盘需要的一些相关值。</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
  private MemoryCommitResult commitToMemory() {
             MemoryCommitResult mcr = new MemoryCommitResult();
             synchronized (SharedPreferencesImpl.this) {
@@ -478,16 +471,15 @@ private void awaitLoadedLocked() {
             }
             return mcr;
         }	
-</code></pre>
-</div>
+</code></pre></div></div>
 
-<h4 id="section-7">写磁盘</h4>
+<h4 id="写磁盘">写磁盘</h4>
 
 <p>最后一块比较重要的就是SP的写磁盘操作。之前介绍的apply和commit都调用了enqueueDiskWrite(）方法。</p>
 
 <p>以下为其具体实现。writeToDiskRunnable中调用writeToFile写文件。如果参数中的postWriteRunable为null，则该Runnable会被同步执行，而如果不为null，则会将该Runnable放入线程池中异步执行。在这里也验证了之前提到的commit和apply的区别。</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>private void enqueueDiskWrite(final MemoryCommitResult mcr,
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>private void enqueueDiskWrite(final MemoryCommitResult mcr,
                                   final Runnable postWriteRunnable) {
         final Runnable writeToDiskRunnable = new Runnable() {
                 public void run() {
@@ -520,20 +512,18 @@ private void awaitLoadedLocked() {
 
         QueuedWork.singleThreadExecutor().execute(writeToDiskRunnable);
     }
-</code></pre>
-</div>
+</code></pre></div></div>
 
-<h4 id="mode">Mode相关</h4>
+<h4 id="mode相关">Mode相关</h4>
 
 <p>下面我们分析一下获取SP实例时的第二个参数 mode，上文我们已经提到了一个被废弃的mode——MODE_MULTI_PROCESS。在SPImpl中在writeToFile方法中用到了该参数。</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>ContextImpl.setFilePermissionsFromMode(mFile.getPath(), mMode, 0);
-</code></pre>
-</div>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ContextImpl.setFilePermissionsFromMode(mFile.getPath(), mMode, 0);
+</code></pre></div></div>
 
 <p>再看setFilePermissionsFromMode方法，根据MODE参数设置文件的读写权限，而从中我们可以看出能够造成影响的两个MODE分别为MODE_WORLD_READABLE和MODE_WORLD_WRITEABLE。而这两个值在API17之后被Deprecated，所以不建议使用，如果需要多App共享数据，建议使用ContentProvider。</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>    @SuppressWarnings("deprecation")
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    @SuppressWarnings("deprecation")
     static void setFilePermissionsFromMode(String name, int mode,
             int extraPermissions) {
         int perms = FileUtils.S_IRUSR|FileUtils.S_IWUSR
@@ -551,10 +541,9 @@ private void awaitLoadedLocked() {
         }
         FileUtils.setPermissions(name, perms, -1, -1);
     }
-</code></pre>
-</div>
+</code></pre></div></div>
 
-<h2 id="section-8">总结</h2>
+<h2 id="总结">总结</h2>
 
 <p>以上为对SP代码的分析，根据以上分析，提出以下几个在使用SP中需要注意的点。</p>
 
@@ -580,50 +569,41 @@ private void awaitLoadedLocked() {
                     </li>
                     
                 </ul>
+                <!--&lt;!&ndash; disqus &ndash;&gt;-->
+                <!--<div id="disqus_thread"></div>-->
+                <!--<script>-->
 
-                <!-- Duoshuo Share start -->
-                <style>
-                    .ds-share{
-                        text-align: right;
-                    }
+                    <!--/**-->
+                     <!--*  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.-->
+                     <!--*  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables*/-->
+                    <!--/*-->
+                     <!--var disqus_config = function () {-->
+                     <!--this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable-->
+                     <!--this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable-->
+                     <!--};-->
+                     <!--*/-->
+                    <!--(function() { // DON'T EDIT BELOW THIS LINE-->
+                        <!--var d = document, s = d.createElement('script');-->
+                        <!--s.src = 'https://in-coding.disqus.com/embed.js';-->
+                        <!--s.setAttribute('data-timestamp', +new Date());-->
+                        <!--(d.head || d.body).appendChild(s);-->
+                    <!--})();-->
+                <!--</script>-->
+                <!--<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>-->
+                <!--&lt;!&ndash;end disqus &ndash;&gt;-->
 
-                    @media only screen and (max-width: 700px) {
-                        .ds-share {
-
-                        }
-                    }
-                </style>
-
-                <div class="ds-share"
-                    data-thread-key="/blog/2016/05/03/Android_SharedPreferences源码分析" data-title="Android SharedPreferences 源码分析"
-                    data-images="http://sixwolf.net/https://img.alicdn.com/imgextra/i4/754328530/TB2GEa3cVXXXXbUXpXXXXXXXXXX-754328530.jpg"
-                    data-content="概览
-SharedPreferences（以下使用SP简称）在Android中作为一种使用简单的数据存储形式被广泛用来存储一些不需要做数据库操作的数据，比... | Microdust:Azeril's blog"
-                    data-url="http://sixwolf.net/blog/2016/05/03/Android_SharedPreferences%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">
-                    <div class="ds-share-inline">
-                      <ul  class="ds-share-icons-16">
-
-                        <li data-toggle="ds-share-icons-more"><a class="ds-more" href="#">分享到：</a></li>
-                        <li><a class="ds-wechat flat" href="javascript:void(0);" data-service="wechat">微信</a></li>
-                        <li><a class="ds-weibo flat" href="javascript:void(0);" data-service="weibo">微博</a></li>
-                        <li><a class="ds-douban flat" href="javascript:void(0);" data-service="douban">豆瓣</a></li>
-                      </ul>
-                      <div class="ds-share-icons-more">
-                      </div>
-                    </div>
-                <hr>
-                </div>
-                <!-- Duoshuo Share end-->
-
-
-                <!-- 多说评论框 start -->
-                <div class="comment">
-                    <div class="ds-thread" data-thread-key="/blog/2016/05/03/Android_SharedPreferences源码分析" data-title="Android SharedPreferences 源码分析" data-url="http://sixwolf.net/blog/2016/05/03/Android_SharedPreferences%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/"></div>
-                </div>
-                <!-- 多说评论框 end -->
-
-
-
+                <!-- changyan-->
+                <!--PC版-->
+                <!--PC版-->
+                <div id="SOHUCS" ></div>
+                <script charset="utf-8" type="text/javascript" src="https://changyan.sohu.com/upload/changyan.js" ></script>
+                <script type="text/javascript">
+                    window.changyan.api.config({
+                        appid: 'cyts5EMWL',
+                        conf: 'prod_8140523863d2c692b9712ff94e941682'
+                    });
+                </script>
+                <!-- end changyan-->
             </div>
         </div>
     </div>
@@ -631,19 +611,6 @@ SharedPreferences（以下使用SP简称）在Android中作为一种使用简单
 
 
 
-<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
-<script type="text/javascript">
-var duoshuoQuery = {short_name:"sixwolf"};
-	(function() {
-		var ds = document.createElement('script');
-		ds.type = 'text/javascript';ds.async = true;
-		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
-		ds.charset = 'UTF-8';
-		(document.getElementsByTagName('head')[0]
-		 || document.getElementsByTagName('body')[0]).appendChild(ds);
-	})();
-	</script>
-<!-- 多说公共JS代码 end -->
 
 <!-- async load function -->
 <script>
@@ -769,7 +736,7 @@ var duoshuoQuery = {short_name:"sixwolf"};
 
                 </ul>
                 <p class="copyright text-muted">
-                &copy; 2016  Klojure ❖ Powered by Jekyll.
+                &copy; 2018  Klojure ❖ Powered by Jekyll.
                 </p>
             </div>
         </div>

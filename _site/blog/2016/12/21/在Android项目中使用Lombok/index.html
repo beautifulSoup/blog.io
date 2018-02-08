@@ -8,9 +8,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="A chinese man, detemined in Android and Python">
     <meta name="baidu-site-verification" content="KonQRkt3nq" />
-    <title>Android持续集成以及测试覆盖率可视化 - In Coding</title>
+    <title>在Android项目中使用Lombok - In Coding</title>
 
-    <link rel="canonical" href="http://localhost:4000/blog/2016/04/12/Android%E4%BD%BF%E7%94%A8Travis-CI%E6%8C%81%E7%BB%AD%E9%9B%86%E6%88%90%E4%BB%A5%E5%8F%8A%E6%B5%8B%E8%AF%95%E8%A6%86%E7%9B%96%E7%8E%87%E5%8F%AF%E8%A7%86%E5%8C%96/">
+    <link rel="canonical" href="http://localhost:4000/blog/2016/12/21/%E5%9C%A8Android%E9%A1%B9%E7%9B%AE%E4%B8%AD%E4%BD%BF%E7%94%A8Lombok/">
 
     <!-- Icons -->
   <link rel="shortcut icon" href="img/logo.ico">
@@ -118,10 +118,12 @@
                         
                         <a class="tag" href="/Tags/#Android" title="Android">Android</a>
                         
+                        <a class="tag" href="/Tags/#lombok" title="lombok">lombok</a>
+                        
                     </div> -->
-                    <h1>Android持续集成以及测试覆盖率可视化</h1>
+                    <h1>在Android项目中使用Lombok</h1>
                     
-                    <span class="meta">Posted by beautifulSoup on April 12, 2016</span>
+                    <span class="meta">Posted by Klojure on December 21, 2016</span>
                 </div>
             </div>
         </div>
@@ -137,167 +139,75 @@
         <div class="row">
             <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1 post-container">
 
-                <h2 id="背景">背景</h2>
+                <p><br />
+<br /></p>
 
-<p>很多开源项目在README中会有几个小图标来表示build情况，测试覆盖率等。如
-<img src="https://img.alicdn.com/imgextra/i3/754328530/TB2sF_JmVXXXXbQXpXXXXXXXXXX_!!754328530.png" alt="" /></p>
+<h2 id="前言">前言</h2>
+<p>之前写了一下后台代码，发现后台项目中使用了一个很好用的插件——Lombok。它帮助程序员避免写一些setter、getter、toString等机械化的代码，减少了程序员的机械劳动。既然是Java项目，那么在Android中应该也是能用的，于是在Android项目中也尝试了一下。</p>
 
-<p>看起来感觉很牛逼的样子，其实实现起来很简单，只需几步，就能让你的开源项目也变得牛逼起来。</p>
+<h2 id="依赖">依赖</h2>
+<p>如下是Gradle文件配置。因为Lombok的原理是根据注解生成代码，所以需要用到apt。
+在Project的build.gradle文件中添加对apt的依赖</p>
 
-<h2 id="travis-ci">Travis-CI</h2>
-
-<p>Travis-CI是一款持续集成工具，对开源项目免费。免除了Jenkins搭建服务器的工作。用户只要完成以下简单的几步就能接入Travis。</p>
-
-<ol>
-  <li>通过Github账号登录https://travis-ci.org/。</li>
-  <li>在项目根目录添加.travis.yml 文件。</li>
-  <li>git add -&gt; commit -&gt; push.</li>
-</ol>
-
-<p>之后再每次push之后Travis-CI就会根据.travis.yml对项目进行build。然后就可以在Travis网站控制台上查看build的情况。在build完成之后Travis也会通过邮件的方式通知你。</p>
-
-<p>在这三步中，最麻烦的一步就是.travis.yml的创建。具体文档可以参考官网。以下给出我的项目的yml文件作为例子分步分析。
-完整文档：</p>
-
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>language: android
-jdk:
-    - oraclejdk8
-env:
-  matrix:
-    - ANDROID_TARGET=android-21 ANDROID_ABI=armeabi-v7a
-  global:
-    - ADB_INSTALL_TIMEOUT=8
-android:
-  components:
-    - tools
-    - platform-tools
-    - build-tools-23.0.2
-    - android-23
-    - extra-android-m2repository
-    - extra-android-support
-    - sys-img-armeabi-v7a-android-21
-before_script:
-    - echo no | android create avd --force -n test -t $ANDROID_TARGET --abi $ANDROID_ABI
-    - emulator -avd test -no-skin -no-audio -no-window &amp;
-    - android-wait-for-emulator
-    - adb shell input keyevent 82 &amp;
-script:
-    - ./gradlew :lib:createDebugAndroidTestCoverageReport --info --stacktrace
-after_success:
-    - bash &lt;(curl -s https://codecov.io/bash)
-
-</code></pre></div></div>
-
-<p>告诉Travis-CI项目语言。这是必要的一步。</p>
-
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>language: android
-</code></pre></div></div>
-
-<p>设置JDK版本。非必要，但建议写上。</p>
-
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>jdk:
-    - oraclejdk8
-</code></pre></div></div>
-
-<p>设置环境变量</p>
-
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>env:
-  matrix:
-    - ANDROID_TARGET=android-21 ANDROID_ABI=armeabi-v7a
-  global:
-    - ADB_INSTALL_TIMEOUT=8
-</code></pre></div></div>
-<p>matrix下面的配置会应用到当前build，而global应用到所有builds。matrix 下两项设置了TARGET api以及ABI，注意需要与Gradle中配置一致。global下这项设置了虚拟机安装apk的超时时间，如果你的项目不需要Instrument Test，可以不用加，但是如果有，且在持续集成中需要测试则需要加上，因为默认情况下安装超时时间为2分钟，某些情况下可能因为没有在2分钟内安装成功而导致集成失败。</p>
-
-<p>设置项目构建依赖</p>
-
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>android:
-  components:
-    - tools
-    - platform-tools
-    - build-tools-23.0.2
-    - android-23
-    - extra-android-m2repository
-    - extra-android-support
-    - sys-img-armeabi-v7a-android-21
-</code></pre></div></div>
-
-<p>tools platform-tools 这两项表示该次build会使用最新的SDK tools, 这两项最好加上，因为如果没有，可能会报错说找不到指定版本的sdk tools。后面是对build-tools和compile sdk version的设置，注意与gradle中一致。如果你的项目中依赖了AppCompat和design support则需要加上extra-android-m2repository，extra-android-support这两项。最后一项是设置虚拟机版本，如果本次构建不需要用到虚拟机则不需要加。</p>
-
-<p>因为我们本次构建需要用到虚拟机来做Instrucment Test，所以需要打开虚拟机，可以在before_script中做这项工作</p>
-
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>before_script:
-    - echo no | android create avd --force -n test -t $ANDROID_TARGET --abi $ANDROID_ABI
-    - emulator -avd test -no-skin -no-audio -no-window &amp;
-    - android-wait-for-emulator   # 该项会等待虚拟机启动成功在执行后面的命令
-    - adb shell input keyevent 82 &amp;
-</code></pre></div></div>
-
-<p>在script中用一些命令行指令来完成build工作。因为，我所用的项目只需要运行所有的Instrument单元测试用例并生成测试覆盖率报告，所以只需要加以下这句，这个Gradle任务是由Jacoco创建的，后面会详细介绍。注意–info最好加上，因为如果10分钟内没有输出，Travis—CI会认为build失败而结束build，–info让每完成一个测试方法都输出结果，因此能够防止这点。当然有可能单个测试方法运行时间超过10分钟的情况（Google Android 模拟器的蛋疼性能），所以单个测试方法应该竟可能小。</p>
-
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>script:
-    - ./gradlew :lib:createDebugAndroidTestCoverageReport --info --stacktrace
-</code></pre></div></div>
-
-<p>after_success，顾名思义，在成功完成构建后会执行。这里的任务是将测试覆盖率报告发送给Codecov，后面会详细介绍。</p>
-
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>after_success:
-    - bash &lt;(curl -s https://codecov.io/bash)
-</code></pre></div></div>
-
-<h2 id="jacoco">Jacoco</h2>
-
-<p>使用Jacoco生成测试覆盖率报告。只需要以下步骤：</p>
-
-<p>1) 添加依赖</p>
-
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    androidTestCompile 'com.android.support.test:runner:0.4.1'
-    // Set this dependency to use JUnit 4 rules
-    androidTestCompile 'com.android.support.test:rules:0.4.1'
-    // Set this dependency to build and run Espresso tests
-    androidTestCompile 'com.android.support.test.espresso:espresso-core:2.2.1'
-    // Espresso-contrib for DatePicker, RecyclerView, Drawer actions, Accessibility checks, CountingIdlingResource
-    androidTestCompile 'com.android.support.test.espresso:espresso-contrib:2.2.1'
-</code></pre></div></div>
-<p>2) 在需要构建测试覆盖率报告的Module的gradle文件中设置。</p>
-
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>debug{
-        testCoverageEnabled true
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>buildscript {
+    repositories {
+        jcenter()
+        mavenCentral()
     }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:2.1.2'
+        //添加apt依赖
+        classpath 'com.neenbedankt.gradle.plugins:android-apt:1.8'
+    }
+}
+
 </code></pre></div></div>
 
-<p>3) 运行 ./gradlew :module_name:createDebugAndroidTestCoverageReport 生成测试报告。测试报告地址：moudle_name/build/reports/coverage/debug/index.html。module_name为生成测试覆盖率的Moudle的名字。</p>
+<p>在app的build.gradle文件中修改</p>
 
-<h2 id="codecov">Codecov</h2>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>//应用apt插件
+apply plugin: 'com.neenbedankt.android-apt'
+...
 
-<p>Codecov不支持自己生成Android的测试覆盖率报告，它能做的是接收Jacoco生成的报告并进行可视化，也就是上面那个表示测试覆盖率的小图标。</p>
-
-<p>集成Codecov只需要以下几个步骤。</p>
-
-<ol>
-  <li>使用Github账号登录 https://codecov.io/， 并提供授权给该应用。</li>
-  <li>在.travis.yml文件中添加命令将测试覆盖率报告上传给Codecov。</li>
-</ol>
-
-<p>上面提到的</p>
-
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>after_success:
-    - bash &lt;(curl -s https://codecov.io/bash)
+dependencies {
+	    compile 'org.projectlombok:lombok:1.16.8'  //添加lombok依赖
+	    ...
+}
 </code></pre></div></div>
 
-<p>就是将报告上传给Codecov。</p>
+<h2 id="代码">代码</h2>
+<p>lombok使用Annotation来申明某个类需要添加getter，setter等，下面是使用lombok和不使用lombok的对比。</p>
 
-<h2 id="总结">总结</h2>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@Setter</span>
+<span class="nd">@Getter</span>
+<span class="nd">@ToString</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">XXX</span> <span class="kd">implements</span> <span class="n">Entity</span> <span class="o">{</span>
 
-<p>除了上面提到的，Travis还能做很多事情，比如自动打包发布等，留待读者自己探索。</p>
+    <span class="n">String</span> <span class="n">id</span><span class="o">;</span>
+	
+<span class="o">}</span>
+</code></pre></div></div>
 
-<h2 id="参考">参考</h2>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">class</span> <span class="nc">XXX</span> <span class="kd">implements</span> <span class="n">Entity</span> <span class="o">{</span>
 
-<p><a href="http://jeroenmols.com/blog/2015/11/13/traviscoveralls/">http://jeroenmols.com/blog/2015/11/13/traviscoveralls/</a></p>
+    <span class="n">String</span> <span class="n">id</span><span class="o">;</span>
+    
+    <span class="kd">public</span> <span class="n">String</span> <span class="nf">getId</span><span class="o">(){</span>
+    	<span class="k">return</span> <span class="k">this</span><span class="o">.</span><span class="na">id</span><span class="o">;</span>
+    <span class="o">}</span>
+    
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">setId</span><span class="o">(</span><span class="n">String</span> <span class="n">id</span><span class="o">){</span>
+    	<span class="k">this</span><span class="o">.</span><span class="na">id</span> <span class="o">=</span> <span class="n">id</span><span class="o">;</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
 
-<p><a href="https://docs.travis-ci.com">https://docs.travis-ci.com</a></p>
+<p>可以看到我们不再需要手工去写Getter和Setter了。</p>
 
-<p><a href="https://segmentfault.com/a/1190000004415437">https://segmentfault.com/a/1190000004415437</a></p>
+<h2 id="as插件">AS插件</h2>
+<p>添加了依赖之后，虽然编译时是正确的。但是因为Android Studio语法识别器不认识@Getter和@Setter注解，所以需要添加Lombok插件。
+在设置页面 -&gt; plugins -&gt; browser repository -&gt; 搜索lombok -&gt; install 
+成功安装之后，再写比如XXX.getId()方法时AS就不会报错了。</p>
 
 
 
@@ -306,12 +216,12 @@ after_success:
                 <ul class="pager">
                     
                     <li class="previous">
-                        <a href="/blog/2016/04/11/Android%E5%8E%BB%E9%99%A4%E7%83%A6%E4%BA%BA%E7%9A%84%E9%97%AA%E9%80%80%E5%BC%B9%E7%AA%97/" data-toggle="tooltip" data-placement="top" title="Android去除烦人的默认闪退Dialog">&larr; Previous Post</a>
+                        <a href="/blog/2016/12/02/%E7%83%AD%E6%9B%B4%E6%96%B0%E6%96%B9%E6%A1%88%E4%B9%8B%E8%B7%AF%E7%94%B1%E5%8A%A8%E6%80%81%E9%85%8D%E7%BD%AE/" data-toggle="tooltip" data-placement="top" title="客户端路由动态配置——可能是最简单的热更新方案">&larr; Previous Post</a>
                     </li>
                     
                     
                     <li class="next">
-                        <a href="/blog/2016/04/18/Android%E8%87%AA%E5%AE%9A%E4%B9%89Notification%E5%B9%B6%E6%B2%A1%E6%9C%89%E9%82%A3%E4%B9%88%E7%AE%80%E5%8D%95/" data-toggle="tooltip" data-placement="top" title="Android自定义Notification并没有那么简单">Next Post &rarr;</a>
+                        <a href="/blog/2017/03/10/Android%E5%BC%80%E5%8F%91%E5%AE%89%E5%85%A8%E6%89%8B%E5%86%8C/" data-toggle="tooltip" data-placement="top" title="Android开发安全手册">Next Post &rarr;</a>
                     </li>
                     
                 </ul>

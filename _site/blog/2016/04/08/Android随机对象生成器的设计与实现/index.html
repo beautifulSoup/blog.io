@@ -10,7 +10,7 @@
     <meta name="baidu-site-verification" content="KonQRkt3nq" />
     <title>Android随机对象生成器的设计与实现 - In Coding</title>
 
-    <link rel="canonical" href="http://sixwolf.net/blog/2016/04/08/Android%E9%9A%8F%E6%9C%BA%E5%AF%B9%E8%B1%A1%E7%94%9F%E6%88%90%E5%99%A8%E7%9A%84%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0/">
+    <link rel="canonical" href="http://localhost:4000/blog/2016/04/08/Android%E9%9A%8F%E6%9C%BA%E5%AF%B9%E8%B1%A1%E7%94%9F%E6%88%90%E5%99%A8%E7%9A%84%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0/">
 
     <!-- Icons -->
   <link rel="shortcut icon" href="img/logo.ico">
@@ -26,8 +26,8 @@
 
     <!-- Custom Fonts -->
     <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
-    <link href='//fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
-    <link href='//fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+    <link href='//fonts.cat.net/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.cat.net/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
 
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -40,11 +40,12 @@
         var _hmt = _hmt || [];
         (function() {
             var hm = document.createElement("script");
-            hm.src = "//hm.baidu.com/hm.js?ad37e90f12e85cec39277b32f2653dfd";
+            hm.src = "https://hm.baidu.com/hm.js?3777c87f74662bbdb6d720064ecf851f";
             var s = document.getElementsByTagName("script")[0];
             s.parentNode.insertBefore(hm, s);
         })();
     </script>
+
 
 </head>
 
@@ -136,19 +137,19 @@
         <div class="row">
             <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1 post-container">
 
-                <h2 id="section">目标</h2>
+                <h2 id="目标">目标</h2>
 <p>当完成一个新的Feature的时候，需要对其进行测试。但是由于服务器还没有部署该功能，或者单元测试的限制，往往需要程序员自己去伪造一些数据。但是手工伪造数据往往效率不高并且没有代表性。因此希望能够实现一个对象生成器，生成对象并往里面填充随机值。</p>
 
-<h2 id="section-1">项目地址</h2>
+<h2 id="项目地址">项目地址</h2>
 <p><a href="https://github.com/campusappcn/rog">rog</a></p>
 
-<h2 id="section-2">设计要点</h2>
+<h2 id="设计要点">设计要点</h2>
 <p>对象生成器的总体思路是清晰的，获取到类，使用反射获取到其所有的域，采用dfs(深度优先搜索)遍历类的域树，在遍历过程中设置随机值。</p>
 
-<h3 id="section-3">类型分类</h3>
+<h3 id="类型分类">类型分类</h3>
 <p>针对Java类的特点，可以将其简单分为几种类型。</p>
 
-<h4 id="section-4">基础类型</h4>
+<h4 id="基础类型">基础类型</h4>
 <p>基础类型包括int、float、double、short、long、byte、char、boolean、String，需要针对这些基础类型提供默认的随机产生器。</p>
 
 <h4 id="array">Array</h4>
@@ -160,10 +161,10 @@
 <h3 id="interface-or-abstract">Interface Or Abstract</h3>
 <p>对于接口和抽象类，我们需要首先知道它们的子类，否则无法产生其实例。在这里，有两种方案，方案一是扫描类路径下的所有类，找到该接口或抽象类的所有非抽象的子类，或者在编译期就生成继承树并记录下来。但是考虑到这样实现会比较复杂，所以在第一个版本，并没有按照这样的方案实现。如果读者对该方案有兴趣的，可以参考<a href="https://github.com/ronmamo/reflections">reflections</a>。它是一个Java的开源项目，但是由于使用了Java7的一些特性，所以无法直接使用到Android项目中。接下来，我们说方案二，其实很简单，就是由使用者通过接口告诉rog某接口或者抽象类的非抽象子类有哪些，Rog会从中随机选择一个并产生它的实例返回。</p>
 
-<h3 id="section-5">其它类</h3>
+<h3 id="其它类">其它类</h3>
 <p>除开上面提到的一些特殊的类，剩下的就是普通的一些类了，其它类的构造器ClassGenerator需要依赖于以上提到的构造器，将对应的一些的类对象的产生作业代理给以上产生器。</p>
 
-<h3 id="uml">UML图</h3>
+<h3 id="uml图">UML图</h3>
 <p><img src="https://img.alicdn.com/imgextra/i1/754328530/TB2113WmFXXXXb7XXXXXXXXXXXX_!!754328530.png" alt="" />
 上图是rog的整体UML图，从图中我们可以看到所有的Generator都继承自IGenerator接口，接口包含两个方法，generate()方法用来产生随机对象，getClassToGenerate()获取该Genreator所产生的对象类型。</p>
 
@@ -173,15 +174,15 @@
 
 <p>在整个rog中，最重要的类就是ClassGenerator，该类可以产生所有类型的对象，不管是基本类型，还是抽象类。它依赖了以上提到的所有默认提供的Generator，将对应的一些的类对象的产生作业代理给以上产生器。</p>
 
-<h2 id="section-6">注意事项</h2>
+<h2 id="注意事项">注意事项</h2>
 
-<h3 id="final">final的处理</h3>
+<h3 id="final的处理">final的处理</h3>
 <p>对于有final修饰的域不再进行赋值。</p>
 
-<h3 id="section-7">产生层级限制</h3>
+<h3 id="产生层级限制">产生层级限制</h3>
 <p>层级定义类引用的层数，比如Class1 为0层，且它有一个Class2的域，则该域的值对象的层级为1。如果不进行限制，则可能因为递归次数太多，而导致StackOverFlow或者无限循环无法结束程序。比如Class1有一个Class1类型的域。默认的最大层级为5，我们建议最大层级不要超过10。</p>
 
-<h3 id="section-8">域的缓存</h3>
+<h3 id="域的缓存">域的缓存</h3>
 <p>由于反射效率低下，所以通过反射获取到某个类的域列表时，应该将其缓存起来。</p>
 
 
@@ -199,50 +200,41 @@
                     </li>
                     
                 </ul>
+                <!--&lt;!&ndash; disqus &ndash;&gt;-->
+                <!--<div id="disqus_thread"></div>-->
+                <!--<script>-->
 
-                <!-- Duoshuo Share start -->
-                <style>
-                    .ds-share{
-                        text-align: right;
-                    }
+                    <!--/**-->
+                     <!--*  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.-->
+                     <!--*  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables*/-->
+                    <!--/*-->
+                     <!--var disqus_config = function () {-->
+                     <!--this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable-->
+                     <!--this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable-->
+                     <!--};-->
+                     <!--*/-->
+                    <!--(function() { // DON'T EDIT BELOW THIS LINE-->
+                        <!--var d = document, s = d.createElement('script');-->
+                        <!--s.src = 'https://in-coding.disqus.com/embed.js';-->
+                        <!--s.setAttribute('data-timestamp', +new Date());-->
+                        <!--(d.head || d.body).appendChild(s);-->
+                    <!--})();-->
+                <!--</script>-->
+                <!--<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>-->
+                <!--&lt;!&ndash;end disqus &ndash;&gt;-->
 
-                    @media only screen and (max-width: 700px) {
-                        .ds-share {
-
-                        }
-                    }
-                </style>
-
-                <div class="ds-share"
-                    data-thread-key="/blog/2016/04/08/Android随机对象生成器的设计与实现" data-title="Android随机对象生成器的设计与实现"
-                    data-images="http://sixwolf.net/https://img.alicdn.com/imgextra/i4/754328530/TB2GEa3cVXXXXbUXpXXXXXXXXXX-754328530.jpg"
-                    data-content="目标
-当完成一个新的Feature的时候，需要对其进行测试。但是由于服务器还没有部署该功能，或者单元测试的限制，往往需要程序员自己去伪造一些数据。但是手工... | Microdust:Azeril's blog"
-                    data-url="http://sixwolf.net/blog/2016/04/08/Android%E9%9A%8F%E6%9C%BA%E5%AF%B9%E8%B1%A1%E7%94%9F%E6%88%90%E5%99%A8%E7%9A%84%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0/">
-                    <div class="ds-share-inline">
-                      <ul  class="ds-share-icons-16">
-
-                        <li data-toggle="ds-share-icons-more"><a class="ds-more" href="#">分享到：</a></li>
-                        <li><a class="ds-wechat flat" href="javascript:void(0);" data-service="wechat">微信</a></li>
-                        <li><a class="ds-weibo flat" href="javascript:void(0);" data-service="weibo">微博</a></li>
-                        <li><a class="ds-douban flat" href="javascript:void(0);" data-service="douban">豆瓣</a></li>
-                      </ul>
-                      <div class="ds-share-icons-more">
-                      </div>
-                    </div>
-                <hr>
-                </div>
-                <!-- Duoshuo Share end-->
-
-
-                <!-- 多说评论框 start -->
-                <div class="comment">
-                    <div class="ds-thread" data-thread-key="/blog/2016/04/08/Android随机对象生成器的设计与实现" data-title="Android随机对象生成器的设计与实现" data-url="http://sixwolf.net/blog/2016/04/08/Android%E9%9A%8F%E6%9C%BA%E5%AF%B9%E8%B1%A1%E7%94%9F%E6%88%90%E5%99%A8%E7%9A%84%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0/"></div>
-                </div>
-                <!-- 多说评论框 end -->
-
-
-
+                <!-- changyan-->
+                <!--PC版-->
+                <!--PC版-->
+                <div id="SOHUCS" ></div>
+                <script charset="utf-8" type="text/javascript" src="https://changyan.sohu.com/upload/changyan.js" ></script>
+                <script type="text/javascript">
+                    window.changyan.api.config({
+                        appid: 'cyts5EMWL',
+                        conf: 'prod_8140523863d2c692b9712ff94e941682'
+                    });
+                </script>
+                <!-- end changyan-->
             </div>
         </div>
     </div>
@@ -250,19 +242,6 @@
 
 
 
-<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
-<script type="text/javascript">
-var duoshuoQuery = {short_name:"sixwolf"};
-	(function() {
-		var ds = document.createElement('script');
-		ds.type = 'text/javascript';ds.async = true;
-		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
-		ds.charset = 'UTF-8';
-		(document.getElementsByTagName('head')[0]
-		 || document.getElementsByTagName('body')[0]).appendChild(ds);
-	})();
-	</script>
-<!-- 多说公共JS代码 end -->
 
 <!-- async load function -->
 <script>
@@ -388,7 +367,7 @@ var duoshuoQuery = {short_name:"sixwolf"};
 
                 </ul>
                 <p class="copyright text-muted">
-                &copy; 2016  Klojure ❖ Powered by Jekyll.
+                &copy; 2018  Klojure ❖ Powered by Jekyll.
                 </p>
             </div>
         </div>

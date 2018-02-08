@@ -10,7 +10,7 @@
     <meta name="baidu-site-verification" content="KonQRkt3nq" />
     <title>浅谈Android开发中多进程共享数据 - In Coding</title>
 
-    <link rel="canonical" href="http://sixwolf.net/blog/2016/02/28/%E6%B5%85%E8%B0%88Android%E5%BC%80%E5%8F%91%E4%B8%AD%E5%A4%9A%E8%BF%9B%E7%A8%8B%E5%85%B1%E4%BA%AB%E6%95%B0%E6%8D%AE/">
+    <link rel="canonical" href="http://localhost:4000/blog/2016/02/28/%E6%B5%85%E8%B0%88Android%E5%BC%80%E5%8F%91%E4%B8%AD%E5%A4%9A%E8%BF%9B%E7%A8%8B%E5%85%B1%E4%BA%AB%E6%95%B0%E6%8D%AE/">
 
     <!-- Icons -->
   <link rel="shortcut icon" href="img/logo.ico">
@@ -26,8 +26,8 @@
 
     <!-- Custom Fonts -->
     <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
-    <link href='//fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
-    <link href='//fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+    <link href='//fonts.cat.net/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.cat.net/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
 
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -40,11 +40,12 @@
         var _hmt = _hmt || [];
         (function() {
             var hm = document.createElement("script");
-            hm.src = "//hm.baidu.com/hm.js?ad37e90f12e85cec39277b32f2653dfd";
+            hm.src = "https://hm.baidu.com/hm.js?3777c87f74662bbdb6d720064ecf851f";
             var s = document.getElementsByTagName("script")[0];
             s.parentNode.insertBefore(hm, s);
         })();
     </script>
+
 
 </head>
 
@@ -137,23 +138,22 @@
             <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1 post-container">
 
                 <p><br />
-<br />
-# 背景
-最近在工作中遇到一个需求，需要在接收到推送的时候将推送获得的数据存起来，以供app启动时使用。我们会认为这不是So easy吗？只要把数据存到SharedPreferences中，然后让app打开同一个SharedPreferences读取数据就可以了。但是在实际的测试中，我们发现推送进程存入的数据，并不能在app进程中获得。所以这是为什么呢，也许聪明的读者从我们上面的陈述中已经发现了原因，因为我们有两个进程，推送进程负责将推送数据存入，而app进程负责读取，但是正是由于是两个进程，如果它们同时存在，它们各自在内存中保持了自己的SP对象和数据，在推送进程中的存入并不能在app进程体现出来，并且可能会被app进程刷掉更改的数据。那么我们怎么做才能让这两边共享数据呢？请看下面陈述。</p>
+<br /></p>
+<h1 id="背景">背景</h1>
+<p>最近在工作中遇到一个需求，需要在接收到推送的时候将推送获得的数据存起来，以供app启动时使用。我们会认为这不是So easy吗？只要把数据存到SharedPreferences中，然后让app打开同一个SharedPreferences读取数据就可以了。但是在实际的测试中，我们发现推送进程存入的数据，并不能在app进程中获得。所以这是为什么呢，也许聪明的读者从我们上面的陈述中已经发现了原因，因为我们有两个进程，推送进程负责将推送数据存入，而app进程负责读取，但是正是由于是两个进程，如果它们同时存在，它们各自在内存中保持了自己的SP对象和数据，在推送进程中的存入并不能在app进程体现出来，并且可能会被app进程刷掉更改的数据。那么我们怎么做才能让这两边共享数据呢？请看下面陈述。</p>
 
-<h1 id="sharedpreferences">多进程支持的SharedPreferences（不推荐）</h1>
+<h1 id="多进程支持的sharedpreferences不推荐">多进程支持的SharedPreferences（不推荐）</h1>
 <p>我们原来的做法是使用SharedPreferences, 自然而然想到，SharedPreferences 在MODE_PRIVATE MODE_PUBLIC 之外其实还可以设置多进程的Flag ———— MODE_MULTI_PROCESS</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>SharedPreferences myPrefs = context.getSharedPreferences(MY_FILE_NAME, Context.MODE_MULTI_PROCESS | Context.MODE_PRIVATE);
-</code></pre>
-</div>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>SharedPreferences myPrefs = context.getSharedPreferences(MY_FILE_NAME, Context.MODE_MULTI_PROCESS | Context.MODE_PRIVATE);
+</code></pre></div></div>
 
 <p>一旦我们设置了这个Flag，每次调用Context.getSharedPreferences 的时候系统会重新从SP文件中读入数据，因此我们在使用的时候每次读取和存入都要使用Context.getSharedPreferences 重新获取SP实例。即使是这样，由于SP本质上并不是多进程安全的，所以还是无法保证数据的同步，因此该方法我们并没有使用，我们也不推荐使用。</p>
 
 <h1 id="tray">Tray</h1>
 <p>如果SP不是多进程安全的，那么是否有多进程安全的，又有SP功能的第三方项目呢。答案是有的，Tray——一个多进程安全的SharedPreferences，我们可以在Github上找到它，如果是AndroidStudio,可以直接使用Gradle引入，可谓是十分方便，如下是使用的代码，十分简单，没有apply commit，看起来比SP还要简单。</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code> // create a preference accessor. This is for global app preferences.
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> // create a preference accessor. This is for global app preferences.
 final AppPreferences appPreferences = new AppPreferences(getContext()); // this Preference comes for free from the library
 // save a key value pair
 appPreferences.put("key", "lorem ipsum");
@@ -165,15 +165,14 @@ Log.v(TAG, "value: " + value); // value: lorem ipsum
 // read a key that isn't saved. returns the default (or throws without default)
 final String defaultValue = appPreferences.getString("key2", "default");
 Log.v(TAG, "value: " + defaultValue); // value: default
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>但是最终我们并没有选择使用它，主要的原因是它需要minSdk 为15，而我们是支持sdk14的，所以只能果断放弃了。</p>
 
 <h1 id="contentprovider">ContentProvider</h1>
 <p>既然Tray不支持sdk15以下的，那么我们是否可以使用Tray的原理自己实现一个呢？在阅读Tray的源码时我们发现其实它是在ContentProvider的基础上做的，而ContentProvider是Android官方支持的多进程安全的。以下是使用ContentProvider的一个例子。</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>public class ArticlesProvider extends ContentProvider {  
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>public class ArticlesProvider extends ContentProvider {  
     private static final String LOG_TAG = "shy.luo.providers.articles.ArticlesProvider";  
   
     private static final String DB_NAME = "Articles.db";  
@@ -386,8 +385,7 @@ Log.v(TAG, "value: " + defaultValue); // value: default
             }  
     }  
 }   我们需要创建一个类继承自ContentProvider，并重载以下方法。 - onCreate()，用来执行一些初始化的工作。 - query(Uri, String[], String, String[], String)，用来返回数据给调用者。 - insert(Uri, ContentValues)，用来插入新的数据。 - update(Uri, ContentValues, String, String[])，用来更新已有的数据。 - delete(Uri, String, String[])，用来删除数据。 - getType(Uri)，用来返回数据的MIME类型。
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>具体使用参考  <a href="http://blog.csdn.net/luoshengyang/article/details/6950440"> Android应用程序组件Content Provider应用实例</a>这篇博客，这里不再赘述。
 在以上对ContentProvider的使用过程中，我们发现过程比较繁琐，如果对于比较复杂的需求可能还比较使用，但是我们这里的需求其实很简单，完全不需要搞得那么复杂，所以最后我们也没有使用这个方法（你可以理解为本博主比较Lazy）。</p>
@@ -397,17 +395,16 @@ Log.v(TAG, "value: " + defaultValue); // value: default
 
 <p>首先在推送进程收到推送消息时，我们将推送数据存入SP，如果这时候没有app进程，那么下次app进程启动的时候该存入的数据就会被app进程读取到。而如果这时候app进程存在，那么之后的代码就会生效，它使用LocalBroadcastManager 发送一个广播。LocalBroadcastManager发送的广播不会被app之外接收到，通过它注册的Receiver也不会接收到app之外的广播，因此拥有更高的效率。</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>pushPref.add(push);
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>pushPref.add(push);
 
 Intent intent = new Intent(PushHandler.KEY_GET_PUSH);
 intent.putExtra(PushHandler.KEY_PUSH_CONTENT, d);
 LocalBroadcastManager.getInstance(context).sendBroadcastSync(intent);
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>而我们在app进程则注册了一个BroadReceiver来接收上面发出的广播。在收到广播之后将推送数据存入SP。</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>public class PushHandler {
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>public class PushHandler {
 
 public static String KEY_GET_PUSH = "PUSH_RECEIVED";
 public static String KEY_PUSH_CONTENT = "PUSH_CONTENT";
@@ -447,10 +444,9 @@ public static void stopListeningToPush(){
 }
 // endregion
 } 该方法相对于上面的方法使用简单，安全可靠，能够比较好的实现我们的需求。不过，在需求比较复杂的时候还是建议使用ContentProvider，因为毕竟这样的方法不是堂堂正道，有种剑走偏锋的感觉。
-</code></pre>
-</div>
+</code></pre></div></div>
 
-<h1 id="section">总结</h1>
+<h1 id="总结">总结</h1>
 <p>实现一个需求可以有很多方法，而我们需要寻找的是又简单有可靠的方法，在写代码之前不如多找找资料，多听听别人的意见。</p>
 
 
@@ -468,52 +464,41 @@ public static void stopListeningToPush(){
                     </li>
                     
                 </ul>
+                <!--&lt;!&ndash; disqus &ndash;&gt;-->
+                <!--<div id="disqus_thread"></div>-->
+                <!--<script>-->
 
-                <!-- Duoshuo Share start -->
-                <style>
-                    .ds-share{
-                        text-align: right;
-                    }
+                    <!--/**-->
+                     <!--*  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.-->
+                     <!--*  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables*/-->
+                    <!--/*-->
+                     <!--var disqus_config = function () {-->
+                     <!--this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable-->
+                     <!--this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable-->
+                     <!--};-->
+                     <!--*/-->
+                    <!--(function() { // DON'T EDIT BELOW THIS LINE-->
+                        <!--var d = document, s = d.createElement('script');-->
+                        <!--s.src = 'https://in-coding.disqus.com/embed.js';-->
+                        <!--s.setAttribute('data-timestamp', +new Date());-->
+                        <!--(d.head || d.body).appendChild(s);-->
+                    <!--})();-->
+                <!--</script>-->
+                <!--<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>-->
+                <!--&lt;!&ndash;end disqus &ndash;&gt;-->
 
-                    @media only screen and (max-width: 700px) {
-                        .ds-share {
-
-                        }
-                    }
-                </style>
-
-                <div class="ds-share"
-                    data-thread-key="/blog/2016/02/28/浅谈Android开发中多进程共享数据" data-title="浅谈Android开发中多进程共享数据"
-                    data-images="http://sixwolf.net/https://img.alicdn.com/imgextra/i4/754328530/TB2GEa3cVXXXXbUXpXXXXXXXXXX-754328530.jpg"
-                    data-content="
-
-# 背景
-最近在工作中遇到一个需求，需要在接收到推送的时候将推送获得的数据存起来，以供app启动时使用。我们会认为这不是So easy吗？只要把数据存... | Microdust:Azeril's blog"
-                    data-url="http://sixwolf.net/blog/2016/02/28/%E6%B5%85%E8%B0%88Android%E5%BC%80%E5%8F%91%E4%B8%AD%E5%A4%9A%E8%BF%9B%E7%A8%8B%E5%85%B1%E4%BA%AB%E6%95%B0%E6%8D%AE/">
-                    <div class="ds-share-inline">
-                      <ul  class="ds-share-icons-16">
-
-                        <li data-toggle="ds-share-icons-more"><a class="ds-more" href="#">分享到：</a></li>
-                        <li><a class="ds-wechat flat" href="javascript:void(0);" data-service="wechat">微信</a></li>
-                        <li><a class="ds-weibo flat" href="javascript:void(0);" data-service="weibo">微博</a></li>
-                        <li><a class="ds-douban flat" href="javascript:void(0);" data-service="douban">豆瓣</a></li>
-                      </ul>
-                      <div class="ds-share-icons-more">
-                      </div>
-                    </div>
-                <hr>
-                </div>
-                <!-- Duoshuo Share end-->
-
-
-                <!-- 多说评论框 start -->
-                <div class="comment">
-                    <div class="ds-thread" data-thread-key="/blog/2016/02/28/浅谈Android开发中多进程共享数据" data-title="浅谈Android开发中多进程共享数据" data-url="http://sixwolf.net/blog/2016/02/28/%E6%B5%85%E8%B0%88Android%E5%BC%80%E5%8F%91%E4%B8%AD%E5%A4%9A%E8%BF%9B%E7%A8%8B%E5%85%B1%E4%BA%AB%E6%95%B0%E6%8D%AE/"></div>
-                </div>
-                <!-- 多说评论框 end -->
-
-
-
+                <!-- changyan-->
+                <!--PC版-->
+                <!--PC版-->
+                <div id="SOHUCS" ></div>
+                <script charset="utf-8" type="text/javascript" src="https://changyan.sohu.com/upload/changyan.js" ></script>
+                <script type="text/javascript">
+                    window.changyan.api.config({
+                        appid: 'cyts5EMWL',
+                        conf: 'prod_8140523863d2c692b9712ff94e941682'
+                    });
+                </script>
+                <!-- end changyan-->
             </div>
         </div>
     </div>
@@ -521,19 +506,6 @@ public static void stopListeningToPush(){
 
 
 
-<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
-<script type="text/javascript">
-var duoshuoQuery = {short_name:"sixwolf"};
-	(function() {
-		var ds = document.createElement('script');
-		ds.type = 'text/javascript';ds.async = true;
-		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
-		ds.charset = 'UTF-8';
-		(document.getElementsByTagName('head')[0]
-		 || document.getElementsByTagName('body')[0]).appendChild(ds);
-	})();
-	</script>
-<!-- 多说公共JS代码 end -->
 
 <!-- async load function -->
 <script>
@@ -659,7 +631,7 @@ var duoshuoQuery = {short_name:"sixwolf"};
 
                 </ul>
                 <p class="copyright text-muted">
-                &copy; 2016  Klojure ❖ Powered by Jekyll.
+                &copy; 2018  Klojure ❖ Powered by Jekyll.
                 </p>
             </div>
         </div>

@@ -10,7 +10,7 @@
     <meta name="baidu-site-verification" content="KonQRkt3nq" />
     <title>如何产生一个随机的[0, n)范围内的Short值 - In Coding</title>
 
-    <link rel="canonical" href="http://sixwolf.net/blog/2016/04/01/%E5%A6%82%E4%BD%95%E4%BA%A7%E7%94%9F%E4%B8%80%E4%B8%AA%E9%9A%8F%E6%9C%BA%E7%9A%84-0,-n)%E7%9A%84short%E5%80%BC/">
+    <link rel="canonical" href="http://localhost:4000/blog/2016/04/01/%E5%A6%82%E4%BD%95%E4%BA%A7%E7%94%9F%E4%B8%80%E4%B8%AA%E9%9A%8F%E6%9C%BA%E7%9A%84-0,-n)%E7%9A%84short%E5%80%BC/">
 
     <!-- Icons -->
   <link rel="shortcut icon" href="img/logo.ico">
@@ -26,8 +26,8 @@
 
     <!-- Custom Fonts -->
     <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
-    <link href='//fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
-    <link href='//fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+    <link href='//fonts.cat.net/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.cat.net/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
 
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -40,11 +40,12 @@
         var _hmt = _hmt || [];
         (function() {
             var hm = document.createElement("script");
-            hm.src = "//hm.baidu.com/hm.js?ad37e90f12e85cec39277b32f2653dfd";
+            hm.src = "https://hm.baidu.com/hm.js?3777c87f74662bbdb6d720064ecf851f";
             var s = document.getElementsByTagName("script")[0];
             s.parentNode.insertBefore(hm, s);
         })();
     </script>
+
 
 </head>
 
@@ -136,44 +137,40 @@
         <div class="row">
             <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1 post-container">
 
-                <h1 id="section">背景</h1>
+                <h1 id="背景">背景</h1>
 <p>最近在做一个Java的随机对象生成器。需要随机产生一些在[0, n)范围内的short值。</p>
 
-<h1 id="section-1">坑</h1>
+<h1 id="坑">坑</h1>
 <p>很多人可能会说，这有什么难的，我刚学编程的时候就会了。然后给出下面代码。</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>    <span class="kt">short</span> <span class="n">value</span> <span class="o">=</span> <span class="o">(</span><span class="kt">short</span><span class="o">)</span> <span class="o">(</span><span class="k">new</span> <span class="n">Random</span><span class="o">().</span><span class="na">nextInt</span><span class="o">(</span><span class="n">n</span><span class="o">));</span>
-</code></pre>
-</div>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    <span class="kt">short</span> <span class="n">value</span> <span class="o">=</span> <span class="o">(</span><span class="kt">short</span><span class="o">)</span> <span class="o">(</span><span class="k">new</span> <span class="n">Random</span><span class="o">().</span><span class="na">nextInt</span><span class="o">(</span><span class="n">n</span><span class="o">));</span>
+</code></pre></div></div>
 <p>看起来很棒的一段的代码，感觉完全没有问题，但是在实际测试过程中我们发现最后获取到的value值有时候会是负值。咦，怎么回事呢，nextInt(n)返回的不是[0, n)的值吗？</p>
 
-<h1 id="section-2">爬坑</h1>
+<h1 id="爬坑">爬坑</h1>
 <p>为了解释以上问题，我们首先需要回顾下学校学的数值的表示。原码用第一位表示正负，后面的位数表示符号，正数反码，补码与原码都相同，负数除符号位外取反获得反码，反码加一获得补码。</p>
 
 <p>int型在Java中占四个字节，short型在Java中占两个字节，int到short的强转将int的后两个字节截取，比如原本是0x0FFFFFFF，我们知道这是正数，但是如果截断获取后两个字节就编程了0xFFFF，这就是一个负数了。</p>
 
 <p>那么判断一下如果是负数，取反行不行:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>	<span class="kt">short</span> <span class="n">value</span> <span class="o">=</span> <span class="o">(</span><span class="kt">short</span><span class="o">)</span> <span class="o">(</span><span class="k">new</span> <span class="n">Random</span><span class="o">().</span><span class="na">nextInt</span><span class="o">(</span><span class="n">n</span><span class="o">));</span>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code>	<span class="kt">short</span> <span class="n">value</span> <span class="o">=</span> <span class="o">(</span><span class="kt">short</span><span class="o">)</span> <span class="o">(</span><span class="k">new</span> <span class="n">Random</span><span class="o">().</span><span class="na">nextInt</span><span class="o">(</span><span class="n">n</span><span class="o">));</span>
     <span class="n">value</span> <span class="o">=</span> <span class="o">(</span><span class="kt">short</span><span class="o">)(</span><span class="n">value</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="o">?</span> <span class="o">-</span><span class="n">value</span> <span class="o">:</span> <span class="n">value</span><span class="o">);</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>答案是不行，因为在Java中四则运算的最小类型是int型，short型和byte型的四则运算都是先将值转为Int型在进行的。所以value(0xFFFF -&gt; 0x0000FFFF) &lt; 0, NO. 即使这里取了负值，但是在经过又一次short强转之后又回到了原来的结果。</p>
 
-<h1 id="section-3">解决</h1>
+<h1 id="解决">解决</h1>
 <p>那么如何解决这一问题呢，下面给出两种正确的解决代码。</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>	<span class="n">n</span> <span class="o">=</span> <span class="n">n</span> <span class="o">&lt;</span> <span class="n">Short</span><span class="o">.</span><span class="na">MAX_VALUE</span> <span class="o">?</span> <span class="n">n</span> <span class="o">:</span> <span class="n">Short</span><span class="o">.</span><span class="na">MAX_VALUE</span><span class="o">;</span>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code>	<span class="n">n</span> <span class="o">=</span> <span class="n">n</span> <span class="o">&lt;</span> <span class="n">Short</span><span class="o">.</span><span class="na">MAX_VALUE</span> <span class="o">?</span> <span class="n">n</span> <span class="o">:</span> <span class="n">Short</span><span class="o">.</span><span class="na">MAX_VALUE</span><span class="o">;</span>
 	<span class="kt">short</span> <span class="n">value</span> <span class="o">=</span> <span class="o">(</span><span class="kt">short</span><span class="o">)</span> <span class="o">(</span><span class="k">new</span> <span class="n">Random</span><span class="o">().</span><span class="na">nextInt</span><span class="o">(</span><span class="n">n</span><span class="o">));</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>因为产生的int值在short值的范围内，所以即使强转也不会改变正负性。因为最大值是0x00007FFF，强转为short，最高位总是0；</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>	<span class="kt">short</span> <span class="n">value</span> <span class="o">=</span> <span class="o">(</span><span class="kt">short</span><span class="o">)</span> <span class="o">(</span><span class="k">new</span> <span class="n">Random</span><span class="o">().</span><span class="na">nextInt</span><span class="o">(</span><span class="n">n</span><span class="o">))</span> <span class="o">&amp;</span> <span class="mh">0x7</span><span class="n">FFF</span><span class="o">;</span>
-</code></pre>
-</div>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code>	<span class="kt">short</span> <span class="n">value</span> <span class="o">=</span> <span class="o">(</span><span class="kt">short</span><span class="o">)</span> <span class="o">(</span><span class="k">new</span> <span class="n">Random</span><span class="o">().</span><span class="na">nextInt</span><span class="o">(</span><span class="n">n</span><span class="o">))</span> <span class="o">&amp;</span> <span class="mh">0x7FFF</span><span class="o">;</span>
+</code></pre></div></div>
 
 <p>做位操作，只取产生值的后15位。第16位总是0，所以可以保证是正数。</p>
 
@@ -194,53 +191,41 @@
                     </li>
                     
                 </ul>
+                <!--&lt;!&ndash; disqus &ndash;&gt;-->
+                <!--<div id="disqus_thread"></div>-->
+                <!--<script>-->
 
-                <!-- Duoshuo Share start -->
-                <style>
-                    .ds-share{
-                        text-align: right;
-                    }
+                    <!--/**-->
+                     <!--*  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.-->
+                     <!--*  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables*/-->
+                    <!--/*-->
+                     <!--var disqus_config = function () {-->
+                     <!--this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable-->
+                     <!--this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable-->
+                     <!--};-->
+                     <!--*/-->
+                    <!--(function() { // DON'T EDIT BELOW THIS LINE-->
+                        <!--var d = document, s = d.createElement('script');-->
+                        <!--s.src = 'https://in-coding.disqus.com/embed.js';-->
+                        <!--s.setAttribute('data-timestamp', +new Date());-->
+                        <!--(d.head || d.body).appendChild(s);-->
+                    <!--})();-->
+                <!--</script>-->
+                <!--<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>-->
+                <!--&lt;!&ndash;end disqus &ndash;&gt;-->
 
-                    @media only screen and (max-width: 700px) {
-                        .ds-share {
-
-                        }
-                    }
-                </style>
-
-                <div class="ds-share"
-                    data-thread-key="/blog/2016/04/01/如何产生一个随机的[0, n)的short值" data-title="如何产生一个随机的[0, n)范围内的Short值"
-                    data-images="http://sixwolf.net/https://img.alicdn.com/imgextra/i4/754328530/TB2GEa3cVXXXXbUXpXXXXXXXXXX-754328530.jpg"
-                    data-content="背景
-最近在做一个Java的随机对象生成器。需要随机产生一些在[0, n)范围内的short值。
-
-坑
-很多人可能会说，这有什么难的，我刚学编程的时候就会... | Microdust:Azeril's blog"
-                    data-url="http://sixwolf.net/blog/2016/04/01/%E5%A6%82%E4%BD%95%E4%BA%A7%E7%94%9F%E4%B8%80%E4%B8%AA%E9%9A%8F%E6%9C%BA%E7%9A%84-0,-n)%E7%9A%84short%E5%80%BC/">
-                    <div class="ds-share-inline">
-                      <ul  class="ds-share-icons-16">
-
-                        <li data-toggle="ds-share-icons-more"><a class="ds-more" href="#">分享到：</a></li>
-                        <li><a class="ds-wechat flat" href="javascript:void(0);" data-service="wechat">微信</a></li>
-                        <li><a class="ds-weibo flat" href="javascript:void(0);" data-service="weibo">微博</a></li>
-                        <li><a class="ds-douban flat" href="javascript:void(0);" data-service="douban">豆瓣</a></li>
-                      </ul>
-                      <div class="ds-share-icons-more">
-                      </div>
-                    </div>
-                <hr>
-                </div>
-                <!-- Duoshuo Share end-->
-
-
-                <!-- 多说评论框 start -->
-                <div class="comment">
-                    <div class="ds-thread" data-thread-key="/blog/2016/04/01/如何产生一个随机的[0, n)的short值" data-title="如何产生一个随机的[0, n)范围内的Short值" data-url="http://sixwolf.net/blog/2016/04/01/%E5%A6%82%E4%BD%95%E4%BA%A7%E7%94%9F%E4%B8%80%E4%B8%AA%E9%9A%8F%E6%9C%BA%E7%9A%84-0,-n)%E7%9A%84short%E5%80%BC/"></div>
-                </div>
-                <!-- 多说评论框 end -->
-
-
-
+                <!-- changyan-->
+                <!--PC版-->
+                <!--PC版-->
+                <div id="SOHUCS" ></div>
+                <script charset="utf-8" type="text/javascript" src="https://changyan.sohu.com/upload/changyan.js" ></script>
+                <script type="text/javascript">
+                    window.changyan.api.config({
+                        appid: 'cyts5EMWL',
+                        conf: 'prod_8140523863d2c692b9712ff94e941682'
+                    });
+                </script>
+                <!-- end changyan-->
             </div>
         </div>
     </div>
@@ -248,19 +233,6 @@
 
 
 
-<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
-<script type="text/javascript">
-var duoshuoQuery = {short_name:"sixwolf"};
-	(function() {
-		var ds = document.createElement('script');
-		ds.type = 'text/javascript';ds.async = true;
-		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
-		ds.charset = 'UTF-8';
-		(document.getElementsByTagName('head')[0]
-		 || document.getElementsByTagName('body')[0]).appendChild(ds);
-	})();
-	</script>
-<!-- 多说公共JS代码 end -->
 
 <!-- async load function -->
 <script>
@@ -386,7 +358,7 @@ var duoshuoQuery = {short_name:"sixwolf"};
 
                 </ul>
                 <p class="copyright text-muted">
-                &copy; 2016  Klojure ❖ Powered by Jekyll.
+                &copy; 2018  Klojure ❖ Powered by Jekyll.
                 </p>
             </div>
         </div>

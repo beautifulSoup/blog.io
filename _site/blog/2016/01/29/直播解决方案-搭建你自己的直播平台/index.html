@@ -10,7 +10,7 @@
     <meta name="baidu-site-verification" content="KonQRkt3nq" />
     <title>视频直播解决方案 - In Coding</title>
 
-    <link rel="canonical" href="http://sixwolf.net/blog/2016/01/29/%E7%9B%B4%E6%92%AD%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88-%E6%90%AD%E5%BB%BA%E4%BD%A0%E8%87%AA%E5%B7%B1%E7%9A%84%E7%9B%B4%E6%92%AD%E5%B9%B3%E5%8F%B0/">
+    <link rel="canonical" href="http://localhost:4000/blog/2016/01/29/%E7%9B%B4%E6%92%AD%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88-%E6%90%AD%E5%BB%BA%E4%BD%A0%E8%87%AA%E5%B7%B1%E7%9A%84%E7%9B%B4%E6%92%AD%E5%B9%B3%E5%8F%B0/">
 
     <!-- Icons -->
   <link rel="shortcut icon" href="img/logo.ico">
@@ -26,8 +26,8 @@
 
     <!-- Custom Fonts -->
     <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
-    <link href='//fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
-    <link href='//fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+    <link href='//fonts.cat.net/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.cat.net/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
 
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -40,11 +40,12 @@
         var _hmt = _hmt || [];
         (function() {
             var hm = document.createElement("script");
-            hm.src = "//hm.baidu.com/hm.js?ad37e90f12e85cec39277b32f2653dfd";
+            hm.src = "https://hm.baidu.com/hm.js?3777c87f74662bbdb6d720064ecf851f";
             var s = document.getElementsByTagName("script")[0];
             s.parentNode.insertBefore(hm, s);
         })();
     </script>
+
 
 </head>
 
@@ -143,10 +144,10 @@
                 <p><br />
 <br /></p>
 
-<h1 id="section">背景</h1>
+<h1 id="背景">背景</h1>
 <p>当下，视频直播行业在中国逐渐走红。在刚刚过去的2015年，视频直播成为互联网行业最抢眼的领域之一。从游戏到秀场，从传统的网页端到移动互联网，各大直播平台包括斗鱼、熊猫tv、虎牙战旗还有纯移动端的印客、易直播等，群雄割据。言归正转，毕竟本文是一篇技术博客，接下来让我们从技术的角度分析如何搭建一个自己的直播平台。</p>
 
-<h1 id="section-1">流程图</h1>
+<h1 id="流程图">流程图</h1>
 <p>首先让我们看一下直播整体流程。
 <img src="https://img.alicdn.com/imgextra/i2/754328530/TB2mp.yjVXXXXaqXFXXXXXXXXXX_!!754328530.jpg" alt="直播流程图" /> <br />
 首先是直播视频采集端，由主播通过摄像头手机等采集设备，采集视音频流，编码后采用RTMP协议<sup id="fnref:RTMP"><a href="#fn:RTMP" class="footnote">1</a></sup>推流到直播流服务器。这里采用H.264[^H.264]编码对视频流进行编码，使用AAC<sup id="fnref:AAC"><a href="#fn:AAC" class="footnote">2</a></sup>对音频流进行编码，采用这两种编码的原因是hls协议<sup id="fnref:hls"><a href="#fn:hls" class="footnote">3</a></sup>要求使用这两种编码。
@@ -182,26 +183,26 @@
 
 <p>综合以上因素，我们认为如果对实时性要求较高，那么使用RTMP会比较好。网页端使用RTMP会比较好，因为Flash Player原生支持，而大多数的浏览器都会安装Flash player。而在移动端如果对实时性要求不高，那么采用hls比较好，因为ios包括3.0以上的安卓都原生支持hls协议。接下来本文将根据以上的三个步骤的具体实现分别展开说明，为了篇幅考虑，我们会将一些内容放到子文章中。</p>
 
-<h1 id="section-2">视频采集与编码</h1>
+<h1 id="视频采集与编码">视频采集与编码</h1>
 <p>视频采集可以有多重途径，比如通过电脑摄像头，通过OBS等录屏软件进行录屏，通过手机摄像头采集。由于目前户外直播和移动互联网很火，所以我们就选择实现在安卓设备上通过摄像头采集视频流（其实是因为我是写安卓的= =）。
 为了实现这一功能，我们使用了一个开源项目<a href="https://github.com/bytedeco/javacv">javacv</a> 它包含了一些在计算机视觉领域应用比较多的库，我们主要使用的是它的FFMpeg库。使用FFMpeg的FFMpegFrameRecoder类，我们能够方便地将从android摄像头采集到的帧传输到服务器。具体的通过Camera和FFMpeg推流到服务器的实现请看我们的另一篇文章<a href="http://sixwolf.net/blog/2016/01/30/Android%E4%BD%BF%E7%94%A8FFMpeg%E5%AE%9E%E7%8E%B0%E6%8E%A8%E9%80%81%E8%A7%86%E9%A2%91%E7%9B%B4%E6%92%AD%E6%B5%81%E5%88%B0%E6%9C%8D%E5%8A%A1%E5%99%A8/">Android使用FFMpeg实现推送视频直播流到服务器</a>。另外FFMpeg也支持H.264和AAC编码。</p>
 
-<h1 id="section-3">直播流服务器</h1>
+<h1 id="直播流服务器">直播流服务器</h1>
 <p>关于直播服务器，我们选择使用我们中国人开发的一个开源项目——<a href="https://github.com/ossrs/srs">srs</a>，它支持RTMP/HTTP/RTSP等协议的流输入，支持RTMP/HDS/HLS/HTTP等协议的流输出，同时它也支持集群。给作者点赞。  <br />
 关于srs的安装和使用可以直接看它在github上的wiki，这里不再赘述。需要注意的一点是该项目在centos 6.x 和ubunut12.x上能正常编译通过，但是在比如我使用的ubuntu14.04上会有一些依赖包的缺失。所以为了方便考虑的话，读者可以在centos和ubuntu12.x上进行test。</p>
 
-<h1 id="section-4">播放器</h1>
+<h1 id="播放器">播放器</h1>
 <p>我们在试验的过程中，使用多种播放器和库在全平台实现了rtmp和hls的播放。在网页端使用了<a href="http://videojs.com/">videojs</a>，在安卓端使用<a href="https://github.com/yixia/VitamioBundle">vitamio</a>。具体的实现请看我们的另外一篇<a href="http://sixwolf.net/blog/2016/01/30/%E5%9C%A8%E5%90%84%E7%AB%AF%E5%AE%9E%E7%8E%B0Rtmp%E5%92%8Chls%E6%B5%81%E8%A7%86%E9%A2%91%E7%9A%84%E6%92%AD%E6%94%BE/">如何在网页端和移动端播放rtmp和hls视频流</a></p>
 
-<h1 id="section-5">总结</h1>
+<h1 id="总结">总结</h1>
 <p>当然本文中的解决方案只是最简单的，对于直播服务器集群，直播间的创建和管理，直播间直播密码和权限，内容分发网络CDN都没有进行深入的研究。但是通过本实验性项目，我认为对于我们了解整个直播的业务流程还是很有帮助的。</p>
 
-<h1 id="section-6">相关文件推荐</h1>
+<h1 id="相关文件推荐">相关文件推荐</h1>
 <ul>
   <li><a href="http://www.infoq.com/cn/articles/alibaba-broadcast-platform-technology-challenges">鏖战双十一-阿里直播平台面临的技术挑战</a></li>
 </ul>
 
-<h1 id="section-7">相关项目</h1>
+<h1 id="相关项目">相关项目</h1>
 <ul>
   <li><a href="https://github.com/bytedeco/javacv">javacv</a></li>
   <li><a href="https://github.com/ossrs/srs">srs</a></li>
@@ -211,13 +212,13 @@
 <div class="footnotes">
   <ol>
     <li id="fn:RTMP">
-      <p>Real Time Messaging Protocol (RTMP) was initially a proprietary protocol developed by Macromedia for streaming audio, video and data over the Internet, between a Flash player and a server. Macromedia is now owned by Adobe, which has released an incomplete version of the specification of the protocol for public use. (reference from wikipedia )<br />Flash Player是天生能够播放RTMP流的，所以RTMP流可以在网页上得到很好的支持，另外也有很多其他浏览器能够支持播放RTMP流，如比较知名的JW player，videoJS。另外RTMP流的延迟只有3s，比较适合一些实时性和互动性较高的直播。 <a href="#fnref:RTMP" class="reversefootnote">&#8617;</a></p>
+      <p>Real Time Messaging Protocol (RTMP) was initially a proprietary protocol developed by Macromedia for streaming audio, video and data over the Internet, between a Flash player and a server. Macromedia is now owned by Adobe, which has released an incomplete version of the specification of the protocol for public use. (reference from wikipedia )<br />Flash Player是天生能够播放RTMP流的，所以RTMP流可以在网页上得到很好的支持，另外也有很多其他浏览器能够支持播放RTMP流，如比较知名的JW player，videoJS。另外RTMP流的延迟只有3s，比较适合一些实时性和互动性较高的直播。 <a href="#fnref:RTMP" class="reversefootnote">&#8617;</a></p>
     </li>
     <li id="fn:AAC">
-      <p>AAC（Advanced Audio Coding），中文名：高级音频编码，出现于1997年，基于MPEG-2的音频编码技术。由Fraunhofer IIS、杜比实验室、AT&amp;T、Sony等公司共同开发，目的是取代MP3格式。2000年，MPEG-4标准出现后，AAC重新集成了其特性，加入了SBR技术和PS技术，为了区别于传统的MPEG-2 AAC又称为MPEG-4 AAC。 <a href="#fnref:AAC" class="reversefootnote">&#8617;</a></p>
+      <p>AAC（Advanced Audio Coding），中文名：高级音频编码，出现于1997年，基于MPEG-2的音频编码技术。由Fraunhofer IIS、杜比实验室、AT&amp;T、Sony等公司共同开发，目的是取代MP3格式。2000年，MPEG-4标准出现后，AAC重新集成了其特性，加入了SBR技术和PS技术，为了区别于传统的MPEG-2 AAC又称为MPEG-4 AAC。 <a href="#fnref:AAC" class="reversefootnote">&#8617;</a></p>
     </li>
     <li id="fn:hls">
-      <p>HLS (HTTP Live Streaming)，Apple的动态码率自适应技术。主要用于PC和Apple终端的音视频服务。包括一个m3u(8)的索引文件，TS媒体分片文件和key加密串文件。 <a href="#fnref:hls" class="reversefootnote">&#8617;</a></p>
+      <p>HLS (HTTP Live Streaming)，Apple的动态码率自适应技术。主要用于PC和Apple终端的音视频服务。包括一个m3u(8)的索引文件，TS媒体分片文件和key加密串文件。 <a href="#fnref:hls" class="reversefootnote">&#8617;</a></p>
     </li>
   </ol>
 </div>
@@ -237,53 +238,41 @@
                     </li>
                     
                 </ul>
+                <!--&lt;!&ndash; disqus &ndash;&gt;-->
+                <!--<div id="disqus_thread"></div>-->
+                <!--<script>-->
 
-                <!-- Duoshuo Share start -->
-                <style>
-                    .ds-share{
-                        text-align: right;
-                    }
+                    <!--/**-->
+                     <!--*  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.-->
+                     <!--*  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables*/-->
+                    <!--/*-->
+                     <!--var disqus_config = function () {-->
+                     <!--this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable-->
+                     <!--this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable-->
+                     <!--};-->
+                     <!--*/-->
+                    <!--(function() { // DON'T EDIT BELOW THIS LINE-->
+                        <!--var d = document, s = d.createElement('script');-->
+                        <!--s.src = 'https://in-coding.disqus.com/embed.js';-->
+                        <!--s.setAttribute('data-timestamp', +new Date());-->
+                        <!--(d.head || d.body).appendChild(s);-->
+                    <!--})();-->
+                <!--</script>-->
+                <!--<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>-->
+                <!--&lt;!&ndash;end disqus &ndash;&gt;-->
 
-                    @media only screen and (max-width: 700px) {
-                        .ds-share {
-
-                        }
-                    }
-                </style>
-
-                <div class="ds-share"
-                    data-thread-key="/blog/2016/01/29/直播解决方案-搭建你自己的直播平台" data-title="视频直播解决方案"
-                    data-images="http://sixwolf.net/https://img.alicdn.com/imgextra/i4/754328530/TB2GEa3cVXXXXbUXpXXXXXXXXXX-754328530.jpg"
-                    data-content="
-
-
-背景
-当下，视频直播行业在中国逐渐走红。在刚刚过去的2015年，视频直播成为互联网行业最抢眼的领域之一。从游戏到秀场，从传统的网页端到移动互联网，各... | Microdust:Azeril's blog"
-                    data-url="http://sixwolf.net/blog/2016/01/29/%E7%9B%B4%E6%92%AD%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88-%E6%90%AD%E5%BB%BA%E4%BD%A0%E8%87%AA%E5%B7%B1%E7%9A%84%E7%9B%B4%E6%92%AD%E5%B9%B3%E5%8F%B0/">
-                    <div class="ds-share-inline">
-                      <ul  class="ds-share-icons-16">
-
-                        <li data-toggle="ds-share-icons-more"><a class="ds-more" href="#">分享到：</a></li>
-                        <li><a class="ds-wechat flat" href="javascript:void(0);" data-service="wechat">微信</a></li>
-                        <li><a class="ds-weibo flat" href="javascript:void(0);" data-service="weibo">微博</a></li>
-                        <li><a class="ds-douban flat" href="javascript:void(0);" data-service="douban">豆瓣</a></li>
-                      </ul>
-                      <div class="ds-share-icons-more">
-                      </div>
-                    </div>
-                <hr>
-                </div>
-                <!-- Duoshuo Share end-->
-
-
-                <!-- 多说评论框 start -->
-                <div class="comment">
-                    <div class="ds-thread" data-thread-key="/blog/2016/01/29/直播解决方案-搭建你自己的直播平台" data-title="视频直播解决方案" data-url="http://sixwolf.net/blog/2016/01/29/%E7%9B%B4%E6%92%AD%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88-%E6%90%AD%E5%BB%BA%E4%BD%A0%E8%87%AA%E5%B7%B1%E7%9A%84%E7%9B%B4%E6%92%AD%E5%B9%B3%E5%8F%B0/"></div>
-                </div>
-                <!-- 多说评论框 end -->
-
-
-
+                <!-- changyan-->
+                <!--PC版-->
+                <!--PC版-->
+                <div id="SOHUCS" ></div>
+                <script charset="utf-8" type="text/javascript" src="https://changyan.sohu.com/upload/changyan.js" ></script>
+                <script type="text/javascript">
+                    window.changyan.api.config({
+                        appid: 'cyts5EMWL',
+                        conf: 'prod_8140523863d2c692b9712ff94e941682'
+                    });
+                </script>
+                <!-- end changyan-->
             </div>
         </div>
     </div>
@@ -291,19 +280,6 @@
 
 
 
-<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
-<script type="text/javascript">
-var duoshuoQuery = {short_name:"sixwolf"};
-	(function() {
-		var ds = document.createElement('script');
-		ds.type = 'text/javascript';ds.async = true;
-		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
-		ds.charset = 'UTF-8';
-		(document.getElementsByTagName('head')[0]
-		 || document.getElementsByTagName('body')[0]).appendChild(ds);
-	})();
-	</script>
-<!-- 多说公共JS代码 end -->
 
 <!-- async load function -->
 <script>
@@ -429,7 +405,7 @@ var duoshuoQuery = {short_name:"sixwolf"};
 
                 </ul>
                 <p class="copyright text-muted">
-                &copy; 2016  Klojure ❖ Powered by Jekyll.
+                &copy; 2018  Klojure ❖ Powered by Jekyll.
                 </p>
             </div>
         </div>

@@ -10,7 +10,7 @@
     <meta name="baidu-site-verification" content="KonQRkt3nq" />
     <title>Android去除烦人的默认闪退Dialog - In Coding</title>
 
-    <link rel="canonical" href="http://sixwolf.net/blog/2016/04/11/Android%E5%8E%BB%E9%99%A4%E7%83%A6%E4%BA%BA%E7%9A%84%E9%97%AA%E9%80%80%E5%BC%B9%E7%AA%97/">
+    <link rel="canonical" href="http://localhost:4000/blog/2016/04/11/Android%E5%8E%BB%E9%99%A4%E7%83%A6%E4%BA%BA%E7%9A%84%E9%97%AA%E9%80%80%E5%BC%B9%E7%AA%97/">
 
     <!-- Icons -->
   <link rel="shortcut icon" href="img/logo.ico">
@@ -26,8 +26,8 @@
 
     <!-- Custom Fonts -->
     <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
-    <link href='//fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
-    <link href='//fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+    <link href='//fonts.cat.net/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.cat.net/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
 
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -40,11 +40,12 @@
         var _hmt = _hmt || [];
         (function() {
             var hm = document.createElement("script");
-            hm.src = "//hm.baidu.com/hm.js?ad37e90f12e85cec39277b32f2653dfd";
+            hm.src = "https://hm.baidu.com/hm.js?3777c87f74662bbdb6d720064ecf851f";
             var s = document.getElementsByTagName("script")[0];
             s.parentNode.insertBefore(hm, s);
         })();
     </script>
+
 
 </head>
 
@@ -136,30 +137,29 @@
         <div class="row">
             <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1 post-container">
 
-                <h2 id="section">背景</h2>
+                <h2 id="背景">背景</h2>
 
 <p>安卓应用闪退后总会出现一个“抱歉，App已经停止运行”的弹窗，这样的用户体验并不好。很多大厂的App都去除了这个弹窗，因此本文主要介绍如何去除默认闪退弹窗，以及在闪退时做一些必要的善后工作。</p>
 
 <h2 id="uncaughtexceptionhandler">UnCaughtExceptionHandler</h2>
 <p>UnCaughtExceptionHandler能够在Thread遇到未catch住的Exception而终止前做一些善后工作。但是它无法阻止线程停止运行，线程最后还是要退出。</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>	<span class="n">Thread</span><span class="o">.</span><span class="na">setDefaultUncaughtExceptionHandler</span><span class="o">(</span><span class="k">new</span> <span class="n">Thread</span><span class="o">.</span><span class="na">UncaughtExceptionHandler</span><span class="o">()</span> <span class="o">{</span>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code>	<span class="n">Thread</span><span class="o">.</span><span class="na">setDefaultUncaughtExceptionHandler</span><span class="o">(</span><span class="k">new</span> <span class="n">Thread</span><span class="o">.</span><span class="na">UncaughtExceptionHandler</span><span class="o">()</span> <span class="o">{</span>
             <span class="nd">@Override</span>
-            <span class="kd">public</span> <span class="kt">void</span> <span class="n">uncaughtException</span><span class="o">(</span><span class="n">Thread</span> <span class="n">thread</span><span class="o">,</span> <span class="n">Throwable</span> <span class="n">ex</span><span class="o">)</span> <span class="o">{</span>
+            <span class="kd">public</span> <span class="kt">void</span> <span class="nf">uncaughtException</span><span class="o">(</span><span class="n">Thread</span> <span class="n">thread</span><span class="o">,</span> <span class="n">Throwable</span> <span class="n">ex</span><span class="o">)</span> <span class="o">{</span>
                 <span class="n">System</span><span class="o">.</span><span class="na">exit</span><span class="o">(</span><span class="mi">1</span><span class="o">);</span>
             <span class="o">}</span>
         <span class="o">});</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
-<h2 id="dialog">去除Dialog</h2>
+<h2 id="去除dialog">去除Dialog</h2>
 <p>Android系统默认设置了一个UnCaughtExceptionHandler，而弹出闪退弹窗的工作就是在这个handler做的。所以如果要去除弹窗，只要实现一个UnCaughtExceptionHandler并替换掉系统默认的就可以了，代码如下。</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">class</span> <span class="nc">App</span> <span class="kd">extends</span> <span class="n">Application</span> <span class="o">{</span>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">class</span> <span class="nc">App</span> <span class="kd">extends</span> <span class="n">Application</span> <span class="o">{</span>
 
 
     <span class="nd">@Override</span>
-    <span class="kd">public</span> <span class="kt">void</span> <span class="n">onCreate</span><span class="o">()</span> <span class="o">{</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onCreate</span><span class="o">()</span> <span class="o">{</span>
         <span class="kd">super</span><span class="o">.</span><span class="na">onCreate</span><span class="o">();</span>
         <span class="n">Thread</span><span class="o">.</span><span class="na">setDefaultUncaughtExceptionHandler</span><span class="o">(</span><span class="k">new</span> <span class="n">MyUnCaughtExceptionHandler</span><span class="o">());</span>
     <span class="o">}</span>
@@ -169,7 +169,7 @@
     <span class="kd">class</span> <span class="nc">MyUnCaughtExceptionHandler</span> <span class="kd">implements</span> <span class="n">Thread</span><span class="o">.</span><span class="na">UncaughtExceptionHandler</span><span class="o">{</span>
 
         <span class="nd">@Override</span>
-        <span class="kd">public</span> <span class="kt">void</span> <span class="n">uncaughtException</span><span class="o">(</span><span class="n">Thread</span> <span class="n">thread</span><span class="o">,</span> <span class="n">Throwable</span> <span class="n">ex</span><span class="o">)</span> <span class="o">{</span>
+        <span class="kd">public</span> <span class="kt">void</span> <span class="nf">uncaughtException</span><span class="o">(</span><span class="n">Thread</span> <span class="n">thread</span><span class="o">,</span> <span class="n">Throwable</span> <span class="n">ex</span><span class="o">)</span> <span class="o">{</span>
             <span class="n">ex</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
             <span class="c1">// do some work here</span>
 
@@ -178,30 +178,29 @@
         <span class="o">}</span>
     <span class="o">}</span>
 <span class="o">}</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>以上的替换UnCaughtExceptionHandler的工作是在Application中统一做的，当然你也可以在每一个Activity中做。对于单个Activity还好，当Activity很多的时候就必需实现一个BaseActivity，在BaseActivity中替换，其它Activity要集成BaseActivity。</p>
 
-<h2 id="section-1">必要的善后工作</h2>
+<h2 id="必要的善后工作">必要的善后工作</h2>
 <p>为了处理闪退，提升用户体验，有必要做一些善后工作，主要有几条罗列如下：</p>
 
-<h3 id="section-2">异常上报</h3>
+<h3 id="异常上报">异常上报</h3>
 <p>可以采用邮件或者通过服务器接口上传的方式。两者各有优缺点，邮件方式开发简单，但需要用户额外操作，用户体验较差。如果用上传服务器方式，因为在UnCaughtExceptionHandler中不能打开一个新的线程，所以只能同步请求，在网络情况不好的时候花费时间会较长而阻塞运行。也可能因为网络原因而上报失败。当然总体下来还是上传服务器好一点。具体实现留给读者。</p>
 
-<h3 id="section-3">记录日志</h3>
+<h3 id="记录日志">记录日志</h3>
 <p>将闪退信息存储到文件系统中。不能存到SharedPreferences中，因为打开SP需要使用一个新的线程（Android内部实现），而这在UnCaughtExceptionHandler中，这是不被允许的。</p>
 
-<h3 id="section-4">闪退三次清除数据</h3>
+<h3 id="闪退三次清除数据">闪退三次清除数据</h3>
 <p>很多时候是由于后台返回数据错误导致的闪退。如果这些数据被缓存下来，那么用户即使再次打开还是会发生闪退，这时候就只能通过重装或者清除数据的方式才能解决闪退问题，用户体验十分不好。所以在多次闪退后自动清除缓存数据十分必要。具体实现可以参考我的另一篇博客<a href="http://sixwolf.net/blog/2016/03/22/Android%E5%AE%9E%E7%8E%B0%E5%A4%9A%E6%AC%A1%E9%97%AA%E9%80%80%E6%B8%85%E9%99%A4%E6%95%B0%E6%8D%AE/">Android实现多次闪退清除数据</a>。不过该博客中使用的是ACRA，一个对UnCaughtExceptionHandler再次封装的开源项目，读者可以将ACRA替换为UnCaughtExceptionHandler来实现。</p>
 
-<h3 id="app">重新打开App</h3>
+<h3 id="重新打开app">重新打开App</h3>
 <p>可以在UnCaughtExceptionHandler中重新打开App或者弹出自定义弹窗。</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code> <span class="kd">class</span> <span class="nc">MyUnCaughtExceptionHandler</span> <span class="kd">implements</span> <span class="n">Thread</span><span class="o">.</span><span class="na">UncaughtExceptionHandler</span><span class="o">{</span>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code> <span class="kd">class</span> <span class="nc">MyUnCaughtExceptionHandler</span> <span class="kd">implements</span> <span class="n">Thread</span><span class="o">.</span><span class="na">UncaughtExceptionHandler</span><span class="o">{</span>
 
         <span class="nd">@Override</span>
-        <span class="kd">public</span> <span class="kt">void</span> <span class="n">uncaughtException</span><span class="o">(</span><span class="n">Thread</span> <span class="n">thread</span><span class="o">,</span> <span class="n">Throwable</span> <span class="n">ex</span><span class="o">)</span> <span class="o">{</span>
+        <span class="kd">public</span> <span class="kt">void</span> <span class="nf">uncaughtException</span><span class="o">(</span><span class="n">Thread</span> <span class="n">thread</span><span class="o">,</span> <span class="n">Throwable</span> <span class="n">ex</span><span class="o">)</span> <span class="o">{</span>
             <span class="n">ex</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
             
             <span class="n">Intent</span> <span class="n">intent</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Intent</span><span class="o">(</span><span class="n">App</span><span class="o">.</span><span class="na">this</span><span class="o">,</span> <span class="n">MainActivity</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
@@ -212,11 +211,10 @@
             <span class="n">System</span><span class="o">.</span><span class="na">exit</span><span class="o">(</span><span class="mi">1</span><span class="o">);</span>
         <span class="o">}</span>
     <span class="o">}</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 <p>注意setFlags这一步是必需的，因为使用的Context是App的Context，所以必需打开一个新的任务队列，否则打开Activity无法生效，如果你替换Handler是在Activity做的，拿到的Context是Activity的Context，则无需这一步。</p>
 
-<h2 id="section-5">注意事项</h2>
+<h2 id="注意事项">注意事项</h2>
 
 <p>最主要的注意点我之前已经提到，不要在UnCaughtExceptionHandler中新开一个线程，会抛出异常。</p>
 
@@ -235,51 +233,41 @@
                     </li>
                     
                 </ul>
+                <!--&lt;!&ndash; disqus &ndash;&gt;-->
+                <!--<div id="disqus_thread"></div>-->
+                <!--<script>-->
 
-                <!-- Duoshuo Share start -->
-                <style>
-                    .ds-share{
-                        text-align: right;
-                    }
+                    <!--/**-->
+                     <!--*  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.-->
+                     <!--*  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables*/-->
+                    <!--/*-->
+                     <!--var disqus_config = function () {-->
+                     <!--this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable-->
+                     <!--this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable-->
+                     <!--};-->
+                     <!--*/-->
+                    <!--(function() { // DON'T EDIT BELOW THIS LINE-->
+                        <!--var d = document, s = d.createElement('script');-->
+                        <!--s.src = 'https://in-coding.disqus.com/embed.js';-->
+                        <!--s.setAttribute('data-timestamp', +new Date());-->
+                        <!--(d.head || d.body).appendChild(s);-->
+                    <!--})();-->
+                <!--</script>-->
+                <!--<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>-->
+                <!--&lt;!&ndash;end disqus &ndash;&gt;-->
 
-                    @media only screen and (max-width: 700px) {
-                        .ds-share {
-
-                        }
-                    }
-                </style>
-
-                <div class="ds-share"
-                    data-thread-key="/blog/2016/04/11/Android去除烦人的闪退弹窗" data-title="Android去除烦人的默认闪退Dialog"
-                    data-images="http://sixwolf.net/https://img.alicdn.com/imgextra/i4/754328530/TB2GEa3cVXXXXbUXpXXXXXXXXXX-754328530.jpg"
-                    data-content="背景
-
-安卓应用闪退后总会出现一个“抱歉，App已经停止运行”的弹窗，这样的用户体验并不好。很多大厂的App都去除了这个弹窗，因此本文主要介绍如何去除默认... | Microdust:Azeril's blog"
-                    data-url="http://sixwolf.net/blog/2016/04/11/Android%E5%8E%BB%E9%99%A4%E7%83%A6%E4%BA%BA%E7%9A%84%E9%97%AA%E9%80%80%E5%BC%B9%E7%AA%97/">
-                    <div class="ds-share-inline">
-                      <ul  class="ds-share-icons-16">
-
-                        <li data-toggle="ds-share-icons-more"><a class="ds-more" href="#">分享到：</a></li>
-                        <li><a class="ds-wechat flat" href="javascript:void(0);" data-service="wechat">微信</a></li>
-                        <li><a class="ds-weibo flat" href="javascript:void(0);" data-service="weibo">微博</a></li>
-                        <li><a class="ds-douban flat" href="javascript:void(0);" data-service="douban">豆瓣</a></li>
-                      </ul>
-                      <div class="ds-share-icons-more">
-                      </div>
-                    </div>
-                <hr>
-                </div>
-                <!-- Duoshuo Share end-->
-
-
-                <!-- 多说评论框 start -->
-                <div class="comment">
-                    <div class="ds-thread" data-thread-key="/blog/2016/04/11/Android去除烦人的闪退弹窗" data-title="Android去除烦人的默认闪退Dialog" data-url="http://sixwolf.net/blog/2016/04/11/Android%E5%8E%BB%E9%99%A4%E7%83%A6%E4%BA%BA%E7%9A%84%E9%97%AA%E9%80%80%E5%BC%B9%E7%AA%97/"></div>
-                </div>
-                <!-- 多说评论框 end -->
-
-
-
+                <!-- changyan-->
+                <!--PC版-->
+                <!--PC版-->
+                <div id="SOHUCS" ></div>
+                <script charset="utf-8" type="text/javascript" src="https://changyan.sohu.com/upload/changyan.js" ></script>
+                <script type="text/javascript">
+                    window.changyan.api.config({
+                        appid: 'cyts5EMWL',
+                        conf: 'prod_8140523863d2c692b9712ff94e941682'
+                    });
+                </script>
+                <!-- end changyan-->
             </div>
         </div>
     </div>
@@ -287,19 +275,6 @@
 
 
 
-<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
-<script type="text/javascript">
-var duoshuoQuery = {short_name:"sixwolf"};
-	(function() {
-		var ds = document.createElement('script');
-		ds.type = 'text/javascript';ds.async = true;
-		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
-		ds.charset = 'UTF-8';
-		(document.getElementsByTagName('head')[0]
-		 || document.getElementsByTagName('body')[0]).appendChild(ds);
-	})();
-	</script>
-<!-- 多说公共JS代码 end -->
 
 <!-- async load function -->
 <script>
@@ -425,7 +400,7 @@ var duoshuoQuery = {short_name:"sixwolf"};
 
                 </ul>
                 <p class="copyright text-muted">
-                &copy; 2016  Klojure ❖ Powered by Jekyll.
+                &copy; 2018  Klojure ❖ Powered by Jekyll.
                 </p>
             </div>
         </div>
