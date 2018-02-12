@@ -1,0 +1,24 @@
+<h2 id="前言">前言</h2>
+<p>写数据库实体类是一项既没有技术含量，又无聊的事情，完全可以让程序代劳。IntelliJ就有这个功能。</p>
+
+<h2 id="使用步骤">使用步骤</h2>
+<h3 id="module添加jpa或者hibernate依赖">Module添加Jpa或者Hibernate依赖</h3>
+<p>打开项目设计 Project Structure，选择Module，点击加号添加对Jpa或者Hibernate的依赖。
+<img src="http://onlwflr60.bkt.clouddn.com/ProjectStructure.png" alt="" /></p>
+
+<h3 id="调出persistence窗口">调出Persistence窗口</h3>
+<p>在View -&gt; Tool Windows里调出Persistence窗口
+<img src="http://onlwflr60.bkt.clouddn.com/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7%202018-02-12%20%E4%B8%8B%E5%8D%884.00.24.png" alt="" /></p>
+
+<h3 id="调出生成窗口">调出生成窗口</h3>
+<p>鼠标右键点击Module，选择Generate Persistence Mapping -&gt; By Database Schema，调出实体类生成窗口。</p>
+
+<h3 id="生成实体类">生成实体类</h3>
+<p>选择数据源（需要在Database窗口中添加数据源），选择实体类生成目标package，数据库表，然后点击生成。
+<img src="http://onlwflr60.bkt.clouddn.com/store.png" alt="" /></p>
+
+<h3 id="微调修改">微调修改</h3>
+<p>最后检查一下生成的实体类，根据自己的需要进行修改，比如tinyint会默认生成Byte类型，我会修改为Integer，Timestamp类型默认生成Timestamp，我会改成LocalDateTime。</p>
+
+<p>大功告成。</p>
+

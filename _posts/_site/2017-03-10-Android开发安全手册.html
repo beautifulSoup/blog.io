@@ -1,0 +1,142 @@
+<h2 id="常规安全防御手段">常规安全防御手段</h2>
+
+<h3 id="混淆">混淆</h3>
+
+<p>混淆是Android基本安全手段，虽然目前有很多工具能够反混淆，但是对于反编译调试代码还是有较大作用的。</p>
+
+<h3 id="加固">加固</h3>
+
+<p>目前有很多第三方加固服务可以使用。如爱加密、360加密、阿里聚安全等。可以选择一个使用。但是也不能认为使用了加固就万事大吉了，因为还是有被脱壳的风险的。</p>
+
+<h2 id="安全风险规避">安全风险规避</h2>
+
+<h3 id="数据接口泄露风险">数据接口泄露风险</h3>
+
+<h4 id="风险说明">风险说明</h4>
+
+<p>数据接口被劫持，中间人攻击等。</p>
+
+<h4 id="风险规避">风险规避</h4>
+
+<ol>
+  <li>使用HTTPS协议。</li>
+  <li>HTTPS证书双向校验，客户端校验服务端证书、域名等是否一致，服务端校验客户端证书是否正确(签名CA是否合法、证书是否是自签名、主机域名是否匹配、证书是否过期等)。</li>
+</ol>
+
+<h3 id="本地存储数据泄露风险">本地存储数据泄露风险</h3>
+
+<h4 id="风险说明-1">风险说明</h4>
+
+<p>Android提供四种Android本地存储方式，分别为Shared Preferences、SQLite Databases、Internal Storage、External Storage。对于一些不当的存储方式，可能会造成数据泄露。</p>
+
+<h3 id="风险规避-1">风险规避</h3>
+
+<ol>
+  <li>对于SP、Database和Internal Storage可以设置打开方式，原则上都使用MODE_PRIVATE。</li>
+  <li>谨慎使用sharedUserId属性。拥有相同sharedUserId 和签名的应用可以共享本地数据。所以拥有sharedUserId属性的应用一定要使用安全的证书签名。</li>
+  <li>谨慎使用External Storage，因为它能够被所有应用读取。</li>
+  <li>对于敏感信息，需要加密之后进行存储，如密码等。</li>
+</ol>
+
+<h3 id="硬编码密钥泄露风险">硬编码密钥泄露风险</h3>
+
+<h4 id="风险说明-2">风险说明</h4>
+
+<p>将AES加密密钥、支付宝SDK密钥等硬编码在代码中容易被反编译获得。</p>
+
+<h4 id="风险规避-2">风险规避</h4>
+
+<p>对密钥进行加密，在使用的时候解密获得。推荐使用阿里聚安全的sdk加密。</p>
+
+<h3 id="日志泄露风险">日志泄露风险</h3>
+
+<h4 id="风险说明-3">风险说明</h4>
+
+<p>打印在Log中的日志容易被调试获取一些信息，所以应该避免在Release版本中输出敏感日志。</p>
+
+<h4 id="风险规避-3">风险规避</h4>
+
+<p>推荐使用Timber等日志框架。设置在Release版本中不输出日志。</p>
+
+<h3 id="webview远程代码执行漏洞">WebView远程代码执行漏洞</h3>
+
+<h4 id="风险说明-4">风险说明</h4>
+
+<p>api16之前，可以通过js反射获取Java代码运行环境，然后进行远程代码执行。</p>
+
+<h4 id="风险防范">风险防范</h4>
+
+<ol>
+  <li>
+    <p>如果没有必要，设置WebView不支持Js接口调用。</p>
+
+    <div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">webView</span><span class="o">.</span><span class="na">getSettings</span><span class="o">().</span><span class="na">setJavascriptEnabled</span><span class="o">(</span><span class="kc">false</span><span class="o">);</span>
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>移除系统隐藏JS调用接口</p>
+
+    <div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">webView</span><span class="o">.</span><span class="na">removeJavascriptInterface</span><span class="o">(</span><span class="s">"searchBoxJavaBridge_"</span><span class="o">);</span>
+<span class="n">webView</span><span class="o">.</span><span class="na">removeJavascriptInterface</span><span class="o">(</span><span class="s">"accessibilityTraversal"</span><span class="o">);</span>
+<span class="n">webView</span><span class="o">.</span><span class="na">removeJavascriptInterface</span><span class="o">(</span><span class="s">"accessibility"</span><span class="o">);</span>
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>如果WebView不需要支持打开第三方网页，则可以过滤第三方网页，只允许打开自己的网页。可以使用HTTPS证书校验、白名单等方式进行过滤。</p>
+  </li>
+  <li>
+    <p>使用不支持Js接口调用的WebView打开第三方网页。</p>
+  </li>
+</ol>
+
+<h3 id="webview-明文存储密码漏洞">WebView 明文存储密码漏洞</h3>
+
+<h4 id="风险说明-5">风险说明</h4>
+
+<p>在api17之前，WebView会把用户统一保存的密码明文存储在手机上。因此可能会泄露用户密码。</p>
+
+<h4 id="风险规避-4">风险规避</h4>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">WebView</span><span class="o">.</span><span class="na">setSavaPassword</span><span class="o">(</span><span class="kc">false</span><span class="o">);</span>
+</code></pre></div></div>
+
+<h3 id="本地拒绝服务风险">本地拒绝服务风险</h3>
+
+<p>如果Activity的exported属性为true，则它能够被外部打开。这时候如果外部传给该Activity的数据异常，则可能会使应用闪退。</p>
+
+<p>如某个被攻击的Activity代码</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">MyClass</span> <span class="n">object</span> <span class="o">=</span> <span class="o">(</span><span class="n">MyClass</span><span class="o">)</span><span class="n">getIntent</span><span class="o">().</span><span class="na">getSerializableExtra</span><span class="o">(</span><span class="s">"my_class"</span><span class="o">);</span>
+</code></pre></div></div>
+
+<p>则如果攻击者代码为，会造成被攻击者的闪退。</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">Intent</span> <span class="n">localIntent</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Intent</span><span class="o">();</span>
+<span class="n">localIntent</span><span class="o">.</span><span class="na">setComponent</span><span class="o">(</span><span class="k">new</span> <span class="n">ComponentName</span><span class="o">(</span><span class="n">packageName</span><span class="o">,</span> <span class="n">className</span><span class="o">));</span>
+<span class="n">localIntent</span><span class="o">.</span><span class="na">putExtra</span><span class="o">(</span><span class="s">"my_class"</span><span class="o">,</span> <span class="k">new</span> <span class="n">MalformedObject</span><span class="o">());</span>
+<span class="n">startActivity</span><span class="o">(</span><span class="n">localIntent</span><span class="o">);</span>
+</code></pre></div></div>
+
+<h4 id="风险规避-5">风险规避</h4>
+
+<ol>
+  <li>如非必要，不要设置Activity的exported属性为true。</li>
+  <li>在获取Intent数据时检测过滤并catch异常。</li>
+</ol>
+
+<h3 id="弱加密风险">弱加密风险</h3>
+
+<h4 id="风险说明-6">风险说明</h4>
+
+<p>使用一些较容易破解的加密算法。</p>
+
+<h4 id="风险规避-6">风险规避</h4>
+
+<ol>
+  <li>使用对称加密算法时避免使用DES算法</li>
+  <li>使用RSA算法加密时不使用NoPadding</li>
+  <li>IvParameterSpec初始化时，不使用常量vector</li>
+  <li>在选择加密模式时避免使用ECB模式</li>
+  <li>使用RSA加密时，建议密钥长度大于1024bit</li>
+</ol>
+

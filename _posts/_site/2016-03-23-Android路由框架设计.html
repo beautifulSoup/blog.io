@@ -1,7 +1,7 @@
-<h1 id="section">背景</h1>
+<h1 id="背景">背景</h1>
 <p>我们知道传统的网站开发框架一般支持用户设置路由表，如Django。而在Android开发中，我们打开页面的方式主要是startActivity()。使用startActivity()的缺点是需要打开的那个Activity的类已经存在，否则无法通过编译，但是在协同开发中，这往往是无法得到满足的。那么如何来解决这一问题呢，我们是否也能够像在Web开放中一样使用一个url来打开一个Activity呢？因此本文主要介绍在Android平台设计和实现一个路由框架。</p>
 
-<h1 id="section-1">框架整体设计</h1>
+<h1 id="框架整体设计">框架整体设计</h1>
 <p>首先我们需要明确一点，那就是我们的框架不能仅仅局限于打开Activity，打开Activity只是框架中的一种行为实现，我们的框架应该是包含了Activity以及其它比较常用的路由。并支持使用者自己添加自己的路由实现的，如使用者希望使用url调用一个方法，或者调用一个Runnable，那么他就可以自己实现一个Router来支持这种行为。基于这样的思路，路由框架的整体架构设计如下。
 <img src="https://img.alicdn.com/imgextra/i2/754328530/TB2XFdcepXXXXX5XXXXXXXXXXXX-754328530.jpg" alt="路由框架设计" /></p>
 
@@ -19,7 +19,7 @@
 <img src="https://img.alicdn.com/imgextra/i1/754328530/TB20x_2epXXXXapXpXXXXXXXXXX-754328530.jpg" alt="路由框架设计修改版" />
 用户在需要额外设置一些参数的时候可以不选择使用open打开url，而是使用getRoute()方法获得抽象的Route对象，通过Route对象进行额外的设置，最后可以通过IRoute接口的open方法打开它自己。IRouter和IRoute的关系应该是一对一或者一对多，一种IRouter应该可以打开一或者多种不同IRoute。而一个IRoute则一般只能由一种IRouter打开。</p>
 
-<h1 id="section-2">路由格式</h1>
+<h1 id="路由格式">路由格式</h1>
 <p>在路由框架中，url应该包含两点功能，一是唯一确定一条路由，二是提供一些参数。我们可以以一个路由的例子来讲解ActivityRouter的路由规则。本规则参考了REST。 <br />
 例：activity://main/:i{key1}/path1/:f{key2}</p>
 
@@ -34,27 +34,25 @@
 activity:main/123/path1/12.4。则会调用intent的putExtra()方法将key1=123, key2=12.4放到intent的bundle中。在被跳的Activity中就可以获取对应的值。如果有些值是不必须的，已可以放到query parameter中。如activity://main/123/path1?des=hello。但query parameter不影响路由匹配。
 以上只是我实现的ActivityRouter的路由格式，如果你需要实现自己的路由，完全可以根据自己的想法设计路由格式。</p>
 
-<h3 id="section-3">路由表的初始化</h3>
+<h3 id="路由表的初始化">路由表的初始化</h3>
 <p>Router需要提供一个方法让使用者初始化路由表。如下ActivityRouter的实现，当然这并不必要，如打开网页的Router就不需要路由表，只需要调用系统浏览器打开网页即可。所以该方法没有在接口中定义。</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>	<span class="kd">public</span> <span class="kt">void</span> <span class="nf">init</span><span class="p">(</span><span class="n">Context</span> <span class="n">appContext</span><span class="o">,</span> <span class="n">IActivityRouteTableInitializer</span> <span class="n">initializer</span><span class="o">)</span> <span class="o">{</span>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code>	<span class="kd">public</span> <span class="kt">void</span> <span class="nf">init</span><span class="o">(</span><span class="n">Context</span> <span class="n">appContext</span><span class="o">,</span> <span class="n">IActivityRouteTableInitializer</span> <span class="n">initializer</span><span class="o">)</span> <span class="o">{</span>
         <span class="n">mBaseContext</span> <span class="o">=</span> <span class="n">appContext</span><span class="o">;</span>
         <span class="n">initializer</span><span class="o">.</span><span class="na">initRouterTable</span><span class="o">(</span><span class="n">mRouteTable</span><span class="o">);</span>
     <span class="o">}</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">interface</span> <span class="nc">IActivityRouteTableInitializer</span> <span class="o">{</span>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">interface</span> <span class="nc">IActivityRouteTableInitializer</span> <span class="o">{</span>
     <span class="cm">/**
      * init the router table
      * @param router the router map to
      */</span>
-    <span class="kt">void</span> <span class="n">initRouterTable</span><span class="o">(</span><span class="n">Map</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">Class</span><span class="o">&lt;?</span> <span class="kd">extends</span> <span class="n">Activity</span><span class="o">&gt;&gt;</span> <span class="n">router</span><span class="o">);</span>
+    <span class="kt">void</span> <span class="nf">initRouterTable</span><span class="o">(</span><span class="n">Map</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">Class</span><span class="o">&lt;?</span> <span class="kd">extends</span> <span class="n">Activity</span><span class="o">&gt;&gt;</span> <span class="n">router</span><span class="o">);</span>
 <span class="o">}</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
-<h1 id="section-4">总结</h1>
+<h1 id="总结">总结</h1>
 <p>我们发现将原本startActivity方式替换成路由方式后，有以下几个明显的优点。</p>
 
 <ul>
@@ -63,5 +61,5 @@ activity:main/123/path1/12.4。则会调用intent的putExtra()方法将key1=123,
   <li>便于从外部链接跳转到app中的任意界面。我们只需要设置一个外链入口Activity，让其接收外部链接，并调用路由管理器打开该链接即可。</li>
 </ul>
 
-<h1 id="section-5">项目地址</h1>
+<h1 id="项目地址">项目地址</h1>
 <p><a href="https://github.com/campusappcn/AndRouter">https://github.com/campusappcn/AndRouter</a></p>

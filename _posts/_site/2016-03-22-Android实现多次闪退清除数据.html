@@ -1,25 +1,24 @@
-<h1 id="section">背景</h1>
+<h1 id="背景">背景</h1>
 <p>很多时候由于后台返回的数据异常，可能会导致App闪退。而如果这些异常数据被App本地缓存下来，那么即使杀掉进程重新进入还是会发生闪退。唯一的解决方法就是清除App数据，但是用户可能没有这个意识或者嫌麻烦就直接不再使用了，这是我们无法接受的。在使用淘宝、追书神器等App时我发现有时候它们也会连续闪退，但是往往闪退三次后就恢复正常了，所以一般成熟的App都会做连续闪退三次后清除缓存数据的工作。而目前笔者搜不到有哪篇blog来讲这方面的事情，所以就姑且由我来讲讲此事，为希望提高App用户体验的朋友提供些许参考。</p>
 
 <h1 id="acra">ACRA</h1>
 <p>为了能够在闪退的时候做一些事情，我们可以使用ACRA，这是Github上的一个开源项目，允许使用者设置一些Sender在App闪退的时候做一些事情。具体使用可以直接参考<a href="https://github.com/ACRA/acra">Github</a>。如果不希望使用ACRA，那么也可以自己实现一个UncachedExceptionHandler并替换系统默认的Handler，并在这个Handler里面对数据进行处理。</p>
 
-<h1 id="section-1">实现清除数据</h1>
+<h1 id="实现清除数据">实现清除数据</h1>
 <p>ACRA提供了自己的一些Sender，如使用系统邮件客户端向指定邮箱发送邮件的EmailIntentSender。而我们希望记录闪退次数和清除数据则需要implements ReportSender接口。</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">class</span> <span class="nc">CrashHandler</span> <span class="kd">implements</span> <span class="n">ReportSender</span> <span class="o">{</span>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">class</span> <span class="nc">CrashHandler</span> <span class="kd">implements</span> <span class="n">ReportSender</span> <span class="o">{</span>
     <span class="nd">@Override</span>
-    <span class="kd">public</span> <span class="kt">void</span> <span class="n">send</span><span class="o">(</span><span class="n">Context</span> <span class="n">context</span><span class="o">,</span> <span class="n">CrashReportData</span> <span class="n">errorContent</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">ReportSenderException</span> <span class="o">{</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">send</span><span class="o">(</span><span class="n">Context</span> <span class="n">context</span><span class="o">,</span> <span class="n">CrashReportData</span> <span class="n">errorContent</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">ReportSenderException</span> <span class="o">{</span>
         <span class="n">Timber</span><span class="o">.</span><span class="na">i</span><span class="o">(</span><span class="s">"闪退,检查是否需要清空数据"</span><span class="o">);</span>
-        <span class="k">new</span> <span class="n">CrashModel</span><span class="o">().</span><span class="na">checkAndClearData</span><span class="o">();</span>
+        <span class="k">new</span> <span class="nf">CrashModel</span><span class="o">().</span><span class="na">checkAndClearData</span><span class="o">();</span>
     <span class="o">}</span>
 <span class="o">}</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 <p>这里我们写了一个CrashModel用来记录闪退次数和时间决定是否需要清空数据，具体代码如下。
 由于在ReportSender的时候无法打开其它线程，所以我们无法使用SharedPerferences来清理数据（打开SP的时候其实打开了一个新线程）。为此需要找到数据缓存的位置并将文件删除。同样道理，记录闪退时间也只能通过文件记录。当然，你可以选择一些文件不进行删除，如用户信息等不太容易出问题的数据。</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">class</span> <span class="nc">CrashModel</span> <span class="o">{</span>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">class</span> <span class="nc">CrashModel</span> <span class="o">{</span>
 
     <span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="n">String</span> <span class="n">KEY_CRASH_TIMES</span> <span class="o">=</span> <span class="s">"crash_times"</span><span class="o">;</span>
     <span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="n">String</span> <span class="n">CRASH_TIME_FILE_NAME</span> <span class="o">=</span> <span class="s">"crash_time"</span><span class="o">;</span>
@@ -36,7 +35,7 @@
     <span class="n">Gson</span> <span class="n">gson</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Gson</span><span class="o">();</span>
     <span class="kd">private</span> <span class="n">File</span> <span class="n">mFileDir</span><span class="o">;</span>
 
-    <span class="kd">public</span> <span class="n">CrashModel</span><span class="o">()</span> <span class="o">{</span>
+    <span class="kd">public</span> <span class="nf">CrashModel</span><span class="o">()</span> <span class="o">{</span>
         <span class="n">mFileDir</span> <span class="o">=</span> <span class="k">new</span> <span class="n">File</span><span class="o">(</span><span class="n">FILE_DIR</span><span class="o">);</span>
         <span class="n">mCrashTimes</span> <span class="o">=</span> <span class="n">readCrashTimes</span><span class="o">();</span>
         <span class="k">if</span> <span class="o">(</span><span class="n">mCrashTimes</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
@@ -46,7 +45,7 @@
     <span class="o">}</span>
 
 
-    <span class="kd">public</span> <span class="kt">void</span> <span class="n">checkAndClearData</span><span class="o">()</span> <span class="o">{</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">checkAndClearData</span><span class="o">()</span> <span class="o">{</span>
         <span class="kt">long</span> <span class="n">timeNow</span> <span class="o">=</span> <span class="n">System</span><span class="o">.</span><span class="na">currentTimeMillis</span><span class="o">();</span>
 
         <span class="k">if</span> <span class="o">(</span><span class="n">checkClearData</span><span class="o">(</span><span class="n">timeNow</span><span class="o">,</span> <span class="k">new</span> <span class="n">ArrayList</span><span class="o">&lt;&gt;(</span><span class="n">mCrashTimes</span><span class="o">)))</span> <span class="o">{</span>
@@ -63,7 +62,7 @@
         <span class="o">}</span>
     <span class="o">}</span>
 
-    <span class="kd">private</span> <span class="kt">void</span> <span class="n">storeCrashTimes</span><span class="o">(</span><span class="n">ArrayList</span><span class="o">&lt;</span><span class="n">Long</span><span class="o">&gt;</span> <span class="n">crashTimes</span><span class="o">)</span> <span class="o">{</span>
+    <span class="kd">private</span> <span class="kt">void</span> <span class="nf">storeCrashTimes</span><span class="o">(</span><span class="n">ArrayList</span><span class="o">&lt;</span><span class="n">Long</span><span class="o">&gt;</span> <span class="n">crashTimes</span><span class="o">)</span> <span class="o">{</span>
         <span class="k">try</span> <span class="o">{</span>
             <span class="n">String</span> <span class="n">str</span> <span class="o">=</span> <span class="n">gson</span><span class="o">.</span><span class="na">toJson</span><span class="o">(</span><span class="n">crashTimes</span><span class="o">);</span>
             <span class="n">Files</span><span class="o">.</span><span class="na">writeToFile</span><span class="o">(</span><span class="n">mFileDir</span><span class="o">,</span> <span class="n">CRASH_TIME_FILE_NAME</span><span class="o">,</span> <span class="n">str</span><span class="o">);</span>
@@ -73,7 +72,7 @@
 
     <span class="o">}</span>
 
-    <span class="kd">private</span> <span class="n">ArrayList</span><span class="o">&lt;</span><span class="n">Long</span><span class="o">&gt;</span> <span class="n">readCrashTimes</span><span class="o">()</span> <span class="o">{</span>
+    <span class="kd">private</span> <span class="n">ArrayList</span><span class="o">&lt;</span><span class="n">Long</span><span class="o">&gt;</span> <span class="nf">readCrashTimes</span><span class="o">()</span> <span class="o">{</span>
         <span class="k">try</span> <span class="o">{</span>
             <span class="n">String</span> <span class="n">timeStr</span> <span class="o">=</span> <span class="n">Files</span><span class="o">.</span><span class="na">readFileContent</span><span class="o">(</span><span class="n">mFileDir</span><span class="o">,</span> <span class="n">CRASH_TIME_FILE_NAME</span><span class="o">);</span>
             <span class="k">return</span> <span class="n">gson</span><span class="o">.</span><span class="na">fromJson</span><span class="o">(</span><span class="n">timeStr</span><span class="o">,</span> <span class="k">new</span> <span class="n">TypeToken</span><span class="o">&lt;</span><span class="n">ArrayList</span><span class="o">&lt;</span><span class="n">Long</span><span class="o">&gt;&gt;()</span> <span class="o">{</span>
@@ -89,7 +88,7 @@
      *
      * @return
      */</span>
-    <span class="kd">private</span> <span class="kt">boolean</span> <span class="n">checkClearData</span><span class="o">(</span><span class="kt">long</span> <span class="n">time</span><span class="o">,</span> <span class="n">ArrayList</span><span class="o">&lt;</span><span class="n">Long</span><span class="o">&gt;</span> <span class="n">crashTimes</span><span class="o">)</span> <span class="o">{</span>
+    <span class="kd">private</span> <span class="kt">boolean</span> <span class="nf">checkClearData</span><span class="o">(</span><span class="kt">long</span> <span class="n">time</span><span class="o">,</span> <span class="n">ArrayList</span><span class="o">&lt;</span><span class="n">Long</span><span class="o">&gt;</span> <span class="n">crashTimes</span><span class="o">)</span> <span class="o">{</span>
         <span class="n">Timber</span><span class="o">.</span><span class="na">i</span><span class="o">(</span><span class="n">gson</span><span class="o">.</span><span class="na">toJson</span><span class="o">(</span><span class="n">crashTimes</span><span class="o">));</span>
         <span class="kt">int</span> <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
         <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="n">crashTimes</span><span class="o">.</span><span class="na">size</span><span class="o">()</span> <span class="o">-</span> <span class="mi">1</span><span class="o">;</span> <span class="n">i</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">i</span><span class="o">--)</span> <span class="o">{</span>
@@ -114,7 +113,7 @@
      *
      * @throws Exception
      */</span>
-    <span class="kd">private</span> <span class="kt">void</span> <span class="n">clearData</span><span class="o">()</span> <span class="kd">throws</span> <span class="n">Exception</span> <span class="o">{</span>
+    <span class="kd">private</span> <span class="kt">void</span> <span class="nf">clearData</span><span class="o">()</span> <span class="kd">throws</span> <span class="n">Exception</span> <span class="o">{</span>
         <span class="n">Timber</span><span class="o">.</span><span class="na">i</span><span class="o">(</span><span class="s">"开始清理数据"</span><span class="o">);</span>
         <span class="n">Files</span><span class="o">.</span><span class="na">deleteFilesExceptSomeInDirectory</span><span class="o">(</span><span class="n">mFileDir</span><span class="o">,</span> <span class="n">FILES_DONTNEED_DELETE</span><span class="o">);</span>
     <span class="o">}</span>
@@ -122,12 +121,11 @@
 
 <span class="o">}</span>
 
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>然后我们需要将CrashHandler 添加到ACRA的异常处理Sender列表中。在你的Application类中添加如下代码。</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="nd">@ReportsCrashes</span><span class="o">(</span>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@ReportsCrashes</span><span class="o">(</span>
 		  <span class="c1">//一些ACRA的设置，具体参考ACRA文档，因为我们使用自定义Sender，所以这里完全可以不用设置</span>
         <span class="c1">//mailTo = "bugs@treeholeapp.cn",</span>
         <span class="c1">//mode = ReportingInteractionMode.TOAST,</span>
@@ -136,7 +134,7 @@
 <span class="kd">public</span> <span class="kd">class</span> <span class="nc">App</span> <span class="kd">extends</span> <span class="n">Application</span> <span class="o">{</span>
 
     <span class="nd">@Override</span>
-    <span class="kd">public</span> <span class="kt">void</span> <span class="n">onCreate</span><span class="o">()</span> <span class="o">{</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onCreate</span><span class="o">()</span> <span class="o">{</span>
     	<span class="k">if</span> <span class="o">(!</span><span class="n">BuildConfig</span><span class="o">.</span><span class="na">DEBUG</span><span class="o">)</span> <span class="o">{</span>  <span class="c1">//这里我判断只有在非DEBUG下才清除数据，主要是为了在开发过程中能够保留线程。</span>
                 <span class="n">ACRA</span><span class="o">.</span><span class="na">init</span><span class="o">(</span><span class="n">APPLICATION_CONTEXT</span><span class="o">);</span>
                 <span class="n">CrashHandler</span> <span class="n">handler</span> <span class="o">=</span> <span class="k">new</span> <span class="n">CrashHandler</span><span class="o">();</span>
@@ -146,8 +144,7 @@
     <span class="o">}</span>
 <span class="o">}</span>
 
-</code></pre>
-</div>
+</code></pre></div></div>
 
-<h1 id="section-2">总结</h1>
+<h1 id="总结">总结</h1>
 <p>以上即为实现多次闪退后清除数据的实现，希望大家开发的App Bug越来越少，鲁棒性越来越强。</p>

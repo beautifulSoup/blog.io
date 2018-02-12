@@ -1,28 +1,27 @@
 <p><br />
 <br /></p>
 
-<h1 id="section">背景</h1>
+<h1 id="背景">背景</h1>
 <p>在过去的2015年中，视频直播页的新宠无疑是户外直播。随着4G网络的普及和覆盖率的提升，主播可以在户外通过手机进行直播。而观众也愿意为这种可以足不出户而观天下事的服务买单。基于这样的背景，本文主要实现在Android设备上采集视频并推流到服务器。</p>
 
-<h1 id="section-1">概览</h1>
+<h1 id="概览">概览</h1>
 <p>如下图所示，在安卓上采集并推流主要应用到两个类。首先是安卓Api自带的Camera，实现从摄像头采集图像。然后是Javacv
 中的FFMpegFrameRecorder类实现对Camera采集到的帧编码并推流。
 <img src="https://img.alicdn.com/imgextra/i2/754328530/TB2zdpskXXXXXbTXXXXXXXXXXXX_!!754328530.jpg" alt="安卓视频采集图" /></p>
 
-<h1 id="section-2">关键步骤与代码</h1>
+<h1 id="关键步骤与代码">关键步骤与代码</h1>
 <p>下面结合上面的流程图给出视频采集的关键步骤。
 首先是Camera类的初始化。</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>// 初始化Camera设备
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>// 初始化Camera设备
 cameraDevice = Camera.open();
      Log.i(LOG_TAG, "cameara open");
      cameraView = new CameraView(this, cameraDevice);
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>上面的CameraView类是我们实现的负责预览视频采集和将采集到的帧写入FFMpegFrameRecorder的类。具体代码如下：</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>class CameraView extends SurfaceView implements SurfaceHolder.Callback, PreviewCallback {
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>class CameraView extends SurfaceView implements SurfaceHolder.Callback, PreviewCallback {
 
     private SurfaceHolder mHolder;
     private Camera mCamera;
@@ -145,12 +144,11 @@ cameraDevice = Camera.open();
         }
     }
 }
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>初始化FFmpegFrameRecorder类</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>    recorder = new FFmpegFrameRecorder(ffmpeg_link, imageWidth, imageHeight, 1);
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    recorder = new FFmpegFrameRecorder(ffmpeg_link, imageWidth, imageHeight, 1);
     //设置视频编码  28 指代h.264
     recorder.setVideoCodec(28);
     recorder.setFormat("flv");
@@ -162,12 +160,11 @@ cameraDevice = Camera.open();
 	audioRecordRunnable = new AudioRecordRunnable();
     audioThread = new Thread(audioRecordRunnable);
     runAudioThread = true;
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>其中的AudioRecordRunnable是我们自己实现的音频采集线程，代码如下</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code> class AudioRecordRunnable implements Runnable {
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> class AudioRecordRunnable implements Runnable {
 
     @Override
     public void run() {
@@ -233,12 +230,11 @@ cameraDevice = Camera.open();
         }
     }
 }
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>接下来是开始直播和停止直播的方法</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>//开始直播
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>//开始直播
 public void startRecording() {
 
     initRecorder();
@@ -322,7 +318,6 @@ public void stopRecording() {
 
     }
 }
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>以上即为关键的步骤和代码，下面给出完整项目地址 <a href="https://github.com/beautifulSoup/RtmpRecoder/tree/master">RtmpRecorder</a></p>

@@ -1,0 +1,76 @@
+<h3 id="起源">起源</h3>
+<p>今天开发过程中遇到一个问题，定位到问题代码如下：</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code>		
+    <span class="kd">public</span> <span class="kd">static</span> <span class="n">Drawable</span> <span class="nf">getColorFilteredDrawable</span><span class="o">(</span><span class="nd">@DrawableRes</span> <span class="kt">int</span> <span class="n">drawableRes</span><span class="o">,</span> <span class="nd">@ColorRes</span> <span class="kt">int</span> <span class="n">colorRes</span><span class="o">){</span>
+        <span class="n">Context</span> <span class="n">context</span> <span class="o">=</span> <span class="n">App</span><span class="o">.</span><span class="na">getContext</span><span class="o">();</span>
+        <span class="n">Drawable</span> <span class="n">drawable</span> <span class="o">=</span> <span class="n">ContextCompat</span><span class="o">.</span><span class="na">getDrawable</span><span class="o">(</span><span class="n">context</span><span class="o">,</span> <span class="n">drawableRes</span><span class="o">);</span>
+        <span class="n">drawable</span><span class="o">.</span><span class="na">setColorFilter</span><span class="o">(</span><span class="n">getColor</span><span class="o">(</span><span class="n">colorRes</span><span class="o">),</span> <span class="n">PorterDuff</span><span class="o">.</span><span class="na">Mode</span><span class="o">.</span><span class="na">SRC_ATOP</span><span class="o">);</span>
+        <span class="k">return</span> <span class="n">drawable</span><span class="o">;</span>
+    <span class="o">}</span>
+</code></pre></div></div>
+<p>这段代码的期望是通过resId产生不同的Drawable，并改变颜色，产生不同颜色的Drawable对象。但是最后发现该方法返回相同resId的Drawable都是同一个颜色，所以颜色只与最后调用的setColorFilter方法有关。初步断定可能是Android系统缓存了Drawable对象。为了进一步确认这个问题，决定进到Android Sdk源码中看一下。</p>
+
+<h3 id="源码分析">源码分析</h3>
+<p>跟踪代码到Resources类的loadDrawable方法。通过分析代码，发现其中有一段就是判断是否缓存了该resId和Theme所对应的Drawable，如果缓存了，就返回了缓存这的对象，这也是getResources.getDrawable()方法返回同一个Drawable对象的原因。</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    <span class="nd">@Nullable</span>
+    <span class="n">Drawable</span> <span class="nf">loadDrawable</span><span class="o">(</span><span class="n">TypedValue</span> <span class="n">value</span><span class="o">,</span> <span class="kt">int</span> <span class="n">id</span><span class="o">,</span> <span class="n">Theme</span> <span class="n">theme</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">NotFoundException</span> <span class="o">{</span>
+        <span class="o">...</span>
+
+        <span class="c1">// First, check whether we have a cached version of this drawable</span>
+        <span class="c1">// that was inflated against the specified theme.</span>
+        <span class="k">if</span> <span class="o">(!</span><span class="n">mPreloading</span><span class="o">)</span> <span class="o">{</span>
+            <span class="kd">final</span> <span class="n">Drawable</span> <span class="n">cachedDrawable</span> <span class="o">=</span> <span class="n">caches</span><span class="o">.</span><span class="na">getInstance</span><span class="o">(</span><span class="n">key</span><span class="o">,</span> <span class="n">theme</span><span class="o">);</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">cachedDrawable</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+                <span class="k">return</span> <span class="n">cachedDrawable</span><span class="o">;</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+        <span class="o">...</span>
+    <span class="o">}</span>
+</code></pre></div></div>
+
+<h3 id="解决方案">解决方案</h3>
+
+<p>既然知道了原因，那么怎么做到获得相同resId的不同Drawable对象呢。通过查找代码，我们发现了Drawable有一个工厂类ConstantState。它保存了一些共享的常量，并且也可以作为工厂类来产生新的Drawable。但是这样产生的Drawable还是共享了这个ConstantState对象，所以为了让Drawable完全独立，还需要调用mutate()方法同时拷贝里面的ConstantState对象，可以理解为DeepCopy。</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code> <span class="cm">/**
+     * This abstract class is used by {@link Drawable}s to store shared constant state and data
+     * between Drawables. {@link BitmapDrawable}s created from the same resource will for instance
+     * share a unique bitmap stored in their ConstantState.
+     *
+     * &lt;p&gt;
+     * {@link #newDrawable(Resources)} can be used as a factory to create new Drawable instances
+     * from this ConstantState.
+     * &lt;/p&gt;
+     *
+     * Use {@link Drawable#getConstantState()} to retrieve the ConstantState of a Drawable. Calling
+     * {@link Drawable#mutate()} on a Drawable should typically create a new ConstantState for that
+     * Drawable.
+     */</span>
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kd">abstract</span> <span class="kd">class</span> <span class="nc">ConstantState</span> <span class="o">{</span>
+    	<span class="o">...</span>
+    	 <span class="kd">public</span> <span class="kd">abstract</span> <span class="n">Drawable</span> <span class="nf">newDrawable</span><span class="o">();</span>
+
+     
+   	     <span class="kd">public</span> <span class="n">Drawable</span> <span class="nf">newDrawable</span><span class="o">(</span><span class="n">Resources</span> <span class="n">res</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">return</span> <span class="nf">newDrawable</span><span class="o">();</span>
+         <span class="o">}</span>
+
+        <span class="kd">public</span> <span class="n">Drawable</span> <span class="nf">newDrawable</span><span class="o">(</span><span class="n">Resources</span> <span class="n">res</span><span class="o">,</span> <span class="n">Theme</span> <span class="n">theme</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">return</span> <span class="nf">newDrawable</span><span class="o">(</span><span class="kc">null</span><span class="o">);</span>
+         <span class="o">}</span>
+        <span class="o">...</span>
+    	
+    <span class="o">}</span>
+</code></pre></div></div>
+
+<p>所以最后通过下面这句代码就可以获得完全独立的Drawable对象，随便修改也不会影响其他地方了。</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">Drawable</span> <span class="n">drawable</span> <span class="o">=</span> <span class="n">ContextCompat</span><span class="o">.</span><span class="na">getDrawable</span><span class="o">(</span><span class="n">context</span><span class="o">,</span> <span class="n">drawableRes</span><span class="o">).</span><span class="na">getConstantState</span><span class="o">().</span><span class="na">newDrawable</span><span class="o">().</span><span class="na">mutate</span><span class="o">();</span>
+</code></pre></div></div>
+
+<h3 id="扩展">扩展</h3>
+
+<p>与Drawable类似的，系统还缓存了ColorStateList，Animation，StateListAnimator，如果通过Resources取得这些资源的对象，又想对其进行修改的话就要注意了。</p>
+

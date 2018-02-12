@@ -5,9 +5,51 @@
     <description>A chinese man, detemined in Android and Python</description>
     <link>http://localhost:4000/</link>
     <atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Thu, 08 Feb 2018 20:20:37 +0800</pubDate>
-    <lastBuildDate>Thu, 08 Feb 2018 20:20:37 +0800</lastBuildDate>
+    <pubDate>Mon, 12 Feb 2018 16:21:09 +0800</pubDate>
+    <lastBuildDate>Mon, 12 Feb 2018 16:21:09 +0800</lastBuildDate>
     <generator>Jekyll v3.7.2</generator>
+    
+      <item>
+        <title>IntelliJ自动生成数据库实体类</title>
+        <description>&lt;h2 id=&quot;前言&quot;&gt;前言&lt;/h2&gt;
+&lt;p&gt;写数据库实体类是一项既没有技术含量，又无聊的事情，完全可以让程序代劳。IntelliJ就有这个功能。&lt;/p&gt;
+
+&lt;h2 id=&quot;使用步骤&quot;&gt;使用步骤&lt;/h2&gt;
+&lt;h3 id=&quot;module添加jpa或者hibernate依赖&quot;&gt;Module添加Jpa或者Hibernate依赖&lt;/h3&gt;
+&lt;p&gt;打开项目设计 Project Structure，选择Module，点击加号添加对Jpa或者Hibernate的依赖。
+&lt;img src=&quot;http://onlwflr60.bkt.clouddn.com/ProjectStructure.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;调出persistence窗口&quot;&gt;调出Persistence窗口&lt;/h3&gt;
+&lt;p&gt;在View -&amp;gt; Tool Windows里调出Persistence窗口
+&lt;img src=&quot;http://onlwflr60.bkt.clouddn.com/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7%202018-02-12%20%E4%B8%8B%E5%8D%884.00.24.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;调出生成窗口&quot;&gt;调出生成窗口&lt;/h3&gt;
+&lt;p&gt;鼠标右键点击Module，选择Generate Persistence Mapping -&amp;gt; By Database Schema，调出实体类生成窗口。&lt;/p&gt;
+
+&lt;h3 id=&quot;生成实体类&quot;&gt;生成实体类&lt;/h3&gt;
+&lt;p&gt;选择数据源（需要在Database窗口中添加数据源），选择实体类生成目标package，数据库表，然后点击生成。
+&lt;img src=&quot;http://onlwflr60.bkt.clouddn.com/store.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;微调修改&quot;&gt;微调修改&lt;/h3&gt;
+&lt;p&gt;最后检查一下生成的实体类，根据自己的需要进行修改，比如tinyint会默认生成Byte类型，我会修改为Integer，Timestamp类型默认生成Timestamp，我会改成LocalDateTime。&lt;/p&gt;
+
+&lt;p&gt;大功告成。&lt;/p&gt;
+
+</description>
+        <pubDate>Wed, 12 Apr 2017 00:00:00 +0800</pubDate>
+        <link>http://localhost:4000/blog/2017/04/12/IntelliJ%E8%87%AA%E5%8A%A8%E7%94%9F%E6%88%90%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AE%9E%E4%BD%93%E7%B1%BB/</link>
+        <guid isPermaLink="true">http://localhost:4000/blog/2017/04/12/IntelliJ%E8%87%AA%E5%8A%A8%E7%94%9F%E6%88%90%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AE%9E%E4%BD%93%E7%B1%BB/</guid>
+        
+        <category>Development</category>
+        
+        <category>后台开发</category>
+        
+        <category>IntelliJ</category>
+        
+        
+        <category>blog</category>
+        
+      </item>
     
       <item>
         <title>Android开发安全手册</title>
@@ -1547,69 +1589,6 @@ after_success:
         <pubDate>Mon, 11 Apr 2016 00:00:00 +0800</pubDate>
         <link>http://localhost:4000/blog/2016/04/11/Android%E5%8E%BB%E9%99%A4%E7%83%A6%E4%BA%BA%E7%9A%84%E9%97%AA%E9%80%80%E5%BC%B9%E7%AA%97/</link>
         <guid isPermaLink="true">http://localhost:4000/blog/2016/04/11/Android%E5%8E%BB%E9%99%A4%E7%83%A6%E4%BA%BA%E7%9A%84%E9%97%AA%E9%80%80%E5%BC%B9%E7%AA%97/</guid>
-        
-        <category>Development</category>
-        
-        <category>Android</category>
-        
-        
-        <category>blog</category>
-        
-      </item>
-    
-      <item>
-        <title>Android随机对象生成器的设计与实现</title>
-        <description>&lt;h2 id=&quot;目标&quot;&gt;目标&lt;/h2&gt;
-&lt;p&gt;当完成一个新的Feature的时候，需要对其进行测试。但是由于服务器还没有部署该功能，或者单元测试的限制，往往需要程序员自己去伪造一些数据。但是手工伪造数据往往效率不高并且没有代表性。因此希望能够实现一个对象生成器，生成对象并往里面填充随机值。&lt;/p&gt;
-
-&lt;h2 id=&quot;项目地址&quot;&gt;项目地址&lt;/h2&gt;
-&lt;p&gt;&lt;a href=&quot;https://github.com/campusappcn/rog&quot;&gt;rog&lt;/a&gt;&lt;/p&gt;
-
-&lt;h2 id=&quot;设计要点&quot;&gt;设计要点&lt;/h2&gt;
-&lt;p&gt;对象生成器的总体思路是清晰的，获取到类，使用反射获取到其所有的域，采用dfs(深度优先搜索)遍历类的域树，在遍历过程中设置随机值。&lt;/p&gt;
-
-&lt;h3 id=&quot;类型分类&quot;&gt;类型分类&lt;/h3&gt;
-&lt;p&gt;针对Java类的特点，可以将其简单分为几种类型。&lt;/p&gt;
-
-&lt;h4 id=&quot;基础类型&quot;&gt;基础类型&lt;/h4&gt;
-&lt;p&gt;基础类型包括int、float、double、short、long、byte、char、boolean、String，需要针对这些基础类型提供默认的随机产生器。&lt;/p&gt;
-
-&lt;h4 id=&quot;array&quot;&gt;Array&lt;/h4&gt;
-&lt;p&gt;数组类型，默认随机产生器能够产生一个指定类的对象数组，并能够对数组成员赋随机对象。&lt;/p&gt;
-
-&lt;h4 id=&quot;enum&quot;&gt;Enum&lt;/h4&gt;
-&lt;p&gt;枚举类型。默认构造器能够随机产生一个枚举值。&lt;/p&gt;
-
-&lt;h3 id=&quot;interface-or-abstract&quot;&gt;Interface Or Abstract&lt;/h3&gt;
-&lt;p&gt;对于接口和抽象类，我们需要首先知道它们的子类，否则无法产生其实例。在这里，有两种方案，方案一是扫描类路径下的所有类，找到该接口或抽象类的所有非抽象的子类，或者在编译期就生成继承树并记录下来。但是考虑到这样实现会比较复杂，所以在第一个版本，并没有按照这样的方案实现。如果读者对该方案有兴趣的，可以参考&lt;a href=&quot;https://github.com/ronmamo/reflections&quot;&gt;reflections&lt;/a&gt;。它是一个Java的开源项目，但是由于使用了Java7的一些特性，所以无法直接使用到Android项目中。接下来，我们说方案二，其实很简单，就是由使用者通过接口告诉rog某接口或者抽象类的非抽象子类有哪些，Rog会从中随机选择一个并产生它的实例返回。&lt;/p&gt;
-
-&lt;h3 id=&quot;其它类&quot;&gt;其它类&lt;/h3&gt;
-&lt;p&gt;除开上面提到的一些特殊的类，剩下的就是普通的一些类了，其它类的构造器ClassGenerator需要依赖于以上提到的构造器，将对应的一些的类对象的产生作业代理给以上产生器。&lt;/p&gt;
-
-&lt;h3 id=&quot;uml图&quot;&gt;UML图&lt;/h3&gt;
-&lt;p&gt;&lt;img src=&quot;https://img.alicdn.com/imgextra/i1/754328530/TB2113WmFXXXXb7XXXXXXXXXXXX_!!754328530.png&quot; alt=&quot;&quot; /&gt;
-上图是rog的整体UML图，从图中我们可以看到所有的Generator都继承自IGenerator接口，接口包含两个方法，generate()方法用来产生随机对象，getClassToGenerate()获取该Genreator所产生的对象类型。&lt;/p&gt;
-
-&lt;p&gt;针对所有基本类型都实现了相对应的Generator，并提供了一些方法用于限制随机值的产生，比如设置最大值，设置不产生负数等。这些基本类型对象产生器通过BasicTypeGeneratorFactory进行管理。这是一个全局的单例。&lt;/p&gt;
-
-&lt;p&gt;上面的BasicTypeGeneratorFactory实现了ITypeGeneratorFactory接口。同样实现了该接口的还有TypeGeneratorFactory，该类用来缓存对象生成器，之前的Generator都会缓存到该Factory中，提升性能。该类依赖了BasicTypeGeneratorFactory，对于基本类型的产生器的获取会代理给BasicTypeGeneratorFactory。&lt;/p&gt;
-
-&lt;p&gt;在整个rog中，最重要的类就是ClassGenerator，该类可以产生所有类型的对象，不管是基本类型，还是抽象类。它依赖了以上提到的所有默认提供的Generator，将对应的一些的类对象的产生作业代理给以上产生器。&lt;/p&gt;
-
-&lt;h2 id=&quot;注意事项&quot;&gt;注意事项&lt;/h2&gt;
-
-&lt;h3 id=&quot;final的处理&quot;&gt;final的处理&lt;/h3&gt;
-&lt;p&gt;对于有final修饰的域不再进行赋值。&lt;/p&gt;
-
-&lt;h3 id=&quot;产生层级限制&quot;&gt;产生层级限制&lt;/h3&gt;
-&lt;p&gt;层级定义类引用的层数，比如Class1 为0层，且它有一个Class2的域，则该域的值对象的层级为1。如果不进行限制，则可能因为递归次数太多，而导致StackOverFlow或者无限循环无法结束程序。比如Class1有一个Class1类型的域。默认的最大层级为5，我们建议最大层级不要超过10。&lt;/p&gt;
-
-&lt;h3 id=&quot;域的缓存&quot;&gt;域的缓存&lt;/h3&gt;
-&lt;p&gt;由于反射效率低下，所以通过反射获取到某个类的域列表时，应该将其缓存起来。&lt;/p&gt;
-</description>
-        <pubDate>Fri, 08 Apr 2016 00:00:00 +0800</pubDate>
-        <link>http://localhost:4000/blog/2016/04/08/Android%E9%9A%8F%E6%9C%BA%E5%AF%B9%E8%B1%A1%E7%94%9F%E6%88%90%E5%99%A8%E7%9A%84%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0/</link>
-        <guid isPermaLink="true">http://localhost:4000/blog/2016/04/08/Android%E9%9A%8F%E6%9C%BA%E5%AF%B9%E8%B1%A1%E7%94%9F%E6%88%90%E5%99%A8%E7%9A%84%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0/</guid>
         
         <category>Development</category>
         

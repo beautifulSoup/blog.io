@@ -1,41 +1,37 @@
-<h1 id="section">背景</h1>
+<h1 id="背景">背景</h1>
 <p>最近在做一个Java的随机对象生成器。需要随机产生一些在[0, n)范围内的short值。</p>
 
-<h1 id="section-1">坑</h1>
+<h1 id="坑">坑</h1>
 <p>很多人可能会说，这有什么难的，我刚学编程的时候就会了。然后给出下面代码。</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>    <span class="kt">short</span> <span class="n">value</span> <span class="o">=</span> <span class="o">(</span><span class="kt">short</span><span class="o">)</span> <span class="o">(</span><span class="k">new</span> <span class="n">Random</span><span class="o">().</span><span class="na">nextInt</span><span class="o">(</span><span class="n">n</span><span class="o">));</span>
-</code></pre>
-</div>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    <span class="kt">short</span> <span class="n">value</span> <span class="o">=</span> <span class="o">(</span><span class="kt">short</span><span class="o">)</span> <span class="o">(</span><span class="k">new</span> <span class="n">Random</span><span class="o">().</span><span class="na">nextInt</span><span class="o">(</span><span class="n">n</span><span class="o">));</span>
+</code></pre></div></div>
 <p>看起来很棒的一段的代码，感觉完全没有问题，但是在实际测试过程中我们发现最后获取到的value值有时候会是负值。咦，怎么回事呢，nextInt(n)返回的不是[0, n)的值吗？</p>
 
-<h1 id="section-2">爬坑</h1>
+<h1 id="爬坑">爬坑</h1>
 <p>为了解释以上问题，我们首先需要回顾下学校学的数值的表示。原码用第一位表示正负，后面的位数表示符号，正数反码，补码与原码都相同，负数除符号位外取反获得反码，反码加一获得补码。</p>
 
 <p>int型在Java中占四个字节，short型在Java中占两个字节，int到short的强转将int的后两个字节截取，比如原本是0x0FFFFFFF，我们知道这是正数，但是如果截断获取后两个字节就编程了0xFFFF，这就是一个负数了。</p>
 
 <p>那么判断一下如果是负数，取反行不行:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>	<span class="kt">short</span> <span class="n">value</span> <span class="o">=</span> <span class="o">(</span><span class="kt">short</span><span class="o">)</span> <span class="o">(</span><span class="k">new</span> <span class="n">Random</span><span class="o">().</span><span class="na">nextInt</span><span class="o">(</span><span class="n">n</span><span class="o">));</span>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code>	<span class="kt">short</span> <span class="n">value</span> <span class="o">=</span> <span class="o">(</span><span class="kt">short</span><span class="o">)</span> <span class="o">(</span><span class="k">new</span> <span class="n">Random</span><span class="o">().</span><span class="na">nextInt</span><span class="o">(</span><span class="n">n</span><span class="o">));</span>
     <span class="n">value</span> <span class="o">=</span> <span class="o">(</span><span class="kt">short</span><span class="o">)(</span><span class="n">value</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="o">?</span> <span class="o">-</span><span class="n">value</span> <span class="o">:</span> <span class="n">value</span><span class="o">);</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>答案是不行，因为在Java中四则运算的最小类型是int型，short型和byte型的四则运算都是先将值转为Int型在进行的。所以value(0xFFFF -&gt; 0x0000FFFF) &lt; 0, NO. 即使这里取了负值，但是在经过又一次short强转之后又回到了原来的结果。</p>
 
-<h1 id="section-3">解决</h1>
+<h1 id="解决">解决</h1>
 <p>那么如何解决这一问题呢，下面给出两种正确的解决代码。</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>	<span class="n">n</span> <span class="o">=</span> <span class="n">n</span> <span class="o">&lt;</span> <span class="n">Short</span><span class="o">.</span><span class="na">MAX_VALUE</span> <span class="o">?</span> <span class="n">n</span> <span class="o">:</span> <span class="n">Short</span><span class="o">.</span><span class="na">MAX_VALUE</span><span class="o">;</span>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code>	<span class="n">n</span> <span class="o">=</span> <span class="n">n</span> <span class="o">&lt;</span> <span class="n">Short</span><span class="o">.</span><span class="na">MAX_VALUE</span> <span class="o">?</span> <span class="n">n</span> <span class="o">:</span> <span class="n">Short</span><span class="o">.</span><span class="na">MAX_VALUE</span><span class="o">;</span>
 	<span class="kt">short</span> <span class="n">value</span> <span class="o">=</span> <span class="o">(</span><span class="kt">short</span><span class="o">)</span> <span class="o">(</span><span class="k">new</span> <span class="n">Random</span><span class="o">().</span><span class="na">nextInt</span><span class="o">(</span><span class="n">n</span><span class="o">));</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>因为产生的int值在short值的范围内，所以即使强转也不会改变正负性。因为最大值是0x00007FFF，强转为short，最高位总是0；</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>	<span class="kt">short</span> <span class="n">value</span> <span class="o">=</span> <span class="o">(</span><span class="kt">short</span><span class="o">)</span> <span class="o">(</span><span class="k">new</span> <span class="n">Random</span><span class="o">().</span><span class="na">nextInt</span><span class="o">(</span><span class="n">n</span><span class="o">))</span> <span class="o">&amp;</span> <span class="mh">0x7</span><span class="n">FFF</span><span class="o">;</span>
-</code></pre>
-</div>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code>	<span class="kt">short</span> <span class="n">value</span> <span class="o">=</span> <span class="o">(</span><span class="kt">short</span><span class="o">)</span> <span class="o">(</span><span class="k">new</span> <span class="n">Random</span><span class="o">().</span><span class="na">nextInt</span><span class="o">(</span><span class="n">n</span><span class="o">))</span> <span class="o">&amp;</span> <span class="mh">0x7FFF</span><span class="o">;</span>
+</code></pre></div></div>
 
 <p>做位操作，只取产生值的后15位。第16位总是0，所以可以保证是正数。</p>
 

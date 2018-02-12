@@ -1,13 +1,13 @@
-<h2 id="section">背景</h2>
+<h2 id="背景">背景</h2>
 <p>今天需要实现一个双击检测功能，以前的实现方式是自己记录上次点击时间与本次比对，如果小于门槛值，则发出双击事件。不过自从入了Rx的坑之后，凡事都喜欢用Rx的思想思考问题。于是上Github找找代码，还真找到一段，虽然是Kotlin的<a href="https://gist.github.com/imton/ee74249fabff5ac95b16">一段错误的代码</a>，翻译成Java如下：（注：这段代码是有问题的，请不要看到这里就复制黏贴）</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>	<span class="kd">public</span> <span class="kt">void</span> <span class="nf">doubleClickDetect</span><span class="p">(</span><span class="n">View</span> <span class="n">view</span><span class="o">){</span>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code>	<span class="kd">public</span> <span class="kt">void</span> <span class="nf">doubleClickDetect</span><span class="o">(</span><span class="n">View</span> <span class="n">view</span><span class="o">){</span>
         <span class="n">Observable</span><span class="o">&lt;</span><span class="n">Void</span><span class="o">&gt;</span> <span class="n">observable</span> <span class="o">=</span> <span class="n">RxView</span><span class="o">.</span><span class="na">clicks</span><span class="o">(</span><span class="n">view</span><span class="o">);</span>
         <span class="n">observable</span><span class="o">.</span><span class="na">buffer</span><span class="o">(</span><span class="n">observable</span><span class="o">.</span><span class="na">debounce</span><span class="o">(</span><span class="mi">200</span><span class="o">,</span> <span class="n">TimeUnit</span><span class="o">.</span><span class="na">MILLISECONDS</span><span class="o">))</span>
                 <span class="o">.</span><span class="na">observeOn</span><span class="o">(</span><span class="n">AndroidSchedulers</span><span class="o">.</span><span class="na">mainThread</span><span class="o">())</span>
                 <span class="o">.</span><span class="na">subscribe</span><span class="o">(</span><span class="k">new</span> <span class="n">Action1</span><span class="o">&lt;</span><span class="n">List</span><span class="o">&lt;</span><span class="n">Void</span><span class="o">&gt;&gt;()</span> <span class="o">{</span>
                     <span class="nd">@Override</span>
-                    <span class="kd">public</span> <span class="kt">void</span> <span class="n">call</span><span class="o">(</span><span class="n">List</span><span class="o">&lt;</span><span class="n">Void</span><span class="o">&gt;</span> <span class="n">voids</span><span class="o">)</span> <span class="o">{</span>
+                    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">call</span><span class="o">(</span><span class="n">List</span><span class="o">&lt;</span><span class="n">Void</span><span class="o">&gt;</span> <span class="n">voids</span><span class="o">)</span> <span class="o">{</span>
                         <span class="k">if</span><span class="o">(</span><span class="n">voids</span><span class="o">.</span><span class="na">size</span><span class="o">()</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="o">){</span>
                         	<span class="c1">//double click detected</span>
                         <span class="o">}</span>
@@ -15,14 +15,13 @@
                     <span class="o">}</span>
                 <span class="o">},</span> <span class="k">new</span> <span class="n">Action1</span><span class="o">&lt;</span><span class="n">Throwable</span><span class="o">&gt;()</span> <span class="o">{</span>
                     <span class="nd">@Override</span>
-                    <span class="kd">public</span> <span class="kt">void</span> <span class="n">call</span><span class="o">(</span><span class="n">Throwable</span> <span class="n">throwable</span><span class="o">)</span> <span class="o">{</span>
+                    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">call</span><span class="o">(</span><span class="n">Throwable</span> <span class="n">throwable</span><span class="o">)</span> <span class="o">{</span>
                         <span class="n">Timber</span><span class="o">.</span><span class="na">e</span><span class="o">(</span><span class="n">throwable</span><span class="o">,</span> <span class="s">"error"</span><span class="o">);</span>
                     <span class="o">}</span>
                 <span class="o">});</span>
     <span class="o">}</span>
 
-</code></pre>
-</div>
+</code></pre></div></div>
 <p>我们先不讲这段代码的问题在哪，先来说说其中涉及到的几个操作符。
 其中buffer()会将observable 发射的item缓存起来，直到它的参数Observable发射一个item时，它会将之前缓存的都作为一个list发射出去，这个还是比较好理解的，如果还是不懂，请参考 <a href="http://reactivex.io/documentation/operators/buffer.html">buffer操作符文档</a>。</p>
 
@@ -31,7 +30,7 @@
 
 <p>所以上面代码的意思就是当有点击事件item产生的时候先缓存起来，当一段事件内没有新的事件产生的时候把之前缓存的事件作为一个列表发射出去，当发现有大于等于2的事件时，认为用户在一定时间内连续点了两次。所以这段代码在逻辑上是ok的。但是实际运行起来发现没反应，buffer后面没有item被发射。但是在buffer之前是有的，所以将问题定位到debounce没有item产生。所以问题在哪呢？我们需要明确一点，普通的Observable是不支持多播的，即使被多个Subscriber所订阅，也只会有一个Subscriber收到items。在buffer中，其实订阅了参数Observable，但是这个Observable在buffer之后又被订阅了一次，所以debounce就收不到item了。</p>
 
-<h2 id="section-1">修改</h2>
+<h2 id="修改">修改</h2>
 <p>那么该如何修改以上代码，让它达到我们需要的效果呢。下面先来介绍几个相关的操作符。</p>
 
 <h3 id="publish">Publish</h3>
@@ -48,29 +47,28 @@
 
 <p>基于以上操作符，我们可以修正我们上面的代码了，稍微改一下就能达到我们预期的效果了，代码如下：</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>	<span class="kd">public</span> <span class="kt">void</span> <span class="nf">doubleClickDetect</span><span class="p">(</span><span class="n">View</span> <span class="n">view</span><span class="o">){</span>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code>	<span class="kd">public</span> <span class="kt">void</span> <span class="nf">doubleClickDetect</span><span class="o">(</span><span class="n">View</span> <span class="n">view</span><span class="o">){</span>
         <span class="n">Observable</span><span class="o">&lt;</span><span class="n">Void</span><span class="o">&gt;</span> <span class="n">observable</span> <span class="o">=</span> <span class="n">RxView</span><span class="o">.</span><span class="na">clicks</span><span class="o">(</span><span class="n">view</span><span class="o">).</span><span class="na">share</span><span class="o">();</span>
         <span class="n">observable</span><span class="o">.</span><span class="na">buffer</span><span class="o">(</span><span class="n">observable</span><span class="o">.</span><span class="na">debounce</span><span class="o">(</span><span class="mi">200</span><span class="o">,</span> <span class="n">TimeUnit</span><span class="o">.</span><span class="na">MILLISECONDS</span><span class="o">))</span>
                 <span class="o">.</span><span class="na">observeOn</span><span class="o">(</span><span class="n">AndroidSchedulers</span><span class="o">.</span><span class="na">mainThread</span><span class="o">())</span>
                 <span class="o">.</span><span class="na">subscribe</span><span class="o">(</span><span class="k">new</span> <span class="n">Action1</span><span class="o">&lt;</span><span class="n">List</span><span class="o">&lt;</span><span class="n">Void</span><span class="o">&gt;&gt;()</span> <span class="o">{</span>
                     <span class="nd">@Override</span>
-                    <span class="kd">public</span> <span class="kt">void</span> <span class="n">call</span><span class="o">(</span><span class="n">List</span><span class="o">&lt;</span><span class="n">Void</span><span class="o">&gt;</span> <span class="n">voids</span><span class="o">)</span> <span class="o">{</span>
+                    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">call</span><span class="o">(</span><span class="n">List</span><span class="o">&lt;</span><span class="n">Void</span><span class="o">&gt;</span> <span class="n">voids</span><span class="o">)</span> <span class="o">{</span>
                         <span class="k">if</span><span class="o">(</span><span class="n">voids</span><span class="o">.</span><span class="na">size</span><span class="o">()</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="o">){</span>
                         	<span class="c1">//double click detected</span>
                         <span class="o">}</span>
                     <span class="o">}</span>
                 <span class="o">},</span> <span class="k">new</span> <span class="n">Action1</span><span class="o">&lt;</span><span class="n">Throwable</span><span class="o">&gt;()</span> <span class="o">{</span>
                     <span class="nd">@Override</span>
-                    <span class="kd">public</span> <span class="kt">void</span> <span class="n">call</span><span class="o">(</span><span class="n">Throwable</span> <span class="n">throwable</span><span class="o">)</span> <span class="o">{</span>
+                    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">call</span><span class="o">(</span><span class="n">Throwable</span> <span class="n">throwable</span><span class="o">)</span> <span class="o">{</span>
                         <span class="n">Timber</span><span class="o">.</span><span class="na">e</span><span class="o">(</span><span class="n">throwable</span><span class="o">,</span> <span class="s">"error"</span><span class="o">);</span>
                     <span class="o">}</span>
                 <span class="o">});</span>
     <span class="o">}</span>
 
-</code></pre>
-</div>
+</code></pre></div></div>
 <p>上面的修改在原有代码基础上使用share操作符将原本的Observable变成了可共享流的Connectable Observable。</p>
 
-<h2 id="section-2">注意事项</h2>
+<h2 id="注意事项">注意事项</h2>
 <p>在使用refCount或者share的时候需要注意一点，那就是在第一个subscriber订阅之后Connectable Observable就被connect产生item了。所以后面subscribe 的订阅者可能就收不到之前的一些item了。如果需要所有的subscriber都收到一样的item。还是先subscribe，最后再connect吧。</p>
 

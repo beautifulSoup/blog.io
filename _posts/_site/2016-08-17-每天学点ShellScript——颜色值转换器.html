@@ -1,0 +1,86 @@
+<h1 id="每天学点shellscript16进制颜色值转换器">每天学点ShellScript——16进制颜色值转换器</h1>
+
+<h2 id="源码">源码</h2>
+
+<p>写了个shell小脚本用来把%为单位的alpha值和RGB值转换为16进制数。</p>
+
+<p>输入有三种情况：</p>
+
+<ul>
+  <li>一个参数： 认为是alpha值，转换为16进制的alpha值。</li>
+  <li>三个参数：认为是RGB 值，转换为6个字符表示16进制的颜色值。</li>
+  <li>四个参数：认为是alpha跟上RGB值，转换为8个字符表示alpha和颜色值的16进制数。</li>
+</ul>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">#! /bin/bash</span>
+
+toHex<span class="o">(){</span>
+    <span class="nv">v</span><span class="o">=</span><span class="sb">`</span><span class="nb">echo</span> <span class="s2">"obase=16;</span><span class="k">${</span><span class="nv">1</span><span class="k">}</span><span class="s2">"</span> | bc<span class="sb">`</span>
+    <span class="nv">l</span><span class="o">=</span><span class="sb">`</span><span class="nb">echo</span> <span class="k">${#</span><span class="nv">v</span><span class="k">}</span><span class="sb">`</span>
+    <span class="k">if</span> <span class="o">[</span> <span class="nv">$l</span> <span class="nt">-lt</span> 2 <span class="o">]</span>
+    <span class="k">then
+        </span><span class="nv">v</span><span class="o">=</span><span class="s2">"0</span><span class="k">${</span><span class="nv">v</span><span class="k">}</span><span class="s2">"</span>
+    <span class="k">fi
+    </span><span class="nb">echo</span> <span class="nv">$v</span>
+<span class="o">}</span>
+
+toAlpha<span class="o">(){</span>
+    <span class="nb">echo</span> <span class="s2">"obase=16;</span><span class="k">$((</span><span class="nv">$1</span><span class="o">*</span><span class="m">256</span><span class="o">/</span><span class="m">100</span><span class="k">))</span><span class="s2">"</span> | bc
+<span class="o">}</span>
+
+toColorHex<span class="o">(){</span>
+    <span class="nv">v1</span><span class="o">=</span><span class="sb">`</span>toHex <span class="nv">$1</span><span class="sb">`</span>
+    <span class="nv">v2</span><span class="o">=</span><span class="sb">`</span>toHex <span class="nv">$2</span><span class="sb">`</span>
+    <span class="nv">v3</span><span class="o">=</span><span class="sb">`</span>toHex <span class="nv">$3</span><span class="sb">`</span>
+    <span class="nb">echo</span> <span class="s2">"</span><span class="k">${</span><span class="nv">v1</span><span class="k">}${</span><span class="nv">v2</span><span class="k">}${</span><span class="nv">v3</span><span class="k">}</span><span class="s2">"</span>
+<span class="o">}</span>
+
+
+<span class="k">if</span> <span class="o">[</span> <span class="nv">$# </span><span class="nt">-eq</span> 3 <span class="o">]</span>
+<span class="k">then
+    </span><span class="nv">color</span><span class="o">=</span><span class="sb">`</span>toColorHex <span class="nv">$1</span> <span class="nv">$2</span> <span class="nv">$3</span><span class="sb">`</span>
+    <span class="nb">echo</span> <span class="s2">"#</span><span class="nv">$color</span><span class="s2">"</span>
+<span class="k">elif</span> <span class="o">[</span> <span class="nv">$# </span><span class="nt">-eq</span> 4 <span class="o">]</span>
+<span class="k">then
+    </span><span class="nv">alpha</span><span class="o">=</span><span class="sb">`</span>toAlpha <span class="nv">$1</span><span class="sb">`</span>
+    <span class="nv">color</span><span class="o">=</span><span class="sb">`</span>toColorHex <span class="nv">$2</span> <span class="nv">$3</span> <span class="nv">$4</span><span class="sb">`</span>
+    <span class="nb">echo</span> <span class="s2">"#</span><span class="k">${</span><span class="nv">alpha</span><span class="k">}${</span><span class="nv">color</span><span class="k">}</span><span class="s2">"</span>
+<span class="k">elif</span> <span class="o">[</span> <span class="nv">$# </span><span class="nt">-eq</span> 1 <span class="o">]</span>
+<span class="k">then
+    </span><span class="nb">echo</span> <span class="sb">`</span>toAlpha <span class="nv">$1</span><span class="sb">`</span>
+<span class="k">else
+    </span><span class="nb">echo</span> <span class="s2">"You should input four or three numbers"</span>
+<span class="k">fi</span>
+
+</code></pre></div></div>
+
+<h2 id="主要知识点">主要知识点</h2>
+<h3 id="参数获取">参数获取</h3>
+<p>从脚本或者函数内部都可以通过 1、2、3… 变量名获取传入的参数。${1}即为传入的第一个参数。而${#}获取参数个数。</p>
+
+<h3 id="关系运算符">关系运算符</h3>
+<p>| 符号 | 含义      |
+|—–|—–      |
+| -eq | equal     |
+| -ne | not equal |
+| -lt | less than |
+| -gt | great than|
+| -ge | great than or equal |
+| -le | less than or equal |</p>
+
+<h3 id="命令执行">命令执行</h3>
+<p>如果需要将命令执行的结果赋值给变量，则需要将这条命令语句用``扩起，或者使用$(),不过$()在某些系统环境下可能无法使用。</p>
+
+<h3 id="数学计算">数学计算</h3>
+<p>数学计算语句需要用$(())括起。</p>
+
+<h3 id="bc">bc</h3>
+<p>bc是一种科学语句，也是shell种一个命令，不过大多数的使用场景是用来做数值转换。这里就是转为16进制。</p>
+
+<h3>[</h3>
+<p>shell 中的if 后面的[ 是一个可执行程序，所以需要在其后加空格，] 同理。</p>
+
+<h3 id="变量和等号之间不能有空格">变量和等号之间不能有空格</h3>
+
+<h3 id="获取字符串长度">获取字符串长度</h3>
+<p>使用${#string}</p>

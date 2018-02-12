@@ -1,0 +1,155 @@
+<h1 id="背景">背景</h1>
+
+<p>最近需要实现一个自定义Notification的功能。网上找了找代码，解决方案就是通过RemoteViews来实现。但是在实现过程中遇到不少问题，网上也没有很好的文章描述这些问题，所以在这里做个总结，希望大家能少走点弯路。</p>
+
+<h1 id="实现">实现</h1>
+
+<h2 id="remoteviews-自定义view">RemoteViews 自定义View</h2>
+<p>这是最基础的知识点，虽然做过自定义通知的应该都清楚，但我觉得还是有必要带一下。它主要被用于AppWidget和Notification，它描述一个在其它进程中显示的View。以下是例子代码。从中我们可以看到RemoteViews提供了一些方法来改变它的子View的值，如设置TextView的文字等。</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">RemoteViews</span> <span class="n">remoteViews</span> <span class="o">=</span> <span class="k">new</span> <span class="n">RemoteViews</span><span class="o">(</span><span class="n">context</span><span class="o">.</span><span class="na">getPackageName</span><span class="o">(),</span> <span class="n">R</span><span class="o">.</span><span class="na">layout</span><span class="o">.</span><span class="na">view_notification_type_0</span><span class="o">);</span>
+        <span class="n">remoteViews</span><span class="o">.</span><span class="na">setTextViewText</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">title_tv</span><span class="o">,</span> <span class="n">title</span><span class="o">);</span>
+        <span class="n">remoteViews</span><span class="o">.</span><span class="na">setTextViewText</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">content_tv</span><span class="o">,</span> <span class="n">content</span><span class="o">);</span>
+        <span class="n">remoteViews</span><span class="o">.</span><span class="na">setTextViewText</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">time_tv</span><span class="o">,</span> <span class="n">getTime</span><span class="o">());</span>
+        <span class="n">remoteViews</span><span class="o">.</span><span class="na">setImageViewResource</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">icon_iv</span><span class="o">,</span> <span class="n">R</span><span class="o">.</span><span class="na">drawable</span><span class="o">.</span><span class="na">logo</span><span class="o">);</span>
+        <span class="n">remoteViews</span><span class="o">.</span><span class="na">setInt</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">close_iv</span><span class="o">,</span> <span class="s">"setColorFilter"</span><span class="o">,</span> <span class="n">getIconColor</span><span class="o">());</span>
+        <span class="n">Intent</span> <span class="n">intent</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Intent</span><span class="o">(</span><span class="n">context</span><span class="o">,</span> <span class="n">MainActivity</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+        <span class="n">intent</span><span class="o">.</span><span class="na">putExtra</span><span class="o">(</span><span class="n">NOTICE_ID_KEY</span><span class="o">,</span> <span class="n">NOTICE_ID_TYPE_0</span><span class="o">);</span>
+        <span class="n">intent</span><span class="o">.</span><span class="na">setFlags</span><span class="o">(</span><span class="n">Intent</span><span class="o">.</span><span class="na">FLAG_ACTIVITY_NEW_TASK</span> <span class="o">|</span> <span class="n">Intent</span><span class="o">.</span><span class="na">FLAG_ACTIVITY_CLEAR_TASK</span><span class="o">);</span>
+        <span class="kt">int</span> <span class="n">requestCode</span> <span class="o">=</span> <span class="o">(</span><span class="kt">int</span><span class="o">)</span> <span class="n">SystemClock</span><span class="o">.</span><span class="na">uptimeMillis</span><span class="o">();</span>
+        <span class="n">PendingIntent</span> <span class="n">pendingIntent</span> <span class="o">=</span> <span class="n">PendingIntent</span><span class="o">.</span><span class="na">getActivity</span><span class="o">(</span><span class="n">context</span><span class="o">,</span> <span class="n">requestCode</span><span class="o">,</span> <span class="n">intent</span><span class="o">,</span> <span class="n">PendingIntent</span><span class="o">.</span><span class="na">FLAG_UPDATE_CURRENT</span><span class="o">);</span>
+        <span class="n">remoteViews</span><span class="o">.</span><span class="na">setOnClickPendingIntent</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">notice_view_type_0</span><span class="o">,</span> <span class="n">pendingIntent</span><span class="o">);</span>
+        <span class="kt">int</span> <span class="n">requestCode1</span> <span class="o">=</span> <span class="o">(</span><span class="kt">int</span><span class="o">)</span> <span class="n">SystemClock</span><span class="o">.</span><span class="na">uptimeMillis</span><span class="o">();</span>
+        <span class="n">Intent</span> <span class="n">intent1</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Intent</span><span class="o">(</span><span class="n">ACTION_CLOSE_NOTICE</span><span class="o">);</span>
+        <span class="n">intent1</span><span class="o">.</span><span class="na">putExtra</span><span class="o">(</span><span class="n">NOTICE_ID_KEY</span><span class="o">,</span> <span class="n">NOTICE_ID_TYPE_0</span><span class="o">);</span>
+        <span class="n">PendingIntent</span> <span class="n">pendingIntent1</span> <span class="o">=</span> <span class="n">PendingIntent</span><span class="o">.</span><span class="na">getBroadcast</span><span class="o">(</span><span class="n">context</span><span class="o">,</span> <span class="n">requestCode1</span><span class="o">,</span> <span class="n">intent1</span><span class="o">,</span> <span class="n">PendingIntent</span><span class="o">.</span><span class="na">FLAG_UPDATE_CURRENT</span><span class="o">);</span>
+        <span class="n">remoteViews</span><span class="o">.</span><span class="na">setOnClickPendingIntent</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">close_iv</span><span class="o">,</span> <span class="n">pendingIntent1</span><span class="o">);</span>
+</code></pre></div></div>
+<p>这里有几点需要注意的。</p>
+
+<h3 id="setint">setInt</h3>
+
+<p>这个方法被用来调用子View中需要一个Int型参数的方法。如下面这句代码，调用了id为close_iv的setColorFilter方法，参数为getIconColor()的返回值。</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">remoteViews</span><span class="o">.</span><span class="na">setInt</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">close_iv</span><span class="o">,</span> <span class="s">"setColorFilter"</span><span class="o">,</span> <span class="n">getIconColor</span><span class="o">());</span>
+</code></pre></div></div>
+
+<h3 id="设置不同区域的点击pendingintent">设置不同区域的点击PendingIntent</h3>
+
+<p>默认的Notification只能通过setContentIntent设置整体的点击事件。不过通过RemoteViews我们可以设置不同地方不同的点击事件，当然这里的事件指的是PendingIntent。如下，设置了点击R.id.notice_view_type_0打开一个Activity，而点击R.id.close_iv会发出一个广播，可以通过这个广播的广播接收器来做一些事情，如这里是关闭当前的Notification。另外还可以打开一个Service。</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">PendingIntent</span><span class="o">.</span><span class="na">getActivity</span><span class="o">(</span><span class="n">context</span><span class="o">,</span> <span class="n">requestCode</span><span class="o">,</span> <span class="n">intent</span><span class="o">,</span> <span class="n">PendingIntent</span><span class="o">.</span><span class="na">FLAG_UPDATE_CURRENT</span><span class="o">);</span>
+        <span class="n">remoteViews</span><span class="o">.</span><span class="na">setOnClickPendingIntent</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">notice_view_type_0</span><span class="o">,</span> <span class="n">pendingIntent</span><span class="o">);</span>
+        <span class="kt">int</span> <span class="n">requestCode1</span> <span class="o">=</span> <span class="o">(</span><span class="kt">int</span><span class="o">)</span> <span class="n">SystemClock</span><span class="o">.</span><span class="na">uptimeMillis</span><span class="o">();</span>
+        <span class="n">Intent</span> <span class="n">intent1</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Intent</span><span class="o">(</span><span class="n">ACTION_CLOSE_NOTICE</span><span class="o">);</span>
+        <span class="n">intent1</span><span class="o">.</span><span class="na">putExtra</span><span class="o">(</span><span class="n">NOTICE_ID_KEY</span><span class="o">,</span> <span class="n">NOTICE_ID_TYPE_0</span><span class="o">);</span>
+        <span class="n">PendingIntent</span> <span class="n">pendingIntent1</span> <span class="o">=</span> <span class="n">PendingIntent</span><span class="o">.</span><span class="na">getBroadcast</span><span class="o">(</span><span class="n">context</span><span class="o">,</span> <span class="n">requestCode1</span><span class="o">,</span> <span class="n">intent1</span><span class="o">,</span> <span class="n">PendingIntent</span><span class="o">.</span><span class="na">FLAG_UPDATE_CURRENT</span><span class="o">);</span>
+        <span class="n">remoteViews</span><span class="o">.</span><span class="na">setOnClickPendingIntent</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">close_iv</span><span class="o">,</span> <span class="n">pendingIntent1</span><span class="o">);</span>
+</code></pre></div></div>
+
+<h1 id="设置通知的自定义view">设置通知的自定义View</h1>
+<p>以上我们得到了自定义的RemoteViews。通过下面这段代码就能生成自定义View的Notification，注意这里使用了setContent()方法。这是网上自定义Notification都会使用的方法。</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">Notification</span> <span class="n">notification</span> <span class="o">=</span> <span class="k">new</span> <span class="n">NotificationCompat</span><span class="o">.</span><span class="na">Builder</span><span class="o">(</span><span class="n">context</span><span class="o">).</span><span class="na">setContent</span><span class="o">(</span><span class="n">remoteViews</span><span class="o">).</span><span class="na">build</span><span class="o">();</span>
+</code></pre></div></div>
+<p>但是它会有一个问题。</p>
+
+<p>通过setContent()方法获得的Notification是定高的。如果View的高度比默认高度要大的话，就有一部分显示不出来。如下图
+<img src="https://img.alicdn.com/imgextra/i4/754328530/TB2Wiq.npXXXXXDXXXXXXXXXXXX_!!754328530.png" alt="" /></p>
+
+<p>默认情况下通知高度为64dp，当然Rom不同可能会有些区别。一般文字在小于两行的情况下都是可以显示。</p>
+
+<p>那么如何做到wrap_content。需要使用一些黑科技。如下：</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">NotificationCompat</span><span class="o">.</span><span class="na">Builder</span> <span class="n">builder</span> <span class="o">=</span> <span class="k">new</span> <span class="n">NotificationCompat</span><span class="o">.</span><span class="na">Builder</span><span class="o">(</span><span class="n">context</span><span class="o">);</span>
+<span class="k">if</span><span class="o">(</span><span class="n">android</span><span class="o">.</span><span class="na">os</span><span class="o">.</span><span class="na">Build</span><span class="o">.</span><span class="na">VERSION</span><span class="o">.</span><span class="na">SDK_INT</span> <span class="o">&gt;=</span> <span class="mi">16</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">notification</span> <span class="o">=</span> <span class="n">builder</span><span class="o">.</span><span class="na">build</span><span class="o">();</span>
+            <span class="n">notification</span><span class="o">.</span><span class="na">bigContentView</span> <span class="o">=</span> <span class="n">remoteViews</span><span class="o">;</span>
+<span class="o">}</span>
+<span class="n">notification</span><span class="o">.</span><span class="na">contentView</span> <span class="o">=</span> <span class="n">remoteViews</span><span class="o">;</span>
+</code></pre></div></div>
+<p>为了理解以上代码，我们需要明确一个我们很容易忽略的问题，那就是通知是可以展开和收起的。请看以下两张图片。同样是网易云音乐的通知，图一比图二要大一些。其实图一展示的是网易云音乐通知的展开状态，使用两个手指上滑就可以缩起，也就是图二。
+<img src="https://img.alicdn.com/imgextra/i2/754328530/TB2NY19npXXXXX_XXXXXXXXXXXX_!!754328530.png" alt="" />
+<img src="https://img.alicdn.com/imgextra/i1/754328530/TB2afuqnpXXXXXdXFXXXXXXXXXX_!!754328530.png" alt="" /></p>
+
+<p>在上面的代码中我们分别设置了bigContentView 这是展开的自定义视图，而contentView则是收起时的视图。</p>
+
+<p>注意bigContentView是在sdk16时引入的，所以需要判断一下。如果小于sdk16则只能定高了。</p>
+
+<p>注意bigContentView 的最大高度是256dp</p>
+
+<p>注意bigContentView和contentView的设置不能调转顺序，亲测这样会让contentView不显示。</p>
+
+<p>另外需要注意某些Rom可能不支持展开收起通知，在设置了BigContentView之后就只显示展开的视图，而默认情况下只展示收起视图。如魅族的FlyMe，其它Rom并没有测试，如果读者知道可以分享一下。</p>
+
+<h2 id="背景色适配">背景色适配</h2>
+
+<p>不同Rom的通知背景色是不同的，所以在UI上需要注意。
+主要分为两种情况。</p>
+
+<ul>
+  <li>背景色为有透明度的黑色，如MiUi、FlyMe。</li>
+  <li>背景色为白色，如原生的5.0之后的Rom、华为部分Rom。</li>
+</ul>
+
+<p>主要有两种方案。</p>
+
+<h3 id="固定背景色">固定背景色</h3>
+
+<p>也就是设置一个固定的背景色，文字和icon颜色都可以固定。如下图。
+<img src="https://img.alicdn.com/imgextra/i2/754328530/TB2XoYanpXXXXXvXXXXXXXXXXXX_!!754328530.png" alt="" />
+这有一个缺点，我们在图中也看到了，那就是某些Rom的Notification会有一个左右的padding，如MIUI的就特别明显，如果固定背景色就会很难看。所以这种方法虽然简答，但是不建议使用。</p>
+
+<h3 id="透明背景色">透明背景色</h3>
+
+<p>另一种方法就是让背景透明。那么文字和icon的颜色怎么办呢？很简单，跟随系统的Notification中文字的样式。如下设置了TextView的style为默认通知中info的样式。其它相关Style包括TextAppearance.StatusBar.EventContent.Line2、TextAppearance.StatusBar.EventContent.Info等。</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>        &lt;TextView
+            android:id="@+id/content_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="@style/TextAppearance.StatusBar.EventContent.Info"
+            tools:text="41个同校小伙伴参与讨论"
+            android:layout_marginTop="4dp"
+            android:singleLine="true"/&gt;
+</code></pre></div></div>
+
+<p>需要注意的一点是Android5.0之后使用了不同的Style名表示通知样式。
+我们需要创建一个layout-v21文件夹，并新建一个在5.0之后使用的自定义通知样式。如下同样是设置TextView的style为Info的样式，但我们使用的是style是@android:style/TextAppearance.Material.Notification.Info。</p>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;TextView</span>
+            <span class="na">android:id=</span><span class="s">"@+id/content_tv"</span>
+            <span class="na">android:layout_width=</span><span class="s">"wrap_content"</span>
+            <span class="na">android:layout_height=</span><span class="s">"wrap_content"</span>
+            <span class="na">android:textSize=</span><span class="s">"9sp"</span>
+            <span class="na">android:textAppearance=</span><span class="s">"@android:style/TextAppearance.Material.Notification.Info"</span>
+            <span class="na">tools:text=</span><span class="s">"41个同校小伙伴参与讨论"</span>
+            <span class="na">android:layout_marginTop=</span><span class="s">"4dp"</span>
+            <span class="na">android:singleLine=</span><span class="s">"true"</span><span class="nt">/&gt;</span>
+</code></pre></div></div>
+
+<p>另外如果自定义view中有Icon，那么Icon的颜色也需要适应背景，可以选择一个灰色，如#999999，原生安卓黑色和白色的文字内容颜色都为该值。</p>
+
+<p>或者根据不同的背景色设置不同的颜色，通过上面提到的setInt方法。ImageView的setColorFilter方法可以设置图案颜色为某种纯色。但是目前我还没有找到很好的方法获取默认通知的背景色，如果读者找到了望告知。</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">remoteViews</span><span class="o">.</span><span class="na">setInt</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">close_iv</span><span class="o">,</span> <span class="s">"setColorFilter"</span><span class="o">,</span> <span class="n">getIconColor</span><span class="o">());</span>
+</code></pre></div></div>
+<p>另外需要注意的是很多手机的Rom可能不会对以上的style做修改，而是采用自己的样式，这样就比较蛋疼。借鉴网易云音乐的方法，在api 21以下，因为大部分手机都使用黑色背景，所以采用透明背景，文字颜色跟随系统。而在api大于等于21时，因为原生Android采用了白色的通知背景，而很多手机厂商的Rom的通知仍然为黑色背景，因此为了通用，采用一个固定的黑色背景，文字颜色同样跟随系统。在这基础上，对某部分特定手机Rom做适配，如华为等在api 21以下通知背景也为白色。这应该是比较完美的做法，但是需要花费较多的时间，所以如果为了简单起见，还是采用方案一吧。</p>
+
+<h1 id="最终效果">最终效果</h1>
+
+<p><img src="https://img.alicdn.com/imgextra/i4/754328530/TB2uf1pnpXXXXX6XFXXXXXXXXXX_!!754328530.png" alt="" />
+<img src="https://img.alicdn.com/imgextra/i3/754328530/TB2rdvanpXXXXXQXXXXXXXXXXXX_!!754328530.png" alt="" /></p>
+
+<h1 id="总结">总结</h1>
+
+<p>以上即为我在自定义Notification中遇到的一些问题以及解决方案。目前还有两点有待进一步补充和完善。</p>
+
+<ul>
+  <li>获取默认通知背景色，或者使图标颜色与背景色适配的方案。</li>
+  <li>不支持Notification展开收起的Rom，目前知道的仅有FlyMe。</li>
+</ul>
+
+<h1 id="示例代码地址">示例代码地址</h1>
+
+<p><a href="https://github.com/beautifulSoup/CNotification">https://github.com/beautifulSoup/CNotification</a></p>
