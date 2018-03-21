@@ -8,9 +8,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="A chinese man, detemined in Android and Python">
     <meta name="baidu-site-verification" content="KonQRkt3nq" />
-    <title>每天学点ShellScript——16进制颜色值转换器 - In Coding</title>
+    <title>快速上手第一个智能合约 - In Coding</title>
 
-    <link rel="canonical" href="http://localhost:4000/blog/2016/08/17/%E6%AF%8F%E5%A4%A9%E5%AD%A6%E7%82%B9ShellScript-%E9%A2%9C%E8%89%B2%E5%80%BC%E8%BD%AC%E6%8D%A2%E5%99%A8/">
+    <link rel="canonical" href="http://localhost:4000/blog/2018/03/21/%E5%BF%AB%E9%80%9F%E4%B8%8A%E6%89%8B%E7%AC%AC%E4%B8%80%E4%B8%AA%E6%99%BA%E8%83%BD%E5%90%88%E7%BA%A6/">
 
     <!-- Icons -->
   <link rel="shortcut icon" href="img/logo.ico">
@@ -114,14 +114,18 @@
                 <div class="post-heading">
 	           <!-- <div class="Tags">
                         
-                        <a class="tag" href="/Tags/#Development" title="Development">Development</a>
+                        <a class="tag" href="/Tags/#智能合约" title="智能合约">智能合约</a>
                         
-                        <a class="tag" href="/Tags/#Android" title="Android">Android</a>
+                        <a class="tag" href="/Tags/#Smart Contract" title="Smart Contract">Smart Contract</a>
+                        
+                        <a class="tag" href="/Tags/#区块链" title="区块链">区块链</a>
+                        
+                        <a class="tag" href="/Tags/#Solidity" title="Solidity">Solidity</a>
                         
                     </div> -->
-                    <h1>每天学点ShellScript——16进制颜色值转换器</h1>
+                    <h1>快速上手第一个智能合约</h1>
                     
-                    <span class="meta">Posted by beautifulSoup on August 17, 2016</span>
+                    <span class="meta">Posted by Klojure on March 21, 2018</span>
                 </div>
             </div>
         </div>
@@ -137,92 +141,57 @@
         <div class="row">
             <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1 post-container">
 
-                <h1 id="每天学点shellscript16进制颜色值转换器">每天学点ShellScript——16进制颜色值转换器</h1>
+                <h2 id="引言">引言</h2>
+<p>本文假设你已经对区块链有一定的了解。智能合约是1990年代由尼克萨博提出的理念，以太坊首先看到了区块链和智能合约的契合，发布了白皮书《以太坊：下一代智能合约和去中心化应用平台》，并一直致力于将以太坊打造成最佳智能合约平台。因此目前的智能合约基本都是运行在以太坊区块链上的计算机程序。本文主要帮助大家快速编写并运行第一个智能合约。</p>
 
-<h2 id="源码">源码</h2>
+<h2 id="语言和ide选择">语言和IDE选择</h2>
+<p>目前智能合约最受欢迎的编程语言为Solidity，但是并不只有Solidity。编写Solidity代码，我们可以使用Remix，它是一个基于浏览器的Soldity IDE，网址为<a href="http://remix.ethereum.org/">http://remix.ethereum.org/</a>。Remix支持编写、测试和部署智能合约。Remix界面如下图
+<img src="http://upload-images.jianshu.io/upload_images/1898595-07cb2ae0f96f95af..png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image" /></p>
 
-<p>写了个shell小脚本用来把%为单位的alpha值和RGB值转换为16进制数。</p>
+<h2 id="编写代码">编写代码</h2>
+<p>学一门语言的第一个程序毋庸置疑都是HelloWorld，那么我们就来写一个HelloWorld的智能合约吧。合约代码如下。</p>
 
-<p>输入有三种情况：</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>pragma solidity ^0.4.21;
 
-<ul>
-  <li>一个参数： 认为是alpha值，转换为16进制的alpha值。</li>
-  <li>三个参数：认为是RGB 值，转换为6个字符表示16进制的颜色值。</li>
-  <li>四个参数：认为是alpha跟上RGB值，转换为8个字符表示alpha和颜色值的16进制数。</li>
-</ul>
+contract HelloWorld {
+    string hello = "Hello World!!!";
+    event say(string _value);
+    
+    function sayHello() public {
+        emit say(hello);
+    }
 
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">#! /bin/bash</span>
-
-toHex<span class="o">(){</span>
-    <span class="nv">v</span><span class="o">=</span><span class="sb">`</span><span class="nb">echo</span> <span class="s2">"obase=16;</span><span class="k">${</span><span class="nv">1</span><span class="k">}</span><span class="s2">"</span> | bc<span class="sb">`</span>
-    <span class="nv">l</span><span class="o">=</span><span class="sb">`</span><span class="nb">echo</span> <span class="k">${#</span><span class="nv">v</span><span class="k">}</span><span class="sb">`</span>
-    <span class="k">if</span> <span class="o">[</span> <span class="nv">$l</span> <span class="nt">-lt</span> 2 <span class="o">]</span>
-    <span class="k">then
-        </span><span class="nv">v</span><span class="o">=</span><span class="s2">"0</span><span class="k">${</span><span class="nv">v</span><span class="k">}</span><span class="s2">"</span>
-    <span class="k">fi
-    </span><span class="nb">echo</span> <span class="nv">$v</span>
-<span class="o">}</span>
-
-toAlpha<span class="o">(){</span>
-    <span class="nb">echo</span> <span class="s2">"obase=16;</span><span class="k">$((</span><span class="nv">$1</span><span class="o">*</span><span class="m">256</span><span class="o">/</span><span class="m">100</span><span class="k">))</span><span class="s2">"</span> | bc
-<span class="o">}</span>
-
-toColorHex<span class="o">(){</span>
-    <span class="nv">v1</span><span class="o">=</span><span class="sb">`</span>toHex <span class="nv">$1</span><span class="sb">`</span>
-    <span class="nv">v2</span><span class="o">=</span><span class="sb">`</span>toHex <span class="nv">$2</span><span class="sb">`</span>
-    <span class="nv">v3</span><span class="o">=</span><span class="sb">`</span>toHex <span class="nv">$3</span><span class="sb">`</span>
-    <span class="nb">echo</span> <span class="s2">"</span><span class="k">${</span><span class="nv">v1</span><span class="k">}${</span><span class="nv">v2</span><span class="k">}${</span><span class="nv">v3</span><span class="k">}</span><span class="s2">"</span>
-<span class="o">}</span>
-
-
-<span class="k">if</span> <span class="o">[</span> <span class="nv">$# </span><span class="nt">-eq</span> 3 <span class="o">]</span>
-<span class="k">then
-    </span><span class="nv">color</span><span class="o">=</span><span class="sb">`</span>toColorHex <span class="nv">$1</span> <span class="nv">$2</span> <span class="nv">$3</span><span class="sb">`</span>
-    <span class="nb">echo</span> <span class="s2">"#</span><span class="nv">$color</span><span class="s2">"</span>
-<span class="k">elif</span> <span class="o">[</span> <span class="nv">$# </span><span class="nt">-eq</span> 4 <span class="o">]</span>
-<span class="k">then
-    </span><span class="nv">alpha</span><span class="o">=</span><span class="sb">`</span>toAlpha <span class="nv">$1</span><span class="sb">`</span>
-    <span class="nv">color</span><span class="o">=</span><span class="sb">`</span>toColorHex <span class="nv">$2</span> <span class="nv">$3</span> <span class="nv">$4</span><span class="sb">`</span>
-    <span class="nb">echo</span> <span class="s2">"#</span><span class="k">${</span><span class="nv">alpha</span><span class="k">}${</span><span class="nv">color</span><span class="k">}</span><span class="s2">"</span>
-<span class="k">elif</span> <span class="o">[</span> <span class="nv">$# </span><span class="nt">-eq</span> 1 <span class="o">]</span>
-<span class="k">then
-    </span><span class="nb">echo</span> <span class="sb">`</span>toAlpha <span class="nv">$1</span><span class="sb">`</span>
-<span class="k">else
-    </span><span class="nb">echo</span> <span class="s2">"You should input four or three numbers"</span>
-<span class="k">fi</span>
+}
 
 </code></pre></div></div>
+<p>合约代码第一行指定该合约使用的Solidity版本为0.4.21，不支持高于0.4.21版本的Solidity特性。</p>
 
-<h2 id="主要知识点">主要知识点</h2>
-<h3 id="参数获取">参数获取</h3>
-<p>从脚本或者函数内部都可以通过 1、2、3… 变量名获取传入的参数。${1}即为传入的第一个参数。而${#}获取参数个数。</p>
+<p>在Solidity中，contract关键字包含的代码段即表示一个智能合约，它拥有一些成员变量，表示该合约的数据，如我们的HelloWorld中的hello，我们可以修改操作这些成员。同时它拥有一些function，可以被他人调用。</p>
 
-<h3 id="关系运算符">关系运算符</h3>
-<p>| 符号 | 含义      |
-|—–|—–      |
-| -eq | equal     |
-| -ne | not equal |
-| -lt | less than |
-| -gt | great than|
-| -ge | great than or equal |
-| -le | less than or equal |</p>
+<p>event是Solidity提供的一种事件和订阅机制，智能合约能够发出一些event，合约调用者能够监听这些事件并作出相应的反应。</p>
 
-<h3 id="命令执行">命令执行</h3>
-<p>如果需要将命令执行的结果赋值给变量，则需要将这条命令语句用``扩起，或者使用$(),不过$()在某些系统环境下可能无法使用。</p>
+<p>这个合约没有做很多事情，它只会在有人调用它的sayHello方法时，发出一个say事件。接下来让我们来部署和执行它。</p>
 
-<h3 id="数学计算">数学计算</h3>
-<p>数学计算语句需要用$(())括起。</p>
+<h2 id="部署和运行合约">部署和运行合约</h2>
+<p>首先我们需要编译这段代码，在Remix的右边有一个Compile的tab，点击Start to compile，编译成功，如果失败会有错误提示，改正即可。
+<img src="https://upload-images.jianshu.io/upload_images/1898595-2208d54291c38132.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="编译成功.png" /></p>
 
-<h3 id="bc">bc</h3>
-<p>bc是一种科学语句，也是shell种一个命令，不过大多数的使用场景是用来做数值转换。这里就是转为16进制。</p>
+<p>然后我们需要将其部署到区块链上，切换tab到Run。</p>
 
-<h3>[</h3>
-<p>shell 中的if 后面的[ 是一个可执行程序，所以需要在其后加空格，] 同理。</p>
+<p>Remix支持三种环境运行合约。其中如果为JavaScript VM，则合约会在浏览器JavaScript沙箱区块链中被执行，可以理解为Remix使用了浏览器的JS环境虚拟了一个区块链虚拟机。如果为Injected Provider，则Remix将会链接Matamask或者Mist这些区块链钱包，通过它们来间接部署和调用合约。最后为Web3 Provider，Remix会链接Geth等远程区款连节点，来部署和调用合约。</p>
 
-<h3 id="变量和等号之间不能有空格">变量和等号之间不能有空格</h3>
+<p>简单起见，我们将使用JavaScript VM，它将为我们初始化出五个区块链账号，使用默认账号即可。将Environment设置为JavaScript VM。如下图。
+<img src="http://upload-images.jianshu.io/upload_images/1898595-45ab68aa624b47bf..png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image" /></p>
 
-<h3 id="获取字符串长度">获取字符串长度</h3>
-<p>使用${#string}</p>
+<p>上图除了Environment和Account依次往下，我们将能够看到Gas Limit，这是执行一个Transaction我们能够接受的最大代价。Value表示下一次调用我们将向合约账户转账多少ether。</p>
+
+<p>接下来的HelloWorld表示我们将创建的合约。点击Create既能够创建这个合约。如下图我们看到HelloWorld合约已被创建。
+<img src="http://upload-images.jianshu.io/upload_images/1898595-dc5ddce28c5b2a1f..png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image" />
+我们可以点击sayHello调用。可以看到已经调用成功，在logs中打印出了我们发出的event。
+<img src="http://upload-images.jianshu.io/upload_images/1898595-f0a6fcc708a0965e..png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image" /></p>
+
+<h2 id="结语">结语</h2>
+<p>在本文中，我们编写了一个最简单的智能合约，并部署和运行了该合约。我们并没有将合约部署到实际的链上，只是在JS 沙箱虚拟机中执行了它。后面的文章中我们将会继续讲解如何将合约部署到链上。</p>
 
 
                 <hr>
@@ -230,13 +199,9 @@ toColorHex<span class="o">(){</span>
                 <ul class="pager">
                     
                     <li class="previous">
-                        <a href="/blog/2016/05/03/Android_SharedPreferences%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" data-toggle="tooltip" data-placement="top" title="Android SharedPreferences 源码分析">&larr; Previous Post</a>
+                        <a href="/blog/2017/04/12/IntelliJ%E8%87%AA%E5%8A%A8%E7%94%9F%E6%88%90%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AE%9E%E4%BD%93%E7%B1%BB/" data-toggle="tooltip" data-placement="top" title="IntelliJ自动生成数据库实体类">&larr; Previous Post</a>
                     </li>
                     
-                    
-                    <li class="next">
-                        <a href="/blog/2016/10/28/Android-Drawable%E7%BC%93%E5%AD%98%E9%97%AE%E9%A2%98-%E4%BB%A5%E5%8F%8AResources%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" data-toggle="tooltip" data-placement="top" title="Android Drawable缓存问题 以及Resources源码分析">Next Post &rarr;</a>
-                    </li>
                     
                 </ul>
                 <!--&lt;!&ndash; disqus &ndash;&gt;-->

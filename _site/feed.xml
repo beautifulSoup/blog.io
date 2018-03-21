@@ -5,9 +5,80 @@
     <description>A chinese man, detemined in Android and Python</description>
     <link>http://localhost:4000/</link>
     <atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Mon, 12 Feb 2018 16:40:59 +0800</pubDate>
-    <lastBuildDate>Mon, 12 Feb 2018 16:40:59 +0800</lastBuildDate>
+    <pubDate>Wed, 21 Mar 2018 17:31:18 +0800</pubDate>
+    <lastBuildDate>Wed, 21 Mar 2018 17:31:18 +0800</lastBuildDate>
     <generator>Jekyll v3.7.2</generator>
+    
+      <item>
+        <title>快速上手第一个智能合约</title>
+        <description>&lt;h2 id=&quot;引言&quot;&gt;引言&lt;/h2&gt;
+&lt;p&gt;本文假设你已经对区块链有一定的了解。智能合约是1990年代由尼克萨博提出的理念，以太坊首先看到了区块链和智能合约的契合，发布了白皮书《以太坊：下一代智能合约和去中心化应用平台》，并一直致力于将以太坊打造成最佳智能合约平台。因此目前的智能合约基本都是运行在以太坊区块链上的计算机程序。本文主要帮助大家快速编写并运行第一个智能合约。&lt;/p&gt;
+
+&lt;h2 id=&quot;语言和ide选择&quot;&gt;语言和IDE选择&lt;/h2&gt;
+&lt;p&gt;目前智能合约最受欢迎的编程语言为Solidity，但是并不只有Solidity。编写Solidity代码，我们可以使用Remix，它是一个基于浏览器的Soldity IDE，网址为&lt;a href=&quot;http://remix.ethereum.org/&quot;&gt;http://remix.ethereum.org/&lt;/a&gt;。Remix支持编写、测试和部署智能合约。Remix界面如下图
+&lt;img src=&quot;http://upload-images.jianshu.io/upload_images/1898595-07cb2ae0f96f95af..png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240&quot; alt=&quot;image&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;编写代码&quot;&gt;编写代码&lt;/h2&gt;
+&lt;p&gt;学一门语言的第一个程序毋庸置疑都是HelloWorld，那么我们就来写一个HelloWorld的智能合约吧。合约代码如下。&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;pragma solidity ^0.4.21;
+
+contract HelloWorld {
+    string hello = &quot;Hello World!!!&quot;;
+    event say(string _value);
+    
+    function sayHello() public {
+        emit say(hello);
+    }
+
+}
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;合约代码第一行指定该合约使用的Solidity版本为0.4.21，不支持高于0.4.21版本的Solidity特性。&lt;/p&gt;
+
+&lt;p&gt;在Solidity中，contract关键字包含的代码段即表示一个智能合约，它拥有一些成员变量，表示该合约的数据，如我们的HelloWorld中的hello，我们可以修改操作这些成员。同时它拥有一些function，可以被他人调用。&lt;/p&gt;
+
+&lt;p&gt;event是Solidity提供的一种事件和订阅机制，智能合约能够发出一些event，合约调用者能够监听这些事件并作出相应的反应。&lt;/p&gt;
+
+&lt;p&gt;这个合约没有做很多事情，它只会在有人调用它的sayHello方法时，发出一个say事件。接下来让我们来部署和执行它。&lt;/p&gt;
+
+&lt;h2 id=&quot;部署和运行合约&quot;&gt;部署和运行合约&lt;/h2&gt;
+&lt;p&gt;首先我们需要编译这段代码，在Remix的右边有一个Compile的tab，点击Start to compile，编译成功，如果失败会有错误提示，改正即可。
+&lt;img src=&quot;https://upload-images.jianshu.io/upload_images/1898595-2208d54291c38132.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240&quot; alt=&quot;编译成功.png&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;然后我们需要将其部署到区块链上，切换tab到Run。&lt;/p&gt;
+
+&lt;p&gt;Remix支持三种环境运行合约。其中如果为JavaScript VM，则合约会在浏览器JavaScript沙箱区块链中被执行，可以理解为Remix使用了浏览器的JS环境虚拟了一个区块链虚拟机。如果为Injected Provider，则Remix将会链接Matamask或者Mist这些区块链钱包，通过它们来间接部署和调用合约。最后为Web3 Provider，Remix会链接Geth等远程区款连节点，来部署和调用合约。&lt;/p&gt;
+
+&lt;p&gt;简单起见，我们将使用JavaScript VM，它将为我们初始化出五个区块链账号，使用默认账号即可。将Environment设置为JavaScript VM。如下图。
+&lt;img src=&quot;http://upload-images.jianshu.io/upload_images/1898595-45ab68aa624b47bf..png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240&quot; alt=&quot;image&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;上图除了Environment和Account依次往下，我们将能够看到Gas Limit，这是执行一个Transaction我们能够接受的最大代价。Value表示下一次调用我们将向合约账户转账多少ether。&lt;/p&gt;
+
+&lt;p&gt;接下来的HelloWorld表示我们将创建的合约。点击Create既能够创建这个合约。如下图我们看到HelloWorld合约已被创建。
+&lt;img src=&quot;http://upload-images.jianshu.io/upload_images/1898595-dc5ddce28c5b2a1f..png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240&quot; alt=&quot;image&quot; /&gt;
+我们可以点击sayHello调用。可以看到已经调用成功，在logs中打印出了我们发出的event。
+&lt;img src=&quot;http://upload-images.jianshu.io/upload_images/1898595-f0a6fcc708a0965e..png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240&quot; alt=&quot;image&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;结语&quot;&gt;结语&lt;/h2&gt;
+&lt;p&gt;在本文中，我们编写了一个最简单的智能合约，并部署和运行了该合约。我们并没有将合约部署到实际的链上，只是在JS 沙箱虚拟机中执行了它。后面的文章中我们将会继续讲解如何将合约部署到链上。&lt;/p&gt;
+</description>
+        <pubDate>Wed, 21 Mar 2018 00:00:00 +0800</pubDate>
+        <link>http://localhost:4000/blog/2018/03/21/%E5%BF%AB%E9%80%9F%E4%B8%8A%E6%89%8B%E7%AC%AC%E4%B8%80%E4%B8%AA%E6%99%BA%E8%83%BD%E5%90%88%E7%BA%A6/</link>
+        <guid isPermaLink="true">http://localhost:4000/blog/2018/03/21/%E5%BF%AB%E9%80%9F%E4%B8%8A%E6%89%8B%E7%AC%AC%E4%B8%80%E4%B8%AA%E6%99%BA%E8%83%BD%E5%90%88%E7%BA%A6/</guid>
+        
+        <category>智能合约</category>
+        
+        <category>Smart Contract</category>
+        
+        <category>区块链</category>
+        
+        <category>Solidity</category>
+        
+        
+        <category>blog</category>
+        
+      </item>
     
       <item>
         <title>IntelliJ自动生成数据库实体类</title>
@@ -1495,102 +1566,6 @@ after_success:
         <pubDate>Tue, 12 Apr 2016 00:00:00 +0800</pubDate>
         <link>http://localhost:4000/blog/2016/04/12/Android%E4%BD%BF%E7%94%A8Travis-CI%E6%8C%81%E7%BB%AD%E9%9B%86%E6%88%90%E4%BB%A5%E5%8F%8A%E6%B5%8B%E8%AF%95%E8%A6%86%E7%9B%96%E7%8E%87%E5%8F%AF%E8%A7%86%E5%8C%96/</link>
         <guid isPermaLink="true">http://localhost:4000/blog/2016/04/12/Android%E4%BD%BF%E7%94%A8Travis-CI%E6%8C%81%E7%BB%AD%E9%9B%86%E6%88%90%E4%BB%A5%E5%8F%8A%E6%B5%8B%E8%AF%95%E8%A6%86%E7%9B%96%E7%8E%87%E5%8F%AF%E8%A7%86%E5%8C%96/</guid>
-        
-        <category>Development</category>
-        
-        <category>Android</category>
-        
-        
-        <category>blog</category>
-        
-      </item>
-    
-      <item>
-        <title>Android去除烦人的默认闪退Dialog</title>
-        <description>&lt;h2 id=&quot;背景&quot;&gt;背景&lt;/h2&gt;
-
-&lt;p&gt;安卓应用闪退后总会出现一个“抱歉，App已经停止运行”的弹窗，这样的用户体验并不好。很多大厂的App都去除了这个弹窗，因此本文主要介绍如何去除默认闪退弹窗，以及在闪退时做一些必要的善后工作。&lt;/p&gt;
-
-&lt;h2 id=&quot;uncaughtexceptionhandler&quot;&gt;UnCaughtExceptionHandler&lt;/h2&gt;
-&lt;p&gt;UnCaughtExceptionHandler能够在Thread遇到未catch住的Exception而终止前做一些善后工作。但是它无法阻止线程停止运行，线程最后还是要退出。&lt;/p&gt;
-
-&lt;div class=&quot;language-java highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;	&lt;span class=&quot;n&quot;&gt;Thread&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;setDefaultUncaughtExceptionHandler&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Thread&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;UncaughtExceptionHandler&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-            &lt;span class=&quot;nd&quot;&gt;@Override&lt;/span&gt;
-            &lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;uncaughtException&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Thread&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;thread&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Throwable&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ex&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-                &lt;span class=&quot;n&quot;&gt;System&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;exit&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
-            &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-        &lt;span class=&quot;o&quot;&gt;});&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;h2 id=&quot;去除dialog&quot;&gt;去除Dialog&lt;/h2&gt;
-&lt;p&gt;Android系统默认设置了一个UnCaughtExceptionHandler，而弹出闪退弹窗的工作就是在这个handler做的。所以如果要去除弹窗，只要实现一个UnCaughtExceptionHandler并替换掉系统默认的就可以了，代码如下。&lt;/p&gt;
-
-&lt;div class=&quot;language-java highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;App&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;extends&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Application&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-
-
-    &lt;span class=&quot;nd&quot;&gt;@Override&lt;/span&gt;
-    &lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;onCreate&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;kd&quot;&gt;super&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;onCreate&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;Thread&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;setDefaultUncaughtExceptionHandler&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;MyUnCaughtExceptionHandler&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;());&lt;/span&gt;
-    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-
-
-
-    &lt;span class=&quot;kd&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;MyUnCaughtExceptionHandler&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;implements&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Thread&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;UncaughtExceptionHandler&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-
-        &lt;span class=&quot;nd&quot;&gt;@Override&lt;/span&gt;
-        &lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;uncaughtException&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Thread&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;thread&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Throwable&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ex&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-            &lt;span class=&quot;n&quot;&gt;ex&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;printStackTrace&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
-            &lt;span class=&quot;c1&quot;&gt;// do some work here&lt;/span&gt;
-
-  			&lt;span class=&quot;n&quot;&gt;android&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;os&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;Process&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;killProcess&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;android&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;os&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;Process&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;myPid&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;());&lt;/span&gt;
-            &lt;span class=&quot;n&quot;&gt;System&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;exit&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
-        &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;以上的替换UnCaughtExceptionHandler的工作是在Application中统一做的，当然你也可以在每一个Activity中做。对于单个Activity还好，当Activity很多的时候就必需实现一个BaseActivity，在BaseActivity中替换，其它Activity要集成BaseActivity。&lt;/p&gt;
-
-&lt;h2 id=&quot;必要的善后工作&quot;&gt;必要的善后工作&lt;/h2&gt;
-&lt;p&gt;为了处理闪退，提升用户体验，有必要做一些善后工作，主要有几条罗列如下：&lt;/p&gt;
-
-&lt;h3 id=&quot;异常上报&quot;&gt;异常上报&lt;/h3&gt;
-&lt;p&gt;可以采用邮件或者通过服务器接口上传的方式。两者各有优缺点，邮件方式开发简单，但需要用户额外操作，用户体验较差。如果用上传服务器方式，因为在UnCaughtExceptionHandler中不能打开一个新的线程，所以只能同步请求，在网络情况不好的时候花费时间会较长而阻塞运行。也可能因为网络原因而上报失败。当然总体下来还是上传服务器好一点。具体实现留给读者。&lt;/p&gt;
-
-&lt;h3 id=&quot;记录日志&quot;&gt;记录日志&lt;/h3&gt;
-&lt;p&gt;将闪退信息存储到文件系统中。不能存到SharedPreferences中，因为打开SP需要使用一个新的线程（Android内部实现），而这在UnCaughtExceptionHandler中，这是不被允许的。&lt;/p&gt;
-
-&lt;h3 id=&quot;闪退三次清除数据&quot;&gt;闪退三次清除数据&lt;/h3&gt;
-&lt;p&gt;很多时候是由于后台返回数据错误导致的闪退。如果这些数据被缓存下来，那么用户即使再次打开还是会发生闪退，这时候就只能通过重装或者清除数据的方式才能解决闪退问题，用户体验十分不好。所以在多次闪退后自动清除缓存数据十分必要。具体实现可以参考我的另一篇博客&lt;a href=&quot;http://sixwolf.net/blog/2016/03/22/Android%E5%AE%9E%E7%8E%B0%E5%A4%9A%E6%AC%A1%E9%97%AA%E9%80%80%E6%B8%85%E9%99%A4%E6%95%B0%E6%8D%AE/&quot;&gt;Android实现多次闪退清除数据&lt;/a&gt;。不过该博客中使用的是ACRA，一个对UnCaughtExceptionHandler再次封装的开源项目，读者可以将ACRA替换为UnCaughtExceptionHandler来实现。&lt;/p&gt;
-
-&lt;h3 id=&quot;重新打开app&quot;&gt;重新打开App&lt;/h3&gt;
-&lt;p&gt;可以在UnCaughtExceptionHandler中重新打开App或者弹出自定义弹窗。&lt;/p&gt;
-
-&lt;div class=&quot;language-java highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; &lt;span class=&quot;kd&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;MyUnCaughtExceptionHandler&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;implements&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Thread&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;UncaughtExceptionHandler&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-
-        &lt;span class=&quot;nd&quot;&gt;@Override&lt;/span&gt;
-        &lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;uncaughtException&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Thread&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;thread&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Throwable&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ex&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-            &lt;span class=&quot;n&quot;&gt;ex&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;printStackTrace&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
-            
-            &lt;span class=&quot;n&quot;&gt;Intent&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;intent&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Intent&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;App&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;MainActivity&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;class&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
-            &lt;span class=&quot;n&quot;&gt;intent&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;setFlags&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Intent&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;FLAG_ACTIVITY_NEW_TASK&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
-            &lt;span class=&quot;n&quot;&gt;App&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;startActivity&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;intent&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
-
-            &lt;span class=&quot;n&quot;&gt;android&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;os&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;Process&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;killProcess&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;android&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;os&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;Process&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;myPid&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;());&lt;/span&gt;
-            &lt;span class=&quot;n&quot;&gt;System&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;exit&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
-        &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;p&gt;注意setFlags这一步是必需的，因为使用的Context是App的Context，所以必需打开一个新的任务队列，否则打开Activity无法生效，如果你替换Handler是在Activity做的，拿到的Context是Activity的Context，则无需这一步。&lt;/p&gt;
-
-&lt;h2 id=&quot;注意事项&quot;&gt;注意事项&lt;/h2&gt;
-
-&lt;p&gt;最主要的注意点我之前已经提到，不要在UnCaughtExceptionHandler中新开一个线程，会抛出异常。&lt;/p&gt;
-</description>
-        <pubDate>Mon, 11 Apr 2016 00:00:00 +0800</pubDate>
-        <link>http://localhost:4000/blog/2016/04/11/Android%E5%8E%BB%E9%99%A4%E7%83%A6%E4%BA%BA%E7%9A%84%E9%97%AA%E9%80%80%E5%BC%B9%E7%AA%97/</link>
-        <guid isPermaLink="true">http://localhost:4000/blog/2016/04/11/Android%E5%8E%BB%E9%99%A4%E7%83%A6%E4%BA%BA%E7%9A%84%E9%97%AA%E9%80%80%E5%BC%B9%E7%AA%97/</guid>
         
         <category>Development</category>
         
