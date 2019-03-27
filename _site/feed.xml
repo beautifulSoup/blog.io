@@ -5,9 +5,51 @@
     <description>A chinese man, detemined in Android and Python</description>
     <link>http://localhost:4000/</link>
     <atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Wed, 21 Mar 2018 17:35:35 +0800</pubDate>
-    <lastBuildDate>Wed, 21 Mar 2018 17:35:35 +0800</lastBuildDate>
+    <pubDate>Tue, 27 Mar 2018 16:33:24 +0800</pubDate>
+    <lastBuildDate>Tue, 27 Mar 2018 16:33:24 +0800</lastBuildDate>
     <generator>Jekyll v3.7.2</generator>
+    
+      <item>
+        <title>将智能合约部署到Rinkeby测试链上</title>
+        <description>&lt;h2 id=&quot;引言&quot;&gt;引言&lt;/h2&gt;
+&lt;p&gt;在上一篇文章中&lt;a href=&quot;https://www.jianshu.com/p/8039142d0b98&quot;&gt;《快速上手第一个智能合约中》&lt;/a&gt;，我们介绍了如何编写与运行我们的第一个智能合约。但那只是将合约运行在了浏览器的区块链虚拟环境中，与区块链还是有一定的区别，另外也无法被其它人所使用。因此本文主要介绍如何使用Remix将我们写好的智能合约部署到公共链中，本文中我们以以太坊的测试链Rinkeby为例。&lt;/p&gt;
+
+&lt;h2 id=&quot;以太坊测试网络&quot;&gt;以太坊测试网络&lt;/h2&gt;
+&lt;p&gt;绝大多数人在使用的网络被称为主网络(Mainnet)，用户在其上交易、构建智能合约，矿工在其上挖矿。由于使用的人数众多，主网络的鲁棒性很强，能够对抗攻击，区块链也不易被篡改，因此主网络是具有功能的，其上的以太币是有价值的。&lt;/p&gt;
+
+&lt;p&gt;而为了能够方便开发者进行测试，我们还需要一些公开的测试网络，以太坊拥有多个测试网络，包括Ropsten、Kovan以及Rinkeby，相对于主网络，测试网络使用人数少，节点少，鲁棒性差，也容易被篡改，但是以太币获取容易，方便开发者进行测试。&lt;/p&gt;
+
+&lt;h2 id=&quot;使用metamask连接测试链&quot;&gt;使用MetaMask连接测试链&lt;/h2&gt;
+&lt;p&gt;为了能够访问Rinkeby，我们需要一个桥梁连接区块链，这里我们使用MetaMask，它是Chrome等浏览器上的一个插件，使用它，我们能够在浏览器中运行我们的智能合约。这里以Chrome为例，从&lt;a href=&quot;https://chrome.google.com/webstore/detail/metamask/nkbihfbeogaeaoehlefnkodbefgpgknn&quot;&gt;插件商店&lt;/a&gt;下载Metatask，输入密码创建钱包账号，&lt;img src=&quot;https://upload-images.jianshu.io/upload_images/1898595-eb2e11e3d910f8d6.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240&quot; alt=&quot;屏幕快照 2018-03-21 下午9.37.18.png&quot; /&gt;，然后选择Rinkeby Test Network。因为对智能合约的操作需要消耗ether，因此我们需要获取到Rinkeby上的ether，通过&lt;a href=&quot;https://faucet.rinkeby.io/&quot;&gt;Rinkeby Ehter获取&lt;/a&gt;我们可以免费获取到ether，只要在google plus或者facebook、twitter上发一个帖，内容为钱包地址，然后将链接复制到输入框即可，然后过一段时间我们就能看到ether到账了。&lt;/p&gt;
+
+&lt;h2 id=&quot;使用remix链接metamask&quot;&gt;使用Remix链接MetaMask&lt;/h2&gt;
+&lt;p&gt;在&lt;a href=&quot;https://www.jianshu.com/p/8039142d0b98&quot;&gt;《快速上手第一个智能合约中》&lt;/a&gt;中我们介绍过，将Remix的Environment设置为Injected Web3，Remix将会链接到MetaMask。
+&lt;img src=&quot;https://upload-images.jianshu.io/upload_images/1898595-c282106c96cdc8ca.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240&quot; alt=&quot;测试链.png&quot; /&gt;，可以发现Account已经变为了Metamask中创建的测试账号，再次点击Create创建HelloWorld智能合约，将会弹出以下对话框，这其实是Metamask让用户确认是否进行这次交易，点击submit即可。
+&lt;img src=&quot;https://upload-images.jianshu.io/upload_images/1898595-0b09ab225cdd3338.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240&quot; alt=&quot;metamask.png&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;等待片刻后合约被成功部署，合约地址为 0xa9511dc74fd18a7e09b1ceaeaa8bab93e7523200，我们可以从&lt;a href=&quot;https://www.rinkeby.io/#explorer&quot;&gt;https://www.rinkeby.io/#explorer&lt;/a&gt;中查询到该合约。
+&lt;img src=&quot;https://upload-images.jianshu.io/upload_images/1898595-508194b13a7dcc1c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240&quot; alt=&quot;测试链上的contract.png&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;结语&quot;&gt;结语&lt;/h2&gt;
+&lt;p&gt;本文主要介绍了如何使用Remix和MetaMask将智能合约部署到区块链上，我们使用了以太坊的Rinkeby区块链网络。&lt;/p&gt;
+
+</description>
+        <pubDate>Wed, 21 Mar 2018 00:00:00 +0800</pubDate>
+        <link>http://localhost:4000/blog/2018/03/21/%E5%B0%86%E6%99%BA%E8%83%BD%E5%90%88%E7%BA%A6%E9%83%A8%E7%BD%B2%E5%88%B0Rinkeby%E6%B5%8B%E8%AF%95%E9%93%BE%E4%B8%8A/</link>
+        <guid isPermaLink="true">http://localhost:4000/blog/2018/03/21/%E5%B0%86%E6%99%BA%E8%83%BD%E5%90%88%E7%BA%A6%E9%83%A8%E7%BD%B2%E5%88%B0Rinkeby%E6%B5%8B%E8%AF%95%E9%93%BE%E4%B8%8A/</guid>
+        
+        <category>智能合约</category>
+        
+        <category>Smart Contract</category>
+        
+        <category>区块链</category>
+        
+        <category>Solidity</category>
+        
+        
+        <category>blog</category>
+        
+      </item>
     
       <item>
         <title>快速上手第一个智能合约</title>
@@ -1388,184 +1430,6 @@ private void awaitLoadedLocked() {
         <pubDate>Mon, 18 Apr 2016 00:00:00 +0800</pubDate>
         <link>http://localhost:4000/blog/2016/04/18/Android%E8%87%AA%E5%AE%9A%E4%B9%89Notification%E5%B9%B6%E6%B2%A1%E6%9C%89%E9%82%A3%E4%B9%88%E7%AE%80%E5%8D%95/</link>
         <guid isPermaLink="true">http://localhost:4000/blog/2016/04/18/Android%E8%87%AA%E5%AE%9A%E4%B9%89Notification%E5%B9%B6%E6%B2%A1%E6%9C%89%E9%82%A3%E4%B9%88%E7%AE%80%E5%8D%95/</guid>
-        
-        <category>Development</category>
-        
-        <category>Android</category>
-        
-        
-        <category>blog</category>
-        
-      </item>
-    
-      <item>
-        <title>Android持续集成以及测试覆盖率可视化</title>
-        <description>&lt;h2 id=&quot;背景&quot;&gt;背景&lt;/h2&gt;
-
-&lt;p&gt;很多开源项目在README中会有几个小图标来表示build情况，测试覆盖率等。如
-&lt;img src=&quot;https://img.alicdn.com/imgextra/i3/754328530/TB2sF_JmVXXXXbQXpXXXXXXXXXX_!!754328530.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;看起来感觉很牛逼的样子，其实实现起来很简单，只需几步，就能让你的开源项目也变得牛逼起来。&lt;/p&gt;
-
-&lt;h2 id=&quot;travis-ci&quot;&gt;Travis-CI&lt;/h2&gt;
-
-&lt;p&gt;Travis-CI是一款持续集成工具，对开源项目免费。免除了Jenkins搭建服务器的工作。用户只要完成以下简单的几步就能接入Travis。&lt;/p&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;通过Github账号登录https://travis-ci.org/。&lt;/li&gt;
-  &lt;li&gt;在项目根目录添加.travis.yml 文件。&lt;/li&gt;
-  &lt;li&gt;git add -&amp;gt; commit -&amp;gt; push.&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;之后再每次push之后Travis-CI就会根据.travis.yml对项目进行build。然后就可以在Travis网站控制台上查看build的情况。在build完成之后Travis也会通过邮件的方式通知你。&lt;/p&gt;
-
-&lt;p&gt;在这三步中，最麻烦的一步就是.travis.yml的创建。具体文档可以参考官网。以下给出我的项目的yml文件作为例子分步分析。
-完整文档：&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;language: android
-jdk:
-    - oraclejdk8
-env:
-  matrix:
-    - ANDROID_TARGET=android-21 ANDROID_ABI=armeabi-v7a
-  global:
-    - ADB_INSTALL_TIMEOUT=8
-android:
-  components:
-    - tools
-    - platform-tools
-    - build-tools-23.0.2
-    - android-23
-    - extra-android-m2repository
-    - extra-android-support
-    - sys-img-armeabi-v7a-android-21
-before_script:
-    - echo no | android create avd --force -n test -t $ANDROID_TARGET --abi $ANDROID_ABI
-    - emulator -avd test -no-skin -no-audio -no-window &amp;amp;
-    - android-wait-for-emulator
-    - adb shell input keyevent 82 &amp;amp;
-script:
-    - ./gradlew :lib:createDebugAndroidTestCoverageReport --info --stacktrace
-after_success:
-    - bash &amp;lt;(curl -s https://codecov.io/bash)
-
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;告诉Travis-CI项目语言。这是必要的一步。&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;language: android
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;设置JDK版本。非必要，但建议写上。&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;jdk:
-    - oraclejdk8
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;设置环境变量&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;env:
-  matrix:
-    - ANDROID_TARGET=android-21 ANDROID_ABI=armeabi-v7a
-  global:
-    - ADB_INSTALL_TIMEOUT=8
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;p&gt;matrix下面的配置会应用到当前build，而global应用到所有builds。matrix 下两项设置了TARGET api以及ABI，注意需要与Gradle中配置一致。global下这项设置了虚拟机安装apk的超时时间，如果你的项目不需要Instrument Test，可以不用加，但是如果有，且在持续集成中需要测试则需要加上，因为默认情况下安装超时时间为2分钟，某些情况下可能因为没有在2分钟内安装成功而导致集成失败。&lt;/p&gt;
-
-&lt;p&gt;设置项目构建依赖&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;android:
-  components:
-    - tools
-    - platform-tools
-    - build-tools-23.0.2
-    - android-23
-    - extra-android-m2repository
-    - extra-android-support
-    - sys-img-armeabi-v7a-android-21
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;tools platform-tools 这两项表示该次build会使用最新的SDK tools, 这两项最好加上，因为如果没有，可能会报错说找不到指定版本的sdk tools。后面是对build-tools和compile sdk version的设置，注意与gradle中一致。如果你的项目中依赖了AppCompat和design support则需要加上extra-android-m2repository，extra-android-support这两项。最后一项是设置虚拟机版本，如果本次构建不需要用到虚拟机则不需要加。&lt;/p&gt;
-
-&lt;p&gt;因为我们本次构建需要用到虚拟机来做Instrucment Test，所以需要打开虚拟机，可以在before_script中做这项工作&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;before_script:
-    - echo no | android create avd --force -n test -t $ANDROID_TARGET --abi $ANDROID_ABI
-    - emulator -avd test -no-skin -no-audio -no-window &amp;amp;
-    - android-wait-for-emulator   # 该项会等待虚拟机启动成功在执行后面的命令
-    - adb shell input keyevent 82 &amp;amp;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;在script中用一些命令行指令来完成build工作。因为，我所用的项目只需要运行所有的Instrument单元测试用例并生成测试覆盖率报告，所以只需要加以下这句，这个Gradle任务是由Jacoco创建的，后面会详细介绍。注意–info最好加上，因为如果10分钟内没有输出，Travis—CI会认为build失败而结束build，–info让每完成一个测试方法都输出结果，因此能够防止这点。当然有可能单个测试方法运行时间超过10分钟的情况（Google Android 模拟器的蛋疼性能），所以单个测试方法应该竟可能小。&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;script:
-    - ./gradlew :lib:createDebugAndroidTestCoverageReport --info --stacktrace
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;after_success，顾名思义，在成功完成构建后会执行。这里的任务是将测试覆盖率报告发送给Codecov，后面会详细介绍。&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;after_success:
-    - bash &amp;lt;(curl -s https://codecov.io/bash)
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;h2 id=&quot;jacoco&quot;&gt;Jacoco&lt;/h2&gt;
-
-&lt;p&gt;使用Jacoco生成测试覆盖率报告。只需要以下步骤：&lt;/p&gt;
-
-&lt;p&gt;1) 添加依赖&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;    androidTestCompile 'com.android.support.test:runner:0.4.1'
-    // Set this dependency to use JUnit 4 rules
-    androidTestCompile 'com.android.support.test:rules:0.4.1'
-    // Set this dependency to build and run Espresso tests
-    androidTestCompile 'com.android.support.test.espresso:espresso-core:2.2.1'
-    // Espresso-contrib for DatePicker, RecyclerView, Drawer actions, Accessibility checks, CountingIdlingResource
-    androidTestCompile 'com.android.support.test.espresso:espresso-contrib:2.2.1'
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;p&gt;2) 在需要构建测试覆盖率报告的Module的gradle文件中设置。&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;debug{
-        testCoverageEnabled true
-    }
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;3) 运行 ./gradlew :module_name:createDebugAndroidTestCoverageReport 生成测试报告。测试报告地址：moudle_name/build/reports/coverage/debug/index.html。module_name为生成测试覆盖率的Moudle的名字。&lt;/p&gt;
-
-&lt;h2 id=&quot;codecov&quot;&gt;Codecov&lt;/h2&gt;
-
-&lt;p&gt;Codecov不支持自己生成Android的测试覆盖率报告，它能做的是接收Jacoco生成的报告并进行可视化，也就是上面那个表示测试覆盖率的小图标。&lt;/p&gt;
-
-&lt;p&gt;集成Codecov只需要以下几个步骤。&lt;/p&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;使用Github账号登录 https://codecov.io/， 并提供授权给该应用。&lt;/li&gt;
-  &lt;li&gt;在.travis.yml文件中添加命令将测试覆盖率报告上传给Codecov。&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;上面提到的&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;after_success:
-    - bash &amp;lt;(curl -s https://codecov.io/bash)
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;就是将报告上传给Codecov。&lt;/p&gt;
-
-&lt;h2 id=&quot;总结&quot;&gt;总结&lt;/h2&gt;
-
-&lt;p&gt;除了上面提到的，Travis还能做很多事情，比如自动打包发布等，留待读者自己探索。&lt;/p&gt;
-
-&lt;h2 id=&quot;参考&quot;&gt;参考&lt;/h2&gt;
-
-&lt;p&gt;&lt;a href=&quot;http://jeroenmols.com/blog/2015/11/13/traviscoveralls/&quot;&gt;http://jeroenmols.com/blog/2015/11/13/traviscoveralls/&lt;/a&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;a href=&quot;https://docs.travis-ci.com&quot;&gt;https://docs.travis-ci.com&lt;/a&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;a href=&quot;https://segmentfault.com/a/1190000004415437&quot;&gt;https://segmentfault.com/a/1190000004415437&lt;/a&gt;&lt;/p&gt;
-
-</description>
-        <pubDate>Tue, 12 Apr 2016 00:00:00 +0800</pubDate>
-        <link>http://localhost:4000/blog/2016/04/12/Android%E4%BD%BF%E7%94%A8Travis-CI%E6%8C%81%E7%BB%AD%E9%9B%86%E6%88%90%E4%BB%A5%E5%8F%8A%E6%B5%8B%E8%AF%95%E8%A6%86%E7%9B%96%E7%8E%87%E5%8F%AF%E8%A7%86%E5%8C%96/</link>
-        <guid isPermaLink="true">http://localhost:4000/blog/2016/04/12/Android%E4%BD%BF%E7%94%A8Travis-CI%E6%8C%81%E7%BB%AD%E9%9B%86%E6%88%90%E4%BB%A5%E5%8F%8A%E6%B5%8B%E8%AF%95%E8%A6%86%E7%9B%96%E7%8E%87%E5%8F%AF%E8%A7%86%E5%8C%96/</guid>
         
         <category>Development</category>
         

@@ -8,9 +8,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="A chinese man, detemined in Android and Python">
     <meta name="baidu-site-verification" content="KonQRkt3nq" />
-    <title>快速上手第一个智能合约 - In Coding</title>
+    <title>将智能合约部署到Rinkeby测试链上 - In Coding</title>
 
-    <link rel="canonical" href="http://localhost:4000/blog/2018/03/21/%E5%BF%AB%E9%80%9F%E4%B8%8A%E6%89%8B%E7%AC%AC%E4%B8%80%E4%B8%AA%E6%99%BA%E8%83%BD%E5%90%88%E7%BA%A6/">
+    <link rel="canonical" href="http://localhost:4000/blog/2018/03/21/%E5%B0%86%E6%99%BA%E8%83%BD%E5%90%88%E7%BA%A6%E9%83%A8%E7%BD%B2%E5%88%B0Rinkeby%E6%B5%8B%E8%AF%95%E9%93%BE%E4%B8%8A/">
 
     <!-- Icons -->
   <link rel="shortcut icon" href="img/logo.ico">
@@ -123,7 +123,7 @@
                         <a class="tag" href="/Tags/#Solidity" title="Solidity">Solidity</a>
                         
                     </div> -->
-                    <h1>快速上手第一个智能合约</h1>
+                    <h1>将智能合约部署到Rinkeby测试链上</h1>
                     
                     <span class="meta">Posted by Klojure on March 21, 2018</span>
                 </div>
@@ -142,56 +142,27 @@
             <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1 post-container">
 
                 <h2 id="引言">引言</h2>
-<p>本文假设你已经对区块链有一定的了解。智能合约是1990年代由尼克萨博提出的理念，以太坊首先看到了区块链和智能合约的契合，发布了白皮书《以太坊：下一代智能合约和去中心化应用平台》，并一直致力于将以太坊打造成最佳智能合约平台。因此目前的智能合约基本都是运行在以太坊区块链上的计算机程序。本文主要帮助大家快速编写并运行第一个智能合约。</p>
+<p>在上一篇文章中<a href="https://www.jianshu.com/p/8039142d0b98">《快速上手第一个智能合约中》</a>，我们介绍了如何编写与运行我们的第一个智能合约。但那只是将合约运行在了浏览器的区块链虚拟环境中，与区块链还是有一定的区别，另外也无法被其它人所使用。因此本文主要介绍如何使用Remix将我们写好的智能合约部署到公共链中，本文中我们以以太坊的测试链Rinkeby为例。</p>
 
-<h2 id="语言和ide选择">语言和IDE选择</h2>
-<p>目前智能合约最受欢迎的编程语言为Solidity，但是并不只有Solidity。编写Solidity代码，我们可以使用Remix，它是一个基于浏览器的Soldity IDE，网址为<a href="http://remix.ethereum.org/">http://remix.ethereum.org/</a>。Remix支持编写、测试和部署智能合约。Remix界面如下图
-<img src="http://upload-images.jianshu.io/upload_images/1898595-07cb2ae0f96f95af..png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image" /></p>
+<h2 id="以太坊测试网络">以太坊测试网络</h2>
+<p>绝大多数人在使用的网络被称为主网络(Mainnet)，用户在其上交易、构建智能合约，矿工在其上挖矿。由于使用的人数众多，主网络的鲁棒性很强，能够对抗攻击，区块链也不易被篡改，因此主网络是具有功能的，其上的以太币是有价值的。</p>
 
-<h2 id="编写代码">编写代码</h2>
-<p>学一门语言的第一个程序毋庸置疑都是HelloWorld，那么我们就来写一个HelloWorld的智能合约吧。合约代码如下。</p>
+<p>而为了能够方便开发者进行测试，我们还需要一些公开的测试网络，以太坊拥有多个测试网络，包括Ropsten、Kovan以及Rinkeby，相对于主网络，测试网络使用人数少，节点少，鲁棒性差，也容易被篡改，但是以太币获取容易，方便开发者进行测试。</p>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>pragma solidity ^0.4.21;
+<h2 id="使用metamask连接测试链">使用MetaMask连接测试链</h2>
+<p>为了能够访问Rinkeby，我们需要一个桥梁连接区块链，这里我们使用MetaMask，它是Chrome等浏览器上的一个插件，使用它，我们能够在浏览器中运行我们的智能合约。这里以Chrome为例，从<a href="https://chrome.google.com/webstore/detail/metamask/nkbihfbeogaeaoehlefnkodbefgpgknn">插件商店</a>下载Metatask，输入密码创建钱包账号，<img src="https://upload-images.jianshu.io/upload_images/1898595-eb2e11e3d910f8d6.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="屏幕快照 2018-03-21 下午9.37.18.png" />，然后选择Rinkeby Test Network。因为对智能合约的操作需要消耗ether，因此我们需要获取到Rinkeby上的ether，通过<a href="https://faucet.rinkeby.io/">Rinkeby Ehter获取</a>我们可以免费获取到ether，只要在google plus或者facebook、twitter上发一个帖，内容为钱包地址，然后将链接复制到输入框即可，然后过一段时间我们就能看到ether到账了。</p>
 
-contract HelloWorld {
-    string hello = "Hello World!!!";
-    event say(string _value);
+<h2 id="使用remix链接metamask">使用Remix链接MetaMask</h2>
+<p>在<a href="https://www.jianshu.com/p/8039142d0b98">《快速上手第一个智能合约中》</a>中我们介绍过，将Remix的Environment设置为Injected Web3，Remix将会链接到MetaMask。
+<img src="https://upload-images.jianshu.io/upload_images/1898595-c282106c96cdc8ca.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="测试链.png" />，可以发现Account已经变为了Metamask中创建的测试账号，再次点击Create创建HelloWorld智能合约，将会弹出以下对话框，这其实是Metamask让用户确认是否进行这次交易，点击submit即可。
+<img src="https://upload-images.jianshu.io/upload_images/1898595-0b09ab225cdd3338.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="metamask.png" /></p>
 
-    function sayHello() public {
-        emit say(hello);
-    }
-
-}
-
-</code></pre></div></div>
-<p>合约代码第一行指定该合约使用的Solidity版本为0.4.21，不支持高于0.4.21版本的Solidity特性。</p>
-
-<p>在Solidity中，contract关键字包含的代码段即表示一个智能合约，它拥有一些成员变量，表示该合约的数据，如我们的HelloWorld中的hello，我们可以修改操作这些成员。同时它拥有一些function，可以被他人调用。</p>
-
-<p>event是Solidity提供的一种事件和订阅机制，智能合约能够发出一些event，合约调用者能够监听这些事件并作出相应的反应。</p>
-
-<p>这个合约没有做很多事情，它只会在有人调用它的sayHello方法时，发出一个say事件。接下来让我们来部署和执行它。</p>
-
-<h2 id="部署和运行合约">部署和运行合约</h2>
-<p>首先我们需要编译这段代码，在Remix的右边有一个Compile的tab，点击Start to compile，编译成功，如果失败会有错误提示，改正即可。
-<img src="https://upload-images.jianshu.io/upload_images/1898595-2208d54291c38132.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="编译成功.png" /></p>
-
-<p>然后我们需要将其部署到区块链上，切换tab到Run。</p>
-
-<p>Remix支持三种环境运行合约。其中如果为JavaScript VM，则合约会在浏览器JavaScript沙箱区块链中被执行，可以理解为Remix使用了浏览器的JS环境虚拟了一个区块链虚拟机。如果为Injected Provider，则Remix将会链接Matamask或者Mist这些区块链钱包，通过它们来间接部署和调用合约。最后为Web3 Provider，Remix会链接Geth等远程区款连节点，来部署和调用合约。</p>
-
-<p>简单起见，我们将使用JavaScript VM，它将为我们初始化出五个区块链账号，使用默认账号即可。将Environment设置为JavaScript VM。如下图。
-<img src="http://upload-images.jianshu.io/upload_images/1898595-45ab68aa624b47bf..png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image" /></p>
-
-<p>上图除了Environment和Account依次往下，我们将能够看到Gas Limit，这是执行一个Transaction我们能够接受的最大代价。Value表示下一次调用我们将向合约账户转账多少ether。</p>
-
-<p>接下来的HelloWorld表示我们将创建的合约。点击Create既能够创建这个合约。如下图我们看到HelloWorld合约已被创建。
-<img src="http://upload-images.jianshu.io/upload_images/1898595-dc5ddce28c5b2a1f..png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image" />
-我们可以点击sayHello调用。可以看到已经调用成功，在logs中打印出了我们发出的event。
-<img src="http://upload-images.jianshu.io/upload_images/1898595-f0a6fcc708a0965e..png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image" /></p>
+<p>等待片刻后合约被成功部署，合约地址为 0xa9511dc74fd18a7e09b1ceaeaa8bab93e7523200，我们可以从<a href="https://www.rinkeby.io/#explorer">https://www.rinkeby.io/#explorer</a>中查询到该合约。
+<img src="https://upload-images.jianshu.io/upload_images/1898595-508194b13a7dcc1c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="测试链上的contract.png" /></p>
 
 <h2 id="结语">结语</h2>
-<p>在本文中，我们编写了一个最简单的智能合约，并部署和运行了该合约。我们并没有将合约部署到实际的链上，只是在JS 沙箱虚拟机中执行了它。后面的文章中我们将会继续讲解如何将合约部署到链上。</p>
+<p>本文主要介绍了如何使用Remix和MetaMask将智能合约部署到区块链上，我们使用了以太坊的Rinkeby区块链网络。</p>
+
 
 
                 <hr>
@@ -199,13 +170,9 @@ contract HelloWorld {
                 <ul class="pager">
                     
                     <li class="previous">
-                        <a href="/blog/2017/04/12/IntelliJ%E8%87%AA%E5%8A%A8%E7%94%9F%E6%88%90%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AE%9E%E4%BD%93%E7%B1%BB/" data-toggle="tooltip" data-placement="top" title="IntelliJ自动生成数据库实体类">&larr; Previous Post</a>
+                        <a href="/blog/2018/03/21/%E5%BF%AB%E9%80%9F%E4%B8%8A%E6%89%8B%E7%AC%AC%E4%B8%80%E4%B8%AA%E6%99%BA%E8%83%BD%E5%90%88%E7%BA%A6/" data-toggle="tooltip" data-placement="top" title="快速上手第一个智能合约">&larr; Previous Post</a>
                     </li>
                     
-                    
-                    <li class="next">
-                        <a href="/blog/2018/03/21/%E5%B0%86%E6%99%BA%E8%83%BD%E5%90%88%E7%BA%A6%E9%83%A8%E7%BD%B2%E5%88%B0Rinkeby%E6%B5%8B%E8%AF%95%E9%93%BE%E4%B8%8A/" data-toggle="tooltip" data-placement="top" title="将智能合约部署到Rinkeby测试链上">Next Post &rarr;</a>
-                    </li>
                     
                 </ul>
                 <!--&lt;!&ndash; disqus &ndash;&gt;-->
