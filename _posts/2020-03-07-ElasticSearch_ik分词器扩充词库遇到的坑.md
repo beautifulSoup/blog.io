@@ -1,7 +1,7 @@
 ---
 layout: post
 title: ElasticSearch ik分词器扩充词库遇到的坑
-date: 2019-09-05
+date: 2020-03-07
 categories: blog
 tags: [ElasticSearch,ik分词器]
 description: ik扩展词库后需要更新历史数据哦~
